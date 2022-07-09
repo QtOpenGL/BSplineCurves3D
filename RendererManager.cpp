@@ -78,6 +78,7 @@ bool RendererManager::init()
         mCube->setPosition(QVector3D(0, 2, 0));
         mModels << mCube;
     }
+
     return true;
 }
 
@@ -105,6 +106,22 @@ void RendererManager::render()
             mBasicShader->setUniformValue("light.ambient", mLight->ambient());
             mBasicShader->setUniformValue("light.diffuse", mLight->diffuse());
             mBasicShader->setUniformValue("light.specular", mLight->specular());
+
+            // Dummy light sphere
+            ModelData *data = mTypeToModelData.value(Model::Sphere, nullptr);
+
+            if (data)
+            {
+                data->bind();
+                mBasicShader->setUniformValue("node.transformation", mLight->transformation());
+                mBasicShader->setUniformValue("node.color", mLight->color());
+                mBasicShader->setUniformValue("node.ambient", mLight->ambient());
+                mBasicShader->setUniformValue("node.diffuse", mLight->diffuse());
+                mBasicShader->setUniformValue("node.specular", mLight->specular());
+                mBasicShader->setUniformValue("node.shininess", 128.0f);
+                glDrawArrays(GL_TRIANGLES, 0, data->count());
+                data->release();
+            }
         }
     }
 

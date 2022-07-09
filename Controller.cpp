@@ -6,13 +6,12 @@ Controller::Controller(QObject *parent)
 
 void Controller::init()
 {
-    mProjection.perspective(60, 1, 0.1, 10000);
-
     mCamera = new Camera;
     mCamera->setPosition(QVector3D(0, 20, 0));
     mCamera->setProjection(mProjection);
 
     mLight = new Light;
+    mLight->setScale(QVector3D(0.005f, 0.005f, 0.005f));
     mLight->setPosition(QVector3D(5, 20, 35));
 
     mRendererManager = new RendererManager;
