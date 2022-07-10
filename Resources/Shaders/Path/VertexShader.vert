@@ -1,12 +1,13 @@
 #version 430 core
 layout (location = 0) in float vertex;
 
+uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
+uniform vec3 controlPoints[16];
 uniform vec4 color;
-uniform vec3 controlPoints;
 uniform int controlPointsCount;
 
-out vec4 fs_Color;
+out vec4 fColor;
 
 float customPow(float x, float y)
 {
@@ -35,7 +36,7 @@ float choose(int n, int k)
 
 vec3 valueAt(float t)
 {
-    vec3 value = vec3(0, 0);
+    vec3 value = vec3(0, 0, 0);
     int degree = controlPointsCount - 1;
 
     for(int i = 0; i <= degree; ++i)
@@ -53,7 +54,7 @@ vec3 valueAt(float t)
 
 vec3 tangentAt(float t)
 {
-    vec3 tangent = vec3(0,0);
+    vec3 tangent = vec3(0,0,0);
     int degree = controlPointsCount - 1;
 
     for(int i = 0; i <= degree - 1; i++)
@@ -69,7 +70,7 @@ vec3 tangentAt(float t)
 
 void main()
 {
-    gl_Position = projectionMatrix * vec4(valueAt(vertex), 1);
-    fs_Color = color;
+    gl_Position = projectionMatrix * viewMatrix * vec4(valueAt(vertex), 1.0);
+    fColor = color;
 }
 

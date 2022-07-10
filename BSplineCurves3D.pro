@@ -19,7 +19,9 @@ SOURCES += \
     Model.cpp \
     ModelData.cpp \
     Node.cpp \
+    PathShader.cpp \
     RendererManager.cpp \
+    Ticks.cpp \
     Window.cpp
 
 HEADERS += \
@@ -32,7 +34,9 @@ HEADERS += \
     Model.h \
     ModelData.h \
     Node.h \
+    PathShader.h \
     RendererManager.h \
+    Ticks.h \
     Window.h
 
 include(Dependencies/qtimgui/qtimgui.pri)

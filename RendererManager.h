@@ -6,6 +6,8 @@
 #include "Light.h"
 #include "Model.h"
 #include "ModelData.h"
+#include "PathShader.h"
+#include "Ticks.h"
 
 #include <QMap>
 #include <QObject>
@@ -34,6 +36,9 @@ private:
     BasicShader *mBasicShader;
     Light *mLight;
     Camera *mCamera;
+
+    PathShader *mPathShader;
+    Ticks *mTicks;
 
     // FIXME
     Model *mPlane;

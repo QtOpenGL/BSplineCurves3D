@@ -20,7 +20,7 @@ bool RendererManager::init()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LINE_SMOOTH);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    glLineWidth(1.5f);
+    glLineWidth(2.5f);
 
     qInfo() << Q_FUNC_INFO << "Initializing BasicShader...";
     mBasicShader = new BasicShader;
@@ -79,6 +79,17 @@ bool RendererManager::init()
         mModels << mCube;
     }
 
+    qInfo() << Q_FUNC_INFO << "Initializing PathShader...";
+    mPathShader = new PathShader;
+
+    if (!mPathShader->init())
+    {
+        qWarning() << Q_FUNC_INFO << "PathShader could not be initialized.";
+    }
+
+    mTicks = new Ticks(0, 1, 200);
+    mTicks->create();
+
     return true;
 }
 
@@ -88,41 +99,23 @@ void RendererManager::render()
     mBasicShader->bind();
 
     // Camera
+
+    if (mCamera)
     {
-        if (mCamera)
-        {
-            mBasicShader->setUniformValue("projectionMatrix", mCamera->projection());
-            mBasicShader->setUniformValue("viewMatrix", mCamera->transformation());
-            mBasicShader->setUniformValue("cameraPosition", mCamera->position());
-        }
+        mBasicShader->setUniformValue("projectionMatrix", mCamera->projection());
+        mBasicShader->setUniformValue("viewMatrix", mCamera->transformation());
+        mBasicShader->setUniformValue("cameraPosition", mCamera->position());
     }
 
     // Light
+
+    if (mLight)
     {
-        if (mLight)
-        {
-            mBasicShader->setUniformValue("light.position", mLight->position());
-            mBasicShader->setUniformValue("light.color", mLight->color());
-            mBasicShader->setUniformValue("light.ambient", mLight->ambient());
-            mBasicShader->setUniformValue("light.diffuse", mLight->diffuse());
-            mBasicShader->setUniformValue("light.specular", mLight->specular());
-
-            // Dummy light sphere
-            ModelData *data = mTypeToModelData.value(Model::Sphere, nullptr);
-
-            if (data)
-            {
-                data->bind();
-                mBasicShader->setUniformValue("node.transformation", mLight->transformation());
-                mBasicShader->setUniformValue("node.color", mLight->color());
-                mBasicShader->setUniformValue("node.ambient", mLight->ambient());
-                mBasicShader->setUniformValue("node.diffuse", mLight->diffuse());
-                mBasicShader->setUniformValue("node.specular", mLight->specular());
-                mBasicShader->setUniformValue("node.shininess", 128.0f);
-                glDrawArrays(GL_TRIANGLES, 0, data->count());
-                data->release();
-            }
-        }
+        mBasicShader->setUniformValue("light.position", mLight->position());
+        mBasicShader->setUniformValue("light.color", mLight->color());
+        mBasicShader->setUniformValue("light.ambient", mLight->ambient());
+        mBasicShader->setUniformValue("light.diffuse", mLight->diffuse());
+        mBasicShader->setUniformValue("light.specular", mLight->specular());
     }
 
     for (Model *model : qAsConst(mModels))
@@ -144,6 +137,29 @@ void RendererManager::render()
     }
 
     mBasicShader->release();
+
+    mPathShader->bind();
+
+    if (mCamera)
+    {
+        mPathShader->setUniformValue("projectionMatrix", mCamera->projection());
+        mPathShader->setUniformValue("viewMatrix", mCamera->transformation());
+    }
+
+    mPathShader->setUniformValue("color", QVector4D(1, 0, 0, 1));
+    mPathShader->setUniformValue("controlPointsCount", 4);
+    QVector<QVector3D> controlPoints;
+    controlPoints << QVector3D(10, 10, 0);
+    controlPoints << QVector3D(0, 10, 0);
+    controlPoints << QVector3D(10, 10, 0);
+    controlPoints << QVector3D(0, 10, 10);
+    mPathShader->setUniformValueArray("controlPoints", controlPoints);
+
+    mTicks->bind();
+    glDrawArrays(GL_LINE_STRIP, 0, mTicks->size());
+    mTicks->release();
+
+    mPathShader->release();
 }
 
 void RendererManager::addModel(Model *model)
