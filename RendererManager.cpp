@@ -1,4 +1,5 @@
 #include "RendererManager.h"
+#include "Spline.h"
 
 RendererManager::RendererManager(QObject *parent)
     : QObject(parent)
@@ -147,12 +148,19 @@ void RendererManager::render()
     }
 
     mPathShader->setUniformValue("color", QVector4D(1, 0, 0, 1));
-    mPathShader->setUniformValue("controlPointsCount", 4);
-    QVector<QVector3D> controlPoints;
-    controlPoints << QVector3D(10, 10, 0);
-    controlPoints << QVector3D(0, 10, 0);
-    controlPoints << QVector3D(10, 10, 0);
-    controlPoints << QVector3D(0, 10, 10);
+
+    Spline spline;
+
+    spline.addKnotPoint(new KnotPoint(0, 0, 0));
+    spline.addKnotPoint(new KnotPoint(5, 5, 0));
+    spline.addKnotPoint(new KnotPoint(0, 10, 0));
+    spline.addKnotPoint(new KnotPoint(5, 15, 0));
+
+    QVector<QVector3D> controlPoints = spline.getControlPointPositions();
+
+    qDebug() << controlPoints;
+
+    mPathShader->setUniformValue("controlPointsCount", controlPoints.size());
     mPathShader->setUniformValueArray("controlPoints", controlPoints);
 
     mTicks->bind();

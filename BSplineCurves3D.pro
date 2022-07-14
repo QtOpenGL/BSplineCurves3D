@@ -13,6 +13,7 @@ SOURCES += \
     Camera.cpp \
     Controller.cpp \
     Helper.cpp \
+    KnotPoint.cpp \
     Light.cpp \
     Main.cpp \
     Material.cpp \
@@ -21,6 +22,7 @@ SOURCES += \
     Node.cpp \
     PathShader.cpp \
     RendererManager.cpp \
+    Spline.cpp \
     Ticks.cpp \
     Window.cpp
 
@@ -29,6 +31,7 @@ HEADERS += \
     Camera.h \
     Controller.h \
     Helper.h \
+    KnotPoint.h \
     Light.h \
     Material.h \
     Model.h \
@@ -36,10 +39,14 @@ HEADERS += \
     Node.h \
     PathShader.h \
     RendererManager.h \
+    Spline.h \
     Ticks.h \
     Window.h
 
 include(Dependencies/qtimgui/qtimgui.pri)
+
+INCLUDEPATH += $$PWD/Dependencies/eigen3/Eigen
+INCLUDEPATH += $$PWD/Dependencies/eigen3/unsupported
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
