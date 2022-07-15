@@ -155,10 +155,9 @@ void RendererManager::render()
     spline.addKnotPoint(new KnotPoint(5, 5, 0));
     spline.addKnotPoint(new KnotPoint(0, 10, 0));
     spline.addKnotPoint(new KnotPoint(5, 15, 0));
+    spline.addKnotPoint(new KnotPoint(5, 25, 25));
 
     QVector<QVector3D> controlPoints = spline.getControlPointPositions();
-
-    qDebug() << controlPoints;
 
     mPathShader->setUniformValue("controlPointsCount", controlPoints.size());
     mPathShader->setUniformValueArray("controlPoints", controlPoints);

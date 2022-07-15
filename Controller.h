@@ -24,11 +24,11 @@ protected:
     void onResizeReceived(int w, int h);
 
 private:
-    QMatrix4x4 mProjection;
     Camera *mCamera;
     Light *mLight;
     RendererManager *mRendererManager;
     Window *mWindow;
+    Model *mSphere;
 };
 
 #endif // CONTROLLER_H
