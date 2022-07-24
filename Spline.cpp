@@ -1,7 +1,10 @@
 #include "Spline.h"
 
+#include <QDebug>
+
 Spline::Spline(QObject *parent)
     : QObject(parent)
+    , mSelected(false)
 {}
 
 Spline::~Spline()
@@ -19,8 +22,6 @@ Spline::~Spline()
 void Spline::addKnotPoint(KnotPoint *knotPoint)
 {
     mKnotPoints << knotPoint;
-
-    updateSpline();
 }
 
 void Spline::updateSpline()
@@ -51,4 +52,39 @@ QVector<QVector3D> Spline::getControlPointPositions()
     }
 
     return positions;
+}
+
+float Spline::closestDistanceToRay(const QVector3D &cameraPosition, const QVector3D &rayDirection, float epsilon)
+{
+    float minDistance = std::numeric_limits<float>::infinity();
+
+    for (float t = 0.0f; t <= 1.0f; t += epsilon)
+    {
+        Eigen::Vector3f value = mEigenSpline(t);
+        QVector3D diff = QVector3D(value.coeff(0), value.coeff(1), value.coeff(2)) - cameraPosition;
+
+        qDebug() << QVector3D(value.coeff(0), value.coeff(1), value.coeff(2));
+        float dot = QVector3D::dotProduct(diff, rayDirection);
+
+        if (dot >= 0.0f)
+        {
+            float distance = (diff - rayDirection * dot).length();
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+            }
+        }
+    }
+
+    return minDistance;
+}
+
+bool Spline::selected() const
+{
+    return mSelected;
+}
+
+void Spline::setSelected(bool newSelected)
+{
+    mSelected = newSelected;
 }

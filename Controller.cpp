@@ -32,6 +32,22 @@ void Controller::init()
         mRendererManager->addModel(mSphere);
     }
 
+    // TestCurve
+    {
+        mTestCurve = new Spline;
+        mTestCurve->addKnotPoint(new KnotPoint(0, 0, 0));
+
+        mTestCurve->addKnotPoint(new KnotPoint(5, 5, 0));
+
+        mTestCurve->addKnotPoint(new KnotPoint(0, 10, 0));
+
+        //        mTestCurve->addKnotPoint(new KnotPoint(0, 15, 0));
+
+        mTestCurve->updateSpline();
+
+        mRendererManager->addCurve(mTestCurve);
+    }
+
     mWindow = new Window;
     mWindow->setRendererManager(mRendererManager);
     mWindow->resize(800, 800);
@@ -57,6 +73,14 @@ void Controller::onMousePressed(QMouseEvent *event)
     if (event->button() == Qt::RightButton)
     {
         mCamera->onMousePressed(event);
+    }
+    else if (event->button() == Qt::LeftButton)
+    {
+        QVector3D rayDirection = mCamera->getDirectionFromScreen(event->x(), event->y(), mWindow->width(), mWindow->height());
+
+        float distance = mTestCurve->closestDistanceToRay(mCamera->position(), rayDirection);
+
+        qDebug() << distance;
     }
 }
 

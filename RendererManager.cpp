@@ -77,7 +77,15 @@ bool RendererManager::init()
         mCube->material().setColor(QVector4D(1, 0, 0, 1));
         mCube->setScale(QVector3D(0.01f, 0.01f, 0.01f));
         mCube->setPosition(QVector3D(0, 2, 0));
-        mModels << mCube;
+        //mModels << mCube;
+    }
+
+    {
+        mKnotModel = new Model;
+        mKnotModel->setObjectName("KnotModel");
+        mKnotModel->setType(Model::Sphere);
+        mKnotModel->material().setColor(QVector4D(0, 1, 0, 1));
+        mKnotModel->setScale(QVector3D(0.001f, 0.001f, 0.001f));
     }
 
     qInfo() << Q_FUNC_INFO << "Initializing PathShader...";
@@ -137,6 +145,30 @@ void RendererManager::render()
         }
     }
 
+    mBasicShader->setUniformValue("node.color", mKnotModel->material().color());
+    mBasicShader->setUniformValue("node.ambient", mKnotModel->material().ambient());
+    mBasicShader->setUniformValue("node.diffuse", mKnotModel->material().diffuse());
+    mBasicShader->setUniformValue("node.specular", mKnotModel->material().specular());
+    mBasicShader->setUniformValue("node.shininess", mKnotModel->material().shininess());
+
+    for (Spline *curve : qAsConst(mCurves))
+    {
+        if (curve)
+        {
+            ModelData *data = mTypeToModelData.value(mKnotModel->type(), nullptr);
+
+            for (int i = 0; i < curve->mKnotPoints.size(); i++)
+            {
+                mKnotModel->setPosition(curve->mKnotPoints[i]->position());
+
+                data->bind();
+                mBasicShader->setUniformValue("node.transformation", mKnotModel->transformation());
+                glDrawArrays(GL_TRIANGLES, 0, data->count());
+                data->release();
+            }
+        }
+    }
+
     mBasicShader->release();
 
     mPathShader->bind();
@@ -149,22 +181,20 @@ void RendererManager::render()
 
     mPathShader->setUniformValue("color", QVector4D(1, 0, 0, 1));
 
-    Spline spline;
+    for (Spline *curve : qAsConst(mCurves))
+    {
+        if (curve)
+        {
+            QVector<QVector3D> controlPoints = curve->getControlPointPositions();
 
-    spline.addKnotPoint(new KnotPoint(0, 0, 0));
-    spline.addKnotPoint(new KnotPoint(5, 5, 0));
-    spline.addKnotPoint(new KnotPoint(0, 10, 0));
-    spline.addKnotPoint(new KnotPoint(5, 15, 0));
-    spline.addKnotPoint(new KnotPoint(5, 25, 25));
+            mPathShader->setUniformValue("controlPointsCount", controlPoints.size());
+            mPathShader->setUniformValueArray("controlPoints", controlPoints);
 
-    QVector<QVector3D> controlPoints = spline.getControlPointPositions();
-
-    mPathShader->setUniformValue("controlPointsCount", controlPoints.size());
-    mPathShader->setUniformValueArray("controlPoints", controlPoints);
-
-    mTicks->bind();
-    glDrawArrays(GL_LINE_STRIP, 0, mTicks->size());
-    mTicks->release();
+            mTicks->bind();
+            glDrawArrays(GL_LINE_STRIP, 0, mTicks->size());
+            mTicks->release();
+        }
+    }
 
     mPathShader->release();
 }
@@ -182,6 +212,11 @@ bool RendererManager::removeModel(Model *model)
     model->deleteLater();
 
     return number > 0;
+}
+
+void RendererManager::addCurve(Spline *curve)
+{
+    mCurves << curve;
 }
 
 Light *RendererManager::light()

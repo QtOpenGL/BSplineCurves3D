@@ -7,6 +7,7 @@
 #include "Model.h"
 #include "ModelData.h"
 #include "PathShader.h"
+#include "Spline.h"
 #include "Ticks.h"
 
 #include <QMap>
@@ -24,6 +25,8 @@ public:
     void addModel(Model *model);
     bool removeModel(Model *model);
 
+    void addCurve(Spline *curve);
+
     Light *light();
     void setLight(Light *newLight);
 
@@ -32,6 +35,7 @@ public:
 
 private:
     QList<Model *> mModels;
+    QList<Spline *> mCurves;
     QMap<Model::Type, ModelData *> mTypeToModelData;
     BasicShader *mBasicShader;
     Light *mLight;
@@ -43,6 +47,7 @@ private:
     // FIXME
     Model *mPlane;
     Model *mCube;
+    Model *mKnotModel;
 };
 
 #endif // RENDERERMANAGER_H

@@ -16,10 +16,15 @@ public:
     void addKnotPoint(KnotPoint *knotPoint);
     void updateSpline();
     QVector<QVector3D> getControlPointPositions();
+    float closestDistanceToRay(const QVector3D &cameraPosition, const QVector3D &rayDirection, float epsilon = 0.01);
 
-private:
+    bool selected() const;
+    void setSelected(bool newSelected);
+
+public:
     Eigen::Spline3f mEigenSpline;
     QVector<KnotPoint *> mKnotPoints;
+    bool mSelected;
 };
 
 #endif // SPLINE_H

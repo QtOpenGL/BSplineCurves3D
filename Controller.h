@@ -29,6 +29,7 @@ private:
     RendererManager *mRendererManager;
     Window *mWindow;
     Model *mSphere;
+    Spline *mTestCurve;
 };
 
 #endif // CONTROLLER_H
