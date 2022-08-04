@@ -11,14 +11,19 @@ CONFIG += c++11
 SOURCES += \
     BasicShader.cpp \
     Camera.cpp \
+    CameraManager.cpp \
     Controller.cpp \
+    DummyCamera.cpp \
+    FreeCamera.cpp \
     Helper.cpp \
     KnotPoint.cpp \
     Light.cpp \
+    LightManager.cpp \
     Main.cpp \
     Material.cpp \
     Model.cpp \
     ModelData.cpp \
+    ModelManager.cpp \
     Node.cpp \
     PathShader.cpp \
     RendererManager.cpp \
@@ -29,13 +34,18 @@ SOURCES += \
 HEADERS += \
     BasicShader.h \
     Camera.h \
+    CameraManager.h \
     Controller.h \
+    DummyCamera.h \
+    FreeCamera.h \
     Helper.h \
     KnotPoint.h \
     Light.h \
+    LightManager.h \
     Material.h \
     Model.h \
     ModelData.h \
+    ModelManager.h \
     Node.h \
     PathShader.h \
     RendererManager.h \

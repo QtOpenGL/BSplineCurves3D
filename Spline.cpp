@@ -35,7 +35,7 @@ void Spline::updateSpline()
         matrix(2, i) = mKnotPoints[i]->position().z();
     }
 
-    mEigenSpline = Eigen::SplineFitting<Eigen::Spline3f>::Interpolate(matrix, 2);
+    mEigenSpline = Eigen::SplineFitting<Eigen::Spline3f>::Interpolate(matrix, 3);
 }
 
 QVector<QVector3D> Spline::getControlPointPositions()

@@ -1,35 +1,58 @@
 #include "Controller.h"
+#include "Light.h"
 
 Controller::Controller(QObject *parent)
-    : QObject{parent}
-{}
+    : QObject(parent)
+{
+    mRendererManager = RendererManager::instance();
+    mCameraManager = CameraManager::instance();
+    mLightManager = LightManager::instance();
+    mModelManager = ModelManager::instance();
+    mWindow = new Window;
+    mWindow->setController(this);
+}
 
 void Controller::init()
 {
-    mCamera = new Camera;
+    // Initialize Managers
+    mRendererManager->init();
+
+    mCamera = FreeCamera::create();
     mCamera->setPosition(QVector3D(0, 10, 10));
     mCamera->setVerticalFov(60.0f);
     mCamera->setZNear(0.1f);
     mCamera->setZFar(10000.0f);
+    mCameraManager->setActiveCamera(mCamera);
 
-    mLight = new Light;
-    mLight->setScale(QVector3D(0.005f, 0.005f, 0.005f));
+    mLight = Light::create();
     mLight->setPosition(QVector3D(5, 20, 35));
-
-    mRendererManager = new RendererManager;
-    mRendererManager->setCamera(mCamera);
-    mRendererManager->setLight(mLight);
+    mLightManager->setActiveLight(mLight);
 
     // FIXME
+
     // Sphere
     {
-        mSphere = new Model;
+        mSphere = Model::create(Model::Sphere);
         mSphere->setObjectName("Sphere");
-        mSphere->setType(Model::Sphere);
-        mSphere->material().setColor(QVector4D(0, 1, 0, 1));
+        mSphere->setPosition(QVector3D(0, 0, 0));
         mSphere->setScale(QVector3D(0.001f, 0.001f, 0.001f));
-        mSphere->setPosition(QVector3D(0, 2, 0));
-        mRendererManager->addModel(mSphere);
+        mSphere->material().setColor(QVector4D(0, 1, 0, 1));
+    }
+
+    // Plane
+    {
+        mPlane = Model::create(Model::Plane);
+        mPlane->setObjectName("Plane");
+        mPlane->setPosition(QVector3D(0, 0, 0));
+    }
+
+    // Cube
+    {
+        mCube = Model::create(Model::Cube);
+        mCube->setObjectName("Cube");
+        mCube->material().setColor(QVector4D(1, 0, 0, 1));
+        mCube->setScale(QVector3D(0.01f, 0.01f, 0.01f));
+        mCube->setPosition(QVector3D(0, 2, 0));
     }
 
     // TestCurve
@@ -41,24 +64,14 @@ void Controller::init()
 
         mTestCurve->addKnotPoint(new KnotPoint(0, 10, 0));
 
-        //        mTestCurve->addKnotPoint(new KnotPoint(0, 15, 0));
+        mTestCurve->addKnotPoint(new KnotPoint(0, 15, 0));
 
         mTestCurve->updateSpline();
 
         mRendererManager->addCurve(mTestCurve);
     }
 
-    mWindow = new Window;
-    mWindow->setRendererManager(mRendererManager);
     mWindow->resize(800, 800);
-
-    connect(mWindow, &Window::wheelMoved, this, &Controller::onWheelMoved);
-    connect(mWindow, &Window::mousePressed, this, &Controller::onMousePressed);
-    connect(mWindow, &Window::mouseReleased, this, &Controller::onMouseReleased);
-    connect(mWindow, &Window::mouseMoved, this, &Controller::onMouseMoved);
-    connect(mWindow, &Window::keyPressed, this, &Controller::onKeyPressed);
-    connect(mWindow, &Window::keyReleased, this, &Controller::onKeyReleased);
-    connect(mWindow, &Window::resizeReceived, this, &Controller::onResizeReceived);
 }
 
 void Controller::show()
@@ -72,11 +85,11 @@ void Controller::onMousePressed(QMouseEvent *event)
 {
     if (event->button() == Qt::RightButton)
     {
-        mCamera->onMousePressed(event);
+        mCameraManager->onMousePressed(event);
     }
     else if (event->button() == Qt::LeftButton)
     {
-        QVector3D rayDirection = mCamera->getDirectionFromScreen(event->x(), event->y(), mWindow->width(), mWindow->height());
+        QVector3D rayDirection = mCameraManager->getDirectionFromScreen(event->x(), event->y(), mWindow->width(), mWindow->height());
 
         float distance = mTestCurve->closestDistanceToRay(mCamera->position(), rayDirection);
 
@@ -88,29 +101,40 @@ void Controller::onMouseReleased(QMouseEvent *event)
 {
     if (event->button() == Qt::RightButton)
     {
-        mCamera->onMouseReleased(event);
+        mCameraManager->onMouseReleased(event);
     }
 }
 
 void Controller::onMouseMoved(QMouseEvent *event)
 {
     // FIXME
-    QVector3D dir = mCamera->getDirectionFromScreen(event->x(), event->y(), mWindow->width(), mWindow->height());
+    QVector3D dir = mCameraManager->getDirectionFromScreen(event->x(), event->y(), mWindow->width(), mWindow->height());
     mSphere->setPosition(mCamera->position() + 10 * dir);
-    mCamera->onMouseMoved(event);
+
+    mCameraManager->onMouseMoved(event);
 }
 
 void Controller::onKeyPressed(QKeyEvent *event)
 {
-    mCamera->onKeyPressed(event);
+    mCameraManager->onKeyPressed(event);
 }
 
 void Controller::onKeyReleased(QKeyEvent *event)
 {
-    mCamera->onKeyReleased(event);
+    mCameraManager->onKeyReleased(event);
 }
 
 void Controller::onResizeReceived(int w, int h)
 {
     mCamera->setAspectRatio((float) (w) / h);
+}
+
+void Controller::update(float ifps)
+{
+    mCameraManager->update(ifps);
+}
+
+void Controller::render(float ifps)
+{
+    mRendererManager->render(ifps);
 }

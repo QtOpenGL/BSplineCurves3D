@@ -4,6 +4,9 @@
 #include <QKeyEvent>
 #include <QtImGui.h>
 
+#include "Controller.h"
+#include <QDateTime>
+
 Window::Window(QWindow *parent)
     : QOpenGLWindow(QOpenGLWindow::UpdateBehavior::NoPartialUpdate, parent)
 {
@@ -17,24 +20,37 @@ Window::Window(QWindow *parent)
     connect(this, &QOpenGLWindow::frameSwapped, this, [=]() { update(); });
 }
 
-Window::~Window() {}
+void Window::setController(Controller *newController)
+{
+    mController = newController;
+}
 
 void Window::initializeGL()
 {
     initializeOpenGLFunctions();
     QtImGui::initialize(this);
 
-    mRendererManager->init();
+    mController->init();
+
+    mCurrentTime = QDateTime::currentMSecsSinceEpoch();
+    mPreviousTime = mCurrentTime;
 }
 
 void Window::resizeGL(int w, int h)
 {
-    emit resizeReceived(w, h);
+    mController->onResizeReceived(w, h);
 }
 
 void Window::paintGL()
 {
-    mRendererManager->render();
+    mCurrentTime = QDateTime::currentMSecsSinceEpoch();
+
+    float ifps = (mCurrentTime - mPreviousTime) * 0.001f;
+
+    mPreviousTime = mCurrentTime;
+
+    mController->update(ifps);
+    mController->render(ifps);
 
     QtImGui::newFrame();
 
@@ -47,35 +63,30 @@ void Window::paintGL()
 
 void Window::keyPressEvent(QKeyEvent *event)
 {
-    emit keyPressed(event);
+    mController->onKeyPressed(event);
 }
 
 void Window::keyReleaseEvent(QKeyEvent *event)
 {
-    emit keyReleased(event);
+    mController->onKeyReleased(event);
 }
 
 void Window::mousePressEvent(QMouseEvent *event)
 {
-    emit mousePressed(event);
+    mController->onMousePressed(event);
 }
 
 void Window::mouseReleaseEvent(QMouseEvent *event)
 {
-    emit mouseReleased(event);
+    mController->onMouseReleased(event);
 }
 
 void Window::mouseMoveEvent(QMouseEvent *event)
 {
-    emit mouseMoved(event);
+    mController->onMouseMoved(event);
 }
 
 void Window::wheelEvent(QWheelEvent *event)
 {
-    emit wheelMoved(event);
-}
-
-void Window::setRendererManager(RendererManager *newRendererManager)
-{
-    mRendererManager = newRendererManager;
+    mController->onWheelMoved(event);
 }

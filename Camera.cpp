@@ -5,153 +5,68 @@
 
 Camera::Camera(QObject *parent)
     : QObject(parent)
-    , mVerticalFov(60.0f)
+    , mPosition(0.0f, 0.0f, 0.0f)
     , mAspectRatio(1.0f)
     , mZNear(0.1f)
     , mZFar(10000.0f)
-    , mMovementSpeed(0.0125f)
-    , mAngularSpeed(0.125f)
-    , mMousePressed(false)
-    , mMousePreviousX(0.0f)
-    , mMousePreviousY(0.0f)
-    , mMouseDeltaX(0.0f)
-    , mMouseDeltaY(0.0f)
-    , mUpdateRotation(true)
-    , mUpdatePosition(true)
 {
     mTransformation.setToIdentity();
     mProjection.setToIdentity();
 
-    connect(&mTimer, &QTimer::timeout, this, &Camera::update);
-    mTimer.start(5);
+    setVerticalFov(60.0f);
 }
 
-void Camera::onKeyPressed(QKeyEvent *event)
+const QVector3D &Camera::position() const
 {
-    mPressedKeys.insert((Qt::Key) event->key(), true);
-    mUpdatePosition = true;
+    return mPosition;
 }
 
-void Camera::onKeyReleased(QKeyEvent *event)
+void Camera::setPosition(const QVector3D &newPosition)
 {
-    mPressedKeys.insert((Qt::Key) event->key(), false);
+    mPosition = newPosition;
+    updateTransformation();
 }
 
-void Camera::onMousePressed(QMouseEvent *event)
+const QQuaternion &Camera::rotation() const
 {
-    mMousePreviousX = event->x();
-    mMousePreviousY = event->y();
-    mMousePressed = true;
+    return mRotation;
 }
 
-void Camera::onMouseReleased(QMouseEvent *)
+void Camera::setRotation(const QQuaternion &newRotation)
 {
-    mMousePressed = false;
+    mRotation = newRotation;
+    updateTransformation();
 }
 
-void Camera::onMouseMoved(QMouseEvent *event)
+float Camera::horizontalFov() const
 {
-    if (mMousePressed)
-    {
-        mMouseDeltaX += mMousePreviousX - event->x();
-        mMouseDeltaY += mMousePreviousY - event->y();
-
-        mMousePreviousX = event->x();
-        mMousePreviousY = event->y();
-        mUpdateRotation = true;
-    }
+    return mHorizontalFov;
 }
 
-QVector3D Camera::getDirectionFromScreen(int x, int y, int width, int height)
+void Camera::setHorizontalFov(float newHorizontalFov)
 {
-    const float halfVerticalFovRadian = 0.5f * qDegreesToRadians(mVerticalFov);
-    const float halfHorizontalFovRadian = atan(tan(halfVerticalFovRadian) * mAspectRatio);
+    mHorizontalFov = newHorizontalFov;
 
-    const float horizontalRotationAngleRadian = atan(tan(halfHorizontalFovRadian) * (0.5f * width - x) / (0.5f * width));
-    const float horizontalRotationAngle = qRadiansToDegrees(horizontalRotationAngleRadian);
+    float halfHorizontalFovRadian = 0.5f * qDegreesToRadians(mHorizontalFov);
+    float verticalFovRadian = 2 * atan(tan(halfHorizontalFovRadian) * mAspectRatio);
 
-    const float verticalRotationAngleRadian = atan(((0.5f * height - y) / (0.5f * width - x)) * sin(horizontalRotationAngleRadian));
-    const float verticalRotationAngle = qRadiansToDegrees(verticalRotationAngleRadian);
-
-    QQuaternion rotation = mRotation * QQuaternion::fromAxisAndAngle(QVector3D(0, 1, 0), horizontalRotationAngle);
-    rotation = rotation * QQuaternion::fromAxisAndAngle(QVector3D(1, 0, 0), verticalRotationAngle);
-
-    return rotation * QVector3D(0, 0, -1);
-}
-
-QVector3D Camera::getViewDirection()
-{
-    return mRotation * QVector3D(0, 0, -1);
-}
-
-void Camera::update()
-{
-    // Rotation
-    if (mUpdateRotation)
-    {
-        mRotation = QQuaternion::fromAxisAndAngle(QVector3D(0, 1, 0), mAngularSpeed * mMouseDeltaX) * mRotation;
-        mRotation = mRotation * QQuaternion::fromAxisAndAngle(QVector3D(1, 0, 0), mAngularSpeed * mMouseDeltaY);
-
-        mMouseDeltaY = 0.0f;
-        mMouseDeltaX = 0.0f;
-        mUpdateRotation = false;
-    }
-
-    // Translation
-    if (mUpdatePosition)
-    {
-        const QList<Qt::Key> keys = mPressedKeys.keys();
-
-        if (mPressedKeys[Qt::Key_Shift])
-            mMovementSpeed = 0.25f;
-        else if (mPressedKeys[Qt::Key_Control])
-            mMovementSpeed = 0.0125f;
-        else
-            mMovementSpeed = 0.05f;
-
-        for (auto key : keys)
-            if (mPressedKeys.value(key, false))
-                mPosition += mMovementSpeed * mRotation.rotatedVector(KEY_BINDINGS.value(key, QVector3D(0, 0, 0)));
-    }
-
-    if (mUpdatePosition | mUpdateRotation)
-    {
-        mTransformation.setToIdentity();
-        mTransformation.rotate(mRotation.conjugated());
-        mTransformation.translate(-mPosition);
-    }
-
-    if (mPressedKeys.empty())
-    {
-        mUpdatePosition = false;
-    }
-}
-
-void Camera::updateProjection()
-{
-    mProjection.setToIdentity();
-    mProjection.perspective(mVerticalFov, mAspectRatio, mZNear, mZFar);
-}
-
-float Camera::zFar() const
-{
-    return mZFar;
-}
-
-void Camera::setZFar(float newZFar)
-{
-    mZFar = newZFar;
+    mVerticalFov = qRadiansToDegrees(verticalFovRadian);
     updateProjection();
 }
 
-float Camera::zNear() const
+float Camera::verticalFov() const
 {
-    return mZNear;
+    return mVerticalFov;
 }
 
-void Camera::setZNear(float newZNear)
+void Camera::setVerticalFov(float newVerticalFov)
 {
-    mZNear = newZNear;
+    mVerticalFov = newVerticalFov;
+
+    float halfVerticalFovRadian = 0.5f * qDegreesToRadians(mVerticalFov);
+    float horizontalFovRadian = 2 * atan(tan(halfVerticalFovRadian) / mAspectRatio);
+
+    mHorizontalFov = qRadiansToDegrees(horizontalFovRadian);
     updateProjection();
 }
 
@@ -166,22 +81,26 @@ void Camera::setAspectRatio(float newAspectRatio)
     updateProjection();
 }
 
-float Camera::verticalFov() const
+float Camera::zNear() const
 {
-    return mVerticalFov;
+    return mZNear;
 }
 
-void Camera::setVerticalFov(float newVerticalFov)
+void Camera::setZNear(float newZNear)
 {
-    mVerticalFov = newVerticalFov;
+    mZNear = newZNear;
     updateProjection();
 }
 
-float Camera::horizontalFov() const
+float Camera::zFar() const
 {
-    const float halfVerticalFovRadian = 0.5f * qDegreesToRadians(mVerticalFov);
-    const float horizontalFovRadian = 2 * atan(tan(halfVerticalFovRadian) / mAspectRatio);
-    return qRadiansToDegrees(horizontalFovRadian);
+    return mZFar;
+}
+
+void Camera::setZFar(float newZFar)
+{
+    mZFar = newZFar;
+    updateProjection();
 }
 
 const QMatrix4x4 &Camera::projection() const
@@ -189,38 +108,25 @@ const QMatrix4x4 &Camera::projection() const
     return mProjection;
 }
 
-QVector3D Camera::position() const
+QVector3D Camera::getViewDirection()
 {
-    return mPosition;
+    return mRotation * QVector3D(0, 0, -1);
 }
 
-void Camera::setPosition(const QVector3D &newPosition)
-{
-    mPosition = newPosition;
-    mUpdatePosition = true;
-}
-
-QQuaternion Camera::rotation() const
-{
-    return mRotation;
-}
-
-void Camera::setRotation(const QQuaternion &newRotation)
-{
-    mRotation = newRotation;
-    mUpdateRotation = true;
-}
-
-const QMatrix4x4 &Camera::transformation()
+const QMatrix4x4 &Camera::transformation() const
 {
     return mTransformation;
 }
 
-const QMap<Qt::Key, QVector3D> Camera::KEY_BINDINGS = {
-    {Qt::Key_W, QVector3D(0, 0, -1)},
-    {Qt::Key_S, QVector3D(0, 0, 1)},
-    {Qt::Key_A, QVector3D(-1, 0, 0)},
-    {Qt::Key_D, QVector3D(1, 0, 0)},
-    {Qt::Key_E, QVector3D(0, 1, 0)},
-    {Qt::Key_Q, QVector3D(0, -1, 0)},
-};
+void Camera::updateTransformation()
+{
+    mTransformation.setToIdentity();
+    mTransformation.rotate(mRotation.conjugated());
+    mTransformation.translate(-mPosition);
+}
+
+void Camera::updateProjection()
+{
+    mProjection.setToIdentity();
+    mProjection.perspective(mVerticalFov, mAspectRatio, mZNear, mZFar);
+}

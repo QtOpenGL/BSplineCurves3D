@@ -1,13 +1,19 @@
 #ifndef LIGHT_H
 #define LIGHT_H
 
-#include "Model.h"
 #include "Node.h"
 
 class Light : public Node
 {
-public:
+private:
+    friend class LightManager;
+
     explicit Light(QObject *parent = nullptr);
+    virtual ~Light();
+
+public:
+    static Light *create();
+    void remove();
 
     const QVector4D &color() const;
     void setColor(const QVector4D &newColor);
@@ -26,6 +32,8 @@ private:
     float mAmbient;
     float mDiffuse;
     float mSpecular;
+
+    static LightManager *LIGHT_MANAGER;
 };
 
 #endif // LIGHT_H

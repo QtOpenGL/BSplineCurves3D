@@ -1,17 +1,21 @@
 #include "RendererManager.h"
+#include "Camera.h"
+#include "Light.h"
 #include "Spline.h"
 
 RendererManager::RendererManager(QObject *parent)
     : QObject(parent)
     , mBasicShader(nullptr)
-    , mLight(nullptr)
-    , mCamera(nullptr)
-
-{}
-
-RendererManager::~RendererManager()
 {
-    // TODO
+    mModelManager = ModelManager::instance();
+    mCameraManager = CameraManager::instance();
+    mLightManager = LightManager::instance();
+}
+
+RendererManager *RendererManager::instance()
+{
+    static RendererManager instance;
+    return &instance;
 }
 
 bool RendererManager::init()
@@ -46,44 +50,11 @@ bool RendererManager::init()
         mTypeToModelData.insert(type, data);
     }
 
-    if (!mLight)
-    {
-        qWarning() << Q_FUNC_INFO << "Light is not set.";
-        return false;
-    }
-
-    if (!mCamera)
-    {
-        qWarning() << Q_FUNC_INFO << "Camera is not set.";
-        return false;
-    }
-
     // FIXME
-
-    // Plane
+    // Knot and Control Point Models
     {
-        mPlane = new Model;
-        mPlane->setObjectName("Plane");
-        mPlane->setType(Model::Plane);
-        mPlane->setPosition(QVector3D(0, 0, 0));
-        mModels << mPlane;
-    }
-
-    // Cube
-    {
-        mCube = new Model;
-        mCube->setObjectName("Cube");
-        mCube->setType(Model::Cube);
-        mCube->material().setColor(QVector4D(1, 0, 0, 1));
-        mCube->setScale(QVector3D(0.01f, 0.01f, 0.01f));
-        mCube->setPosition(QVector3D(0, 2, 0));
-        //mModels << mCube;
-    }
-
-    {
-        mKnotModel = new Model;
+        mKnotModel = Model::create(Model::Sphere);
         mKnotModel->setObjectName("KnotModel");
-        mKnotModel->setType(Model::Sphere);
         mKnotModel->material().setColor(QVector4D(0, 1, 0, 1));
         mKnotModel->setScale(QVector3D(0.001f, 0.001f, 0.001f));
     }
@@ -102,32 +73,38 @@ bool RendererManager::init()
     return true;
 }
 
-void RendererManager::render()
+void RendererManager::render(float ifps)
 {
+    Q_UNUSED(ifps);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     mBasicShader->bind();
 
     // Camera
+    Camera *camera = mCameraManager->activeCamera();
+    Light *light = mLightManager->activeLight();
 
-    if (mCamera)
+    if (camera)
     {
-        mBasicShader->setUniformValue("projectionMatrix", mCamera->projection());
-        mBasicShader->setUniformValue("viewMatrix", mCamera->transformation());
-        mBasicShader->setUniformValue("cameraPosition", mCamera->position());
+        mBasicShader->setUniformValue("projectionMatrix", camera->projection());
+        mBasicShader->setUniformValue("viewMatrix", camera->transformation());
+        mBasicShader->setUniformValue("cameraPosition", camera->position());
     }
 
     // Light
 
-    if (mLight)
+    if (light)
     {
-        mBasicShader->setUniformValue("light.position", mLight->position());
-        mBasicShader->setUniformValue("light.color", mLight->color());
-        mBasicShader->setUniformValue("light.ambient", mLight->ambient());
-        mBasicShader->setUniformValue("light.diffuse", mLight->diffuse());
-        mBasicShader->setUniformValue("light.specular", mLight->specular());
+        mBasicShader->setUniformValue("light.position", light->position());
+        mBasicShader->setUniformValue("light.color", light->color());
+        mBasicShader->setUniformValue("light.ambient", light->ambient());
+        mBasicShader->setUniformValue("light.diffuse", light->diffuse());
+        mBasicShader->setUniformValue("light.specular", light->specular());
     }
 
-    for (Model *model : qAsConst(mModels))
+    QList<Model *> models = mModelManager->models();
+
+    for (Model *model : qAsConst(models))
     {
         ModelData *data = mTypeToModelData.value(model->type(), nullptr);
 
@@ -173,10 +150,10 @@ void RendererManager::render()
 
     mPathShader->bind();
 
-    if (mCamera)
+    if (camera)
     {
-        mPathShader->setUniformValue("projectionMatrix", mCamera->projection());
-        mPathShader->setUniformValue("viewMatrix", mCamera->transformation());
+        mPathShader->setUniformValue("projectionMatrix", camera->projection());
+        mPathShader->setUniformValue("viewMatrix", camera->transformation());
     }
 
     mPathShader->setUniformValue("color", QVector4D(1, 0, 0, 1));
@@ -199,42 +176,7 @@ void RendererManager::render()
     mPathShader->release();
 }
 
-void RendererManager::addModel(Model *model)
-{
-    // FIXME
-    mModels << model;
-}
-
-bool RendererManager::removeModel(Model *model)
-{
-    // FIXME
-    int number = mModels.removeAll(model);
-    model->deleteLater();
-
-    return number > 0;
-}
-
 void RendererManager::addCurve(Spline *curve)
 {
     mCurves << curve;
-}
-
-Light *RendererManager::light()
-{
-    return mLight;
-}
-
-void RendererManager::setLight(Light *newLight)
-{
-    mLight = newLight;
-}
-
-Camera *RendererManager::camera()
-{
-    return mCamera;
-}
-
-void RendererManager::setCamera(Camera *newCamera)
-{
-    mCamera = newCamera;
 }

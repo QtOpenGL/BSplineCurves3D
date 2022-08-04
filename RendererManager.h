@@ -2,10 +2,10 @@
 #define RENDERERMANAGER_H
 
 #include "BasicShader.h"
-#include "Camera.h"
-#include "Light.h"
-#include "Model.h"
+#include "CameraManager.h"
+#include "LightManager.h"
 #include "ModelData.h"
+#include "ModelManager.h"
 #include "PathShader.h"
 #include "Spline.h"
 #include "Ticks.h"
@@ -16,33 +16,29 @@
 class RendererManager : public QObject, protected QOpenGLFunctions
 {
     Q_OBJECT
-public:
+
+private:
     explicit RendererManager(QObject *parent = nullptr);
-    ~RendererManager();
+
+public:
+    static RendererManager *instance();
 
     bool init();
-    void render();
-    void addModel(Model *model);
-    bool removeModel(Model *model);
+    void render(float ifps);
 
     void addCurve(Spline *curve);
 
-    Light *light();
-    void setLight(Light *newLight);
-
-    Camera *camera();
-    void setCamera(Camera *newCamera);
-
 private:
-    QList<Model *> mModels;
     QList<Spline *> mCurves;
     QMap<Model::Type, ModelData *> mTypeToModelData;
     BasicShader *mBasicShader;
-    Light *mLight;
-    Camera *mCamera;
 
     PathShader *mPathShader;
     Ticks *mTicks;
+
+    ModelManager *mModelManager;
+    CameraManager *mCameraManager;
+    LightManager *mLightManager;
 
     // FIXME
     Model *mPlane;

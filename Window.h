@@ -1,10 +1,10 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include "RendererManager.h"
-
 #include <QOpenGLFunctions>
 #include <QOpenGLWindow>
+
+class Controller;
 
 class Window : public QOpenGLWindow, protected QOpenGLFunctions
 {
@@ -12,31 +12,23 @@ class Window : public QOpenGLWindow, protected QOpenGLFunctions
 
 public:
     Window(QWindow *parent = nullptr);
-    ~Window();
 
-    void setRendererManager(RendererManager *newRendererManager);
-
-signals:
-    void wheelMoved(QWheelEvent *event);
-    void mousePressed(QMouseEvent *event);
-    void mouseReleased(QMouseEvent *event);
-    void mouseMoved(QMouseEvent *event);
-    void keyPressed(QKeyEvent *event);
-    void keyReleased(QKeyEvent *event);
-    void resizeReceived(int w, int h);
-
-protected:
-    virtual void initializeGL() override;
-    virtual void resizeGL(int w, int h) override;
-    virtual void paintGL() override;
-    virtual void keyPressEvent(QKeyEvent *) override;
-    virtual void keyReleaseEvent(QKeyEvent *) override;
-    virtual void mousePressEvent(QMouseEvent *) override;
-    virtual void mouseReleaseEvent(QMouseEvent *) override;
-    virtual void mouseMoveEvent(QMouseEvent *) override;
-    virtual void wheelEvent(QWheelEvent *) override;
+    void setController(Controller *newController);
 
 private:
-    RendererManager *mRendererManager;
+    Controller *mController;
+
+    void initializeGL() override;
+    void resizeGL(int w, int h) override;
+    void paintGL() override;
+    void keyPressEvent(QKeyEvent *) override;
+    void keyReleaseEvent(QKeyEvent *) override;
+    void mousePressEvent(QMouseEvent *) override;
+    void mouseReleaseEvent(QMouseEvent *) override;
+    void mouseMoveEvent(QMouseEvent *) override;
+    void wheelEvent(QWheelEvent *) override;
+
+    long long mPreviousTime;
+    long long mCurrentTime;
 };
 #endif // WINDOW_H

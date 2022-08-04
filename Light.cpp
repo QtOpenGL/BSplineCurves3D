@@ -1,4 +1,5 @@
 #include "Light.h"
+#include "LightManager.h"
 
 Light::Light(QObject *parent)
     : Node{parent}
@@ -7,6 +8,20 @@ Light::Light(QObject *parent)
     , mDiffuse(1.0f)
     , mSpecular(1.0f)
 {}
+
+Light::~Light() {}
+
+Light *Light::create()
+{
+    Light *light = new Light;
+    LIGHT_MANAGER->addLight(light);
+    return light;
+}
+
+void Light::remove()
+{
+    LIGHT_MANAGER->removeLight(this);
+}
 
 const QVector4D &Light::color() const
 {
@@ -47,3 +62,5 @@ void Light::setSpecular(float newSpecular)
 {
     mSpecular = newSpecular;
 }
+
+LightManager *Light::LIGHT_MANAGER = LightManager::instance();
