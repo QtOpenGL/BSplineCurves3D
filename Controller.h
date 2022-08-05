@@ -1,6 +1,7 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
+#include "Bezier.h"
 #include "Camera.h"
 #include "RendererManager.h"
 #include "Window.h"
@@ -12,11 +13,9 @@ class Controller : public QObject
     Q_OBJECT
 public:
     explicit Controller(QObject *parent = nullptr);
-    void show();
+    void run();
 
-private:
-    friend class Window;
-
+private slots:
     void init();
     void onWheelMoved(QWheelEvent *event);
     void onMousePressed(QMouseEvent *event);
@@ -24,10 +23,10 @@ private:
     void onMouseMoved(QMouseEvent *event);
     void onKeyPressed(QKeyEvent *event);
     void onKeyReleased(QKeyEvent *event);
-    void onResizeReceived(int w, int h);
-    void update(float ifps);
+    void onResized(int w, int h);
     void render(float ifps);
 
+private:
     RendererManager *mRendererManager;
     CameraManager *mCameraManager;
     LightManager *mLightManager;
@@ -37,7 +36,7 @@ private:
     Camera *mCamera;
     Light *mLight;
 
-    Spline *mTestCurve;
+    Bezier *mBezierTestCurve;
 
     Model *mPlane;
     Model *mCube;

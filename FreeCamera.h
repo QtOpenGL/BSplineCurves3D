@@ -14,13 +14,15 @@ private:
 
     explicit FreeCamera(QObject *parent = nullptr);
 
-    void onKeyPressed(QKeyEvent *event);
-    void onKeyReleased(QKeyEvent *event);
-    void onMousePressed(QMouseEvent *event);
-    void onMouseReleased(QMouseEvent *event);
-    void onMouseMoved(QMouseEvent *event);
-    void update(float ifps);
+private slots:
+    void onKeyPressed(QKeyEvent *event) override;
+    void onKeyReleased(QKeyEvent *event) override;
+    void onMousePressed(QMouseEvent *event) override;
+    void onMouseReleased(QMouseEvent *event) override;
+    void onMouseMoved(QMouseEvent *event) override;
+    void update(float ifps) override;
 
+private:
     QMap<Qt::Key, bool> mPressedKeys;
 
     float mMovementSpeed;

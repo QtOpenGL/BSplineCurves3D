@@ -52,11 +52,19 @@ bool RendererManager::init()
 
     // FIXME
     // Knot and Control Point Models
+
     {
-        mKnotModel = Model::create(Model::Sphere);
-        mKnotModel->setObjectName("KnotModel");
-        mKnotModel->material().setColor(QVector4D(0, 1, 0, 1));
-        mKnotModel->setScale(QVector3D(0.001f, 0.001f, 0.001f));
+        mKnotPointModel = Model::create(Model::Sphere);
+        mKnotPointModel->setObjectName("KnotPointModel");
+        mKnotPointModel->material().setColor(QVector4D(0, 1, 0, 1));
+        mKnotPointModel->setScale(QVector3D(0.001f, 0.001f, 0.001f));
+    }
+
+    {
+        mControlPointModel = Model::create(Model::Sphere);
+        mControlPointModel->setObjectName("ControlPointModel");
+        mControlPointModel->material().setColor(QVector4D(0, 1, 0, 1));
+        mControlPointModel->setScale(QVector3D(0.001f, 0.001f, 0.001f));
     }
 
     qInfo() << Q_FUNC_INFO << "Initializing PathShader...";
@@ -122,24 +130,26 @@ void RendererManager::render(float ifps)
         }
     }
 
-    mBasicShader->setUniformValue("node.color", mKnotModel->material().color());
-    mBasicShader->setUniformValue("node.ambient", mKnotModel->material().ambient());
-    mBasicShader->setUniformValue("node.diffuse", mKnotModel->material().diffuse());
-    mBasicShader->setUniformValue("node.specular", mKnotModel->material().specular());
-    mBasicShader->setUniformValue("node.shininess", mKnotModel->material().shininess());
+    mBasicShader->setUniformValue("node.color", mControlPointModel->material().color());
+    mBasicShader->setUniformValue("node.ambient", mControlPointModel->material().ambient());
+    mBasicShader->setUniformValue("node.diffuse", mControlPointModel->material().diffuse());
+    mBasicShader->setUniformValue("node.specular", mControlPointModel->material().specular());
+    mBasicShader->setUniformValue("node.shininess", mControlPointModel->material().shininess());
 
-    for (Spline *curve : qAsConst(mCurves))
+    for (Bezier *curve : qAsConst(mBezierCurves))
     {
         if (curve)
         {
-            ModelData *data = mTypeToModelData.value(mKnotModel->type(), nullptr);
+            ModelData *data = mTypeToModelData.value(mControlPointModel->type(), nullptr);
 
-            for (int i = 0; i < curve->mKnotPoints.size(); i++)
+            auto controlPoints = curve->controlPoints();
+
+            for (int i = 0; i < controlPoints.size(); i++)
             {
-                mKnotModel->setPosition(curve->mKnotPoints[i]->position());
+                mControlPointModel->setPosition(controlPoints[i]->position());
 
                 data->bind();
-                mBasicShader->setUniformValue("node.transformation", mKnotModel->transformation());
+                mBasicShader->setUniformValue("node.transformation", mControlPointModel->transformation());
                 glDrawArrays(GL_TRIANGLES, 0, data->count());
                 data->release();
             }
@@ -158,14 +168,18 @@ void RendererManager::render(float ifps)
 
     mPathShader->setUniformValue("color", QVector4D(1, 0, 0, 1));
 
-    for (Spline *curve : qAsConst(mCurves))
+    for (Bezier *curve : qAsConst(mBezierCurves))
     {
         if (curve)
         {
-            QVector<QVector3D> controlPoints = curve->getControlPointPositions();
+            auto controlPoints = curve->controlPoints();
+            QVector<QVector3D> positions;
 
-            mPathShader->setUniformValue("controlPointsCount", controlPoints.size());
-            mPathShader->setUniformValueArray("controlPoints", controlPoints);
+            for (auto &controlPoint : controlPoints)
+                positions << controlPoint->position();
+
+            mPathShader->setUniformValue("controlPointsCount", positions.size());
+            mPathShader->setUniformValueArray("controlPoints", positions);
 
             mTicks->bind();
             glDrawArrays(GL_LINE_STRIP, 0, mTicks->size());
@@ -176,7 +190,7 @@ void RendererManager::render(float ifps)
     mPathShader->release();
 }
 
-void RendererManager::addCurve(Spline *curve)
+void RendererManager::addBezierCurve(Bezier *curve)
 {
-    mCurves << curve;
+    mBezierCurves << curve;
 }

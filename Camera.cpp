@@ -113,6 +113,36 @@ QVector3D Camera::getViewDirection()
     return mRotation * QVector3D(0, 0, -1);
 }
 
+void Camera::onKeyPressed(QKeyEvent *)
+{
+
+}
+
+void Camera::onKeyReleased(QKeyEvent *)
+{
+
+}
+
+void Camera::onMousePressed(QMouseEvent *)
+{
+
+}
+
+void Camera::onMouseReleased(QMouseEvent *)
+{
+
+}
+
+void Camera::onMouseMoved(QMouseEvent *)
+{
+
+}
+
+void Camera::update(float)
+{
+
+}
+
 const QMatrix4x4 &Camera::transformation() const
 {
     return mTransformation;

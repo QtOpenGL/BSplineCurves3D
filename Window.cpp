@@ -1,11 +1,9 @@
 #include "Window.h"
 
 #include <imgui.h>
+#include <QDateTime>
 #include <QKeyEvent>
 #include <QtImGui.h>
-
-#include "Controller.h"
-#include <QDateTime>
 
 Window::Window(QWindow *parent)
     : QOpenGLWindow(QOpenGLWindow::UpdateBehavior::NoPartialUpdate, parent)
@@ -20,17 +18,12 @@ Window::Window(QWindow *parent)
     connect(this, &QOpenGLWindow::frameSwapped, this, [=]() { update(); });
 }
 
-void Window::setController(Controller *newController)
-{
-    mController = newController;
-}
-
 void Window::initializeGL()
 {
     initializeOpenGLFunctions();
     QtImGui::initialize(this);
 
-    mController->init();
+    emit init();
 
     mCurrentTime = QDateTime::currentMSecsSinceEpoch();
     mPreviousTime = mCurrentTime;
@@ -38,7 +31,7 @@ void Window::initializeGL()
 
 void Window::resizeGL(int w, int h)
 {
-    mController->onResizeReceived(w, h);
+    emit resized(w, h);
 }
 
 void Window::paintGL()
@@ -49,8 +42,7 @@ void Window::paintGL()
 
     mPreviousTime = mCurrentTime;
 
-    mController->update(ifps);
-    mController->render(ifps);
+    emit render(ifps);
 
     QtImGui::newFrame();
 
@@ -63,30 +55,30 @@ void Window::paintGL()
 
 void Window::keyPressEvent(QKeyEvent *event)
 {
-    mController->onKeyPressed(event);
+    emit keyPressed(event);
 }
 
 void Window::keyReleaseEvent(QKeyEvent *event)
 {
-    mController->onKeyReleased(event);
+    emit keyReleased(event);
 }
 
 void Window::mousePressEvent(QMouseEvent *event)
 {
-    mController->onMousePressed(event);
+    emit mousePressed(event);
 }
 
 void Window::mouseReleaseEvent(QMouseEvent *event)
 {
-    mController->onMouseReleased(event);
+    emit mouseReleased(event);
 }
 
 void Window::mouseMoveEvent(QMouseEvent *event)
 {
-    mController->onMouseMoved(event);
+    emit mouseMoved(event);
 }
 
 void Window::wheelEvent(QWheelEvent *event)
 {
-    mController->onWheelMoved(event);
+    emit wheelMoved(event);
 }

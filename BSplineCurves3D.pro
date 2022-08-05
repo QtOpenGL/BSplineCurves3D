@@ -10,6 +10,7 @@ CONFIG += c++11
 
 SOURCES += \
     BasicShader.cpp \
+    Bezier.cpp \
     Camera.cpp \
     CameraManager.cpp \
     Controller.cpp \
@@ -33,6 +34,7 @@ SOURCES += \
 
 HEADERS += \
     BasicShader.h \
+    Bezier.h \
     Camera.h \
     CameraManager.h \
     Controller.h \

@@ -13,11 +13,18 @@ class Window : public QOpenGLWindow, protected QOpenGLFunctions
 public:
     Window(QWindow *parent = nullptr);
 
-    void setController(Controller *newController);
+signals:
+    void init();
+    void resized(int w, int h);
+    void render(float ifps);
+    void keyPressed(QKeyEvent *);
+    void keyReleased(QKeyEvent *);
+    void mousePressed(QMouseEvent *);
+    void mouseReleased(QMouseEvent *);
+    void mouseMoved(QMouseEvent *);
+    void wheelMoved(QWheelEvent *);
 
 private:
-    Controller *mController;
-
     void initializeGL() override;
     void resizeGL(int w, int h) override;
     void paintGL() override;

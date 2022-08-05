@@ -37,50 +37,38 @@ void CameraManager::setActiveCamera(Camera *newActiveCamera)
 
 void CameraManager::onKeyPressed(QKeyEvent *event)
 {
-    FreeCamera *camera = dynamic_cast<FreeCamera *>(mActiveCamera);
-
-    if (camera)
-        camera->onKeyPressed(event);
+    if (mActiveCamera)
+        mActiveCamera->onKeyPressed(event);
 }
 
 void CameraManager::onKeyReleased(QKeyEvent *event)
 {
-    FreeCamera *camera = dynamic_cast<FreeCamera *>(mActiveCamera);
-
-    if (camera)
-        camera->onKeyReleased(event);
+    if (mActiveCamera)
+        mActiveCamera->onKeyReleased(event);
 }
 
 void CameraManager::onMousePressed(QMouseEvent *event)
 {
-    FreeCamera *camera = dynamic_cast<FreeCamera *>(mActiveCamera);
-
-    if (camera)
-        camera->onMousePressed(event);
+    if (mActiveCamera)
+        mActiveCamera->onMousePressed(event);
 }
 
 void CameraManager::onMouseReleased(QMouseEvent *event)
 {
-    FreeCamera *camera = dynamic_cast<FreeCamera *>(mActiveCamera);
-
-    if (camera)
-        camera->onMouseReleased(event);
+    if (mActiveCamera)
+        mActiveCamera->onMouseReleased(event);
 }
 
 void CameraManager::onMouseMoved(QMouseEvent *event)
 {
-    FreeCamera *camera = dynamic_cast<FreeCamera *>(mActiveCamera);
-
-    if (camera)
-        camera->onMouseMoved(event);
+    if (mActiveCamera)
+        mActiveCamera->onMouseMoved(event);
 }
 
 void CameraManager::update(float ifps)
 {
-    FreeCamera *camera = dynamic_cast<FreeCamera *>(mActiveCamera);
-
-    if (camera)
-        camera->update(ifps);
+    if (mActiveCamera)
+        mActiveCamera->update(ifps);
 }
 
 QVector3D CameraManager::getViewDirection()

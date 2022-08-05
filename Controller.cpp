@@ -9,7 +9,16 @@ Controller::Controller(QObject *parent)
     mLightManager = LightManager::instance();
     mModelManager = ModelManager::instance();
     mWindow = new Window;
-    mWindow->setController(this);
+
+    connect(mWindow, &Window::wheelMoved, this, &Controller::onWheelMoved);
+    connect(mWindow, &Window::mousePressed, this, &Controller::onMousePressed);
+    connect(mWindow, &Window::mouseReleased, this, &Controller::onMouseReleased);
+    connect(mWindow, &Window::mouseMoved, this, &Controller::onMouseMoved);
+    connect(mWindow, &Window::keyPressed, this, &Controller::onKeyPressed);
+    connect(mWindow, &Window::keyReleased, this, &Controller::onKeyReleased);
+    connect(mWindow, &Window::resized, this, &Controller::onResized);
+    connect(mWindow, &Window::init, this, &Controller::init);
+    connect(mWindow, &Window::render, this, &Controller::render);
 }
 
 void Controller::init()
@@ -57,24 +66,22 @@ void Controller::init()
 
     // TestCurve
     {
-        mTestCurve = new Spline;
-        mTestCurve->addKnotPoint(new KnotPoint(0, 0, 0));
+        mBezierTestCurve = new Bezier;
+        mBezierTestCurve->addControlPoint(new ControlPoint(0, 0, 0));
 
-        mTestCurve->addKnotPoint(new KnotPoint(5, 5, 0));
+        mBezierTestCurve->addControlPoint(new ControlPoint(5, 5, 0));
 
-        mTestCurve->addKnotPoint(new KnotPoint(0, 10, 0));
+        mBezierTestCurve->addControlPoint(new ControlPoint(0, 10, 0));
 
-        mTestCurve->addKnotPoint(new KnotPoint(0, 15, 0));
+        mBezierTestCurve->addControlPoint(new ControlPoint(0, 15, 0));
 
-        mTestCurve->updateSpline();
-
-        mRendererManager->addCurve(mTestCurve);
+        mRendererManager->addBezierCurve(mBezierTestCurve);
     }
 
     mWindow->resize(800, 800);
 }
 
-void Controller::show()
+void Controller::run()
 {
     mWindow->show();
 }
@@ -89,11 +96,11 @@ void Controller::onMousePressed(QMouseEvent *event)
     }
     else if (event->button() == Qt::LeftButton)
     {
-        QVector3D rayDirection = mCameraManager->getDirectionFromScreen(event->x(), event->y(), mWindow->width(), mWindow->height());
+        //QVector3D rayDirection = mCameraManager->getDirectionFromScreen(event->x(), event->y(), mWindow->width(), mWindow->height());
 
-        float distance = mTestCurve->closestDistanceToRay(mCamera->position(), rayDirection);
+        //float distance = mBezierTestCurve->closestDistanceToRay(mCamera->position(), rayDirection);
 
-        qDebug() << distance;
+        //qDebug() << distance;
     }
 }
 
@@ -124,17 +131,14 @@ void Controller::onKeyReleased(QKeyEvent *event)
     mCameraManager->onKeyReleased(event);
 }
 
-void Controller::onResizeReceived(int w, int h)
+void Controller::onResized(int w, int h)
 {
     mCamera->setAspectRatio((float) (w) / h);
 }
 
-void Controller::update(float ifps)
-{
-    mCameraManager->update(ifps);
-}
-
 void Controller::render(float ifps)
 {
+    mCameraManager->update(ifps);
+
     mRendererManager->render(ifps);
 }
