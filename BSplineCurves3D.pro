@@ -14,6 +14,7 @@ SOURCES += \
     Camera.cpp \
     CameraManager.cpp \
     Controller.cpp \
+    Curve.cpp \
     DummyCamera.cpp \
     FreeCamera.cpp \
     Helper.cpp \
@@ -38,6 +39,7 @@ HEADERS += \
     Camera.h \
     CameraManager.h \
     Controller.h \
+    Curve.h \
     DummyCamera.h \
     FreeCamera.h \
     Helper.h \
