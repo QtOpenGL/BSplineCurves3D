@@ -31,6 +31,7 @@ private:
     CameraManager *mCameraManager;
     LightManager *mLightManager;
     ModelManager *mModelManager;
+    CurveManager *mCurveManager;
     Window *mWindow;
 
     Camera *mCamera;

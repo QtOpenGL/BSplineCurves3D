@@ -2,7 +2,7 @@
 #define BEZIER_H
 
 #include "Curve.h"
-#include "KnotPoint.h"
+#include "Point.h"
 #include <QObject>
 
 class Bezier : public Curve
@@ -25,11 +25,16 @@ public:
                                               float maxDistance = 0.5f,
                                               float epsilon = 0.001f);
 
+    int degree() const;
+    float factorial(int n) const;
+    float choose(int n, int k) const;
+
     // Curve interface
     virtual QVector3D valueAt(float t) const override;
     virtual QVector3D tangentAt(float t) const override;
     virtual QVector3D normalAt(float t) const override;
     virtual float closestDistanceToRay(const QVector3D &rayOrigin, const QVector3D &rayDirection, float epsilon) override;
+    virtual void update() override;
 
 private:
     QList<ControlPoint *> mControlPoints;

@@ -1,15 +1,21 @@
 #include "RendererManager.h"
+#include "Bezier.h"
 #include "Camera.h"
 #include "Light.h"
-#include "Spline.h"
 
 RendererManager::RendererManager(QObject *parent)
     : QObject(parent)
     , mBasicShader(nullptr)
+    , mSelectedCurve(nullptr)
+    , mSelectedPoint(nullptr)
 {
     mModelManager = ModelManager::instance();
     mCameraManager = CameraManager::instance();
     mLightManager = LightManager::instance();
+    mCurveManager = CurveManager::instance();
+
+    connect(mCurveManager, &CurveManager::selectedCurveChanged, this, [=](Curve *selectedCurve) { mSelectedCurve = selectedCurve; });
+    connect(mCurveManager, &CurveManager::selectedPointChanged, this, [=](Point *selectedPoint) { mSelectedPoint = selectedPoint; });
 }
 
 RendererManager *RendererManager::instance()
@@ -58,6 +64,7 @@ bool RendererManager::init()
         mKnotPointModel->setObjectName("KnotPointModel");
         mKnotPointModel->material().setColor(QVector4D(0, 1, 0, 1));
         mKnotPointModel->setScale(QVector3D(0.001f, 0.001f, 0.001f));
+        mKnotPointModel->setVisible(false);
     }
 
     {
@@ -65,6 +72,7 @@ bool RendererManager::init()
         mControlPointModel->setObjectName("ControlPointModel");
         mControlPointModel->material().setColor(QVector4D(0, 1, 0, 1));
         mControlPointModel->setScale(QVector3D(0.001f, 0.001f, 0.001f));
+        mControlPointModel->setVisible(false);
     }
 
     qInfo() << Q_FUNC_INFO << "Initializing PathShader...";
@@ -83,14 +91,18 @@ bool RendererManager::init()
 
 void RendererManager::render(float ifps)
 {
-    Q_UNUSED(ifps);
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    mBasicShader->bind();
 
-    // Camera
+    renderModels(ifps);
+    renderCurves(ifps);
+}
+
+void RendererManager::renderModels(float ifps)
+{
     Camera *camera = mCameraManager->activeCamera();
     Light *light = mLightManager->activeLight();
+
+    mBasicShader->bind();
 
     if (camera)
     {
@@ -98,8 +110,6 @@ void RendererManager::render(float ifps)
         mBasicShader->setUniformValue("viewMatrix", camera->transformation());
         mBasicShader->setUniformValue("cameraPosition", camera->position());
     }
-
-    // Light
 
     if (light)
     {
@@ -114,50 +124,86 @@ void RendererManager::render(float ifps)
 
     for (Model *model : qAsConst(models))
     {
+        if (!model->visible())
+            continue;
+
         ModelData *data = mTypeToModelData.value(model->type(), nullptr);
 
         if (data)
         {
             data->bind();
+
             mBasicShader->setUniformValue("node.transformation", model->transformation());
             mBasicShader->setUniformValue("node.color", model->material().color());
             mBasicShader->setUniformValue("node.ambient", model->material().ambient());
             mBasicShader->setUniformValue("node.diffuse", model->material().diffuse());
             mBasicShader->setUniformValue("node.specular", model->material().specular());
             mBasicShader->setUniformValue("node.shininess", model->material().shininess());
+
+            // Draw
             glDrawArrays(GL_TRIANGLES, 0, data->count());
+
             data->release();
         }
     }
 
-    mBasicShader->setUniformValue("node.color", mControlPointModel->material().color());
-    mBasicShader->setUniformValue("node.ambient", mControlPointModel->material().ambient());
-    mBasicShader->setUniformValue("node.diffuse", mControlPointModel->material().diffuse());
-    mBasicShader->setUniformValue("node.specular", mControlPointModel->material().specular());
-    mBasicShader->setUniformValue("node.shininess", mControlPointModel->material().shininess());
+    mBasicShader->release();
+}
 
-    for (Bezier *curve : qAsConst(mBezierCurves))
+void RendererManager::renderCurves(float ifps)
+{
+    Camera *camera = mCameraManager->activeCamera();
+    Light *light = mLightManager->activeLight();
+
+    mBasicShader->bind();
+
+    if (camera)
     {
-        if (curve)
+        mBasicShader->setUniformValue("projectionMatrix", camera->projection());
+        mBasicShader->setUniformValue("viewMatrix", camera->transformation());
+        mBasicShader->setUniformValue("cameraPosition", camera->position());
+    }
+
+    if (light)
+    {
+        mBasicShader->setUniformValue("light.position", light->position());
+        mBasicShader->setUniformValue("light.color", light->color());
+        mBasicShader->setUniformValue("light.ambient", light->ambient());
+        mBasicShader->setUniformValue("light.diffuse", light->diffuse());
+        mBasicShader->setUniformValue("light.specular", light->specular());
+    }
+
+    // Draw Control Point Models
+    Bezier *bezier = dynamic_cast<Bezier *>(mSelectedCurve);
+
+    if (bezier)
+    {
+        mBasicShader->setUniformValue("node.ambient", mControlPointModel->material().ambient());
+        mBasicShader->setUniformValue("node.diffuse", mControlPointModel->material().diffuse());
+        mBasicShader->setUniformValue("node.specular", mControlPointModel->material().specular());
+        mBasicShader->setUniformValue("node.shininess", mControlPointModel->material().shininess());
+        ModelData *data = mTypeToModelData.value(mControlPointModel->type(), nullptr);
+
+        for (auto &controlPoint : qAsConst(bezier->controlPoints()))
         {
-            ModelData *data = mTypeToModelData.value(mControlPointModel->type(), nullptr);
+            mControlPointModel->setPosition(controlPoint->position());
+            mControlPointModel->material().setColor(controlPoint->selected() ? QVector4D(1, 1, 0, 1) : QVector4D(0, 1, 0, 1));
 
-            auto controlPoints = curve->controlPoints();
+            mBasicShader->setUniformValue("node.color", mControlPointModel->material().color());
+            mBasicShader->setUniformValue("node.transformation", mControlPointModel->transformation());
 
-            for (int i = 0; i < controlPoints.size(); i++)
-            {
-                mControlPointModel->setPosition(controlPoints[i]->position());
+            data->bind();
 
-                data->bind();
-                mBasicShader->setUniformValue("node.transformation", mControlPointModel->transformation());
-                glDrawArrays(GL_TRIANGLES, 0, data->count());
-                data->release();
-            }
+            // Draw Control Point Model
+            glDrawArrays(GL_TRIANGLES, 0, data->count());
+
+            data->release();
         }
     }
 
     mBasicShader->release();
 
+    // Path
     mPathShader->bind();
 
     if (camera)
@@ -168,18 +214,16 @@ void RendererManager::render(float ifps)
 
     mPathShader->setUniformValue("color", QVector4D(1, 0, 0, 1));
 
-    for (Bezier *curve : qAsConst(mBezierCurves))
+    for (auto &curve : qAsConst(mCurveManager->curves()))
     {
-        if (curve)
+        Bezier *bezier = dynamic_cast<Bezier *>(curve);
+
+        if (bezier)
         {
-            auto controlPoints = curve->controlPoints();
-            QVector<QVector3D> positions;
+            auto controlPointPositions = bezier->getControlPointPositions();
 
-            for (auto &controlPoint : controlPoints)
-                positions << controlPoint->position();
-
-            mPathShader->setUniformValue("controlPointsCount", positions.size());
-            mPathShader->setUniformValueArray("controlPoints", positions);
+            mPathShader->setUniformValue("controlPointsCount", controlPointPositions.size());
+            mPathShader->setUniformValueArray("controlPoints", controlPointPositions);
 
             mTicks->bind();
             glDrawArrays(GL_LINE_STRIP, 0, mTicks->size());
@@ -188,9 +232,4 @@ void RendererManager::render(float ifps)
     }
 
     mPathShader->release();
-}
-
-void RendererManager::addBezierCurve(Bezier *curve)
-{
-    mBezierCurves << curve;
 }

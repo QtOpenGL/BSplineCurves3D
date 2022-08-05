@@ -3,7 +3,8 @@
 #include "ModelManager.h"
 
 Model::Model(QObject *parent)
-    : Node{parent}
+    : Node(parent)
+    , mVisible(true)
 {}
 
 Model::~Model() {}
@@ -40,6 +41,16 @@ Model *Model::create(Type type)
 void Model::remove()
 {
     MODEL_MANAGER->removeModel(this);
+}
+
+bool Model::visible() const
+{
+    return mVisible;
+}
+
+void Model::setVisible(bool newVisible)
+{
+    mVisible = newVisible;
 }
 
 const QVector<Model::Type> Model::ALL_MODEL_TYPES = {

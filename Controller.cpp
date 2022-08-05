@@ -8,6 +8,7 @@ Controller::Controller(QObject *parent)
     mCameraManager = CameraManager::instance();
     mLightManager = LightManager::instance();
     mModelManager = ModelManager::instance();
+    mCurveManager = CurveManager::instance();
     mWindow = new Window;
 
     connect(mWindow, &Window::wheelMoved, this, &Controller::onWheelMoved);
@@ -41,11 +42,11 @@ void Controller::init()
 
     // Sphere
     {
-        mSphere = Model::create(Model::Sphere);
-        mSphere->setObjectName("Sphere");
-        mSphere->setPosition(QVector3D(0, 0, 0));
-        mSphere->setScale(QVector3D(0.001f, 0.001f, 0.001f));
-        mSphere->material().setColor(QVector4D(0, 1, 0, 1));
+        //        mSphere = Model::create(Model::Sphere);
+        //        mSphere->setObjectName("Sphere");
+        //        mSphere->setPosition(QVector3D(0, 0, 0));
+        //        mSphere->setScale(QVector3D(0.001f, 0.001f, 0.001f));
+        //        mSphere->material().setColor(QVector4D(0, 1, 0, 1));
     }
 
     // Plane
@@ -57,25 +58,22 @@ void Controller::init()
 
     // Cube
     {
-        mCube = Model::create(Model::Cube);
-        mCube->setObjectName("Cube");
-        mCube->material().setColor(QVector4D(1, 0, 0, 1));
-        mCube->setScale(QVector3D(0.01f, 0.01f, 0.01f));
-        mCube->setPosition(QVector3D(0, 2, 0));
+        //        mCube = Model::create(Model::Cube);
+        //        mCube->setObjectName("Cube");
+        //        mCube->material().setColor(QVector4D(1, 0, 0, 1));
+        //        mCube->setScale(QVector3D(0.01f, 0.01f, 0.01f));
+        //        mCube->setPosition(QVector3D(0, 2, 0));
     }
 
     // TestCurve
     {
         mBezierTestCurve = new Bezier;
         mBezierTestCurve->addControlPoint(new ControlPoint(0, 0, 0));
-
         mBezierTestCurve->addControlPoint(new ControlPoint(5, 5, 0));
-
         mBezierTestCurve->addControlPoint(new ControlPoint(0, 10, 0));
-
         mBezierTestCurve->addControlPoint(new ControlPoint(0, 15, 0));
 
-        mRendererManager->addBezierCurve(mBezierTestCurve);
+        mCurveManager->addCurve(mBezierTestCurve);
     }
 
     mWindow->resize(800, 800);
@@ -115,8 +113,8 @@ void Controller::onMouseReleased(QMouseEvent *event)
 void Controller::onMouseMoved(QMouseEvent *event)
 {
     // FIXME
-    QVector3D dir = mCameraManager->getDirectionFromScreen(event->x(), event->y(), mWindow->width(), mWindow->height());
-    mSphere->setPosition(mCamera->position() + 10 * dir);
+    //    QVector3D dir = mCameraManager->getDirectionFromScreen(event->x(), event->y(), mWindow->width(), mWindow->height());
+    //    mSphere->setPosition(mCamera->position() + 10 * dir);
 
     mCameraManager->onMouseMoved(event);
 }

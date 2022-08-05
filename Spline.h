@@ -1,7 +1,7 @@
 #ifndef SPLINE_H
 #define SPLINE_H
 
-#include "KnotPoint.h"
+#include "Point.h"
 
 #include <Eigen/Splines>
 #include <QObject>

@@ -41,9 +41,13 @@ public:
 
     static const QVector<Model::Type> ALL_MODEL_TYPES;
 
+    bool visible() const;
+    void setVisible(bool newVisible);
+
 protected:
     Type mType;
     Material mMaterial;
+    bool mVisible;
 
     static ModelManager *MODEL_MANAGER;
 };

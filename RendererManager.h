@@ -2,8 +2,8 @@
 #define RENDERERMANAGER_H
 
 #include "BasicShader.h"
-#include "Bezier.h"
 #include "CameraManager.h"
+#include "CurveManager.h"
 #include "LightManager.h"
 #include "ModelData.h"
 #include "ModelManager.h"
@@ -26,10 +26,11 @@ public:
     bool init();
     void render(float ifps);
 
-    void addBezierCurve(Bezier *curve);
+private slots:
+    void renderModels(float ifps);
+    void renderCurves(float ifps);
 
 private:
-    QList<Bezier *> mBezierCurves;
     QMap<Model::Type, ModelData *> mTypeToModelData;
     BasicShader *mBasicShader;
 
@@ -39,6 +40,10 @@ private:
     ModelManager *mModelManager;
     CameraManager *mCameraManager;
     LightManager *mLightManager;
+    CurveManager *mCurveManager;
+
+    Curve *mSelectedCurve;
+    Point *mSelectedPoint;
 
     // FIXME
     Model *mKnotPointModel;

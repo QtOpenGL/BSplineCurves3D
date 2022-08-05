@@ -3,6 +3,7 @@
 Curve::Curve(QObject *parent)
     : QObject(parent)
     , mSelected(false)
+    , mDirty(false)
 {}
 
 Curve::~Curve() {}
@@ -15,4 +16,14 @@ bool Curve::selected() const
 void Curve::setSelected(bool newSelected)
 {
     mSelected = newSelected;
+}
+
+bool Curve::dirty() const
+{
+    return mDirty;
+}
+
+void Curve::setDirty(bool newDirty)
+{
+    mDirty = newDirty;
 }

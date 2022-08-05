@@ -1,15 +1,15 @@
-#ifndef KNOTPOINT_H
-#define KNOTPOINT_H
+#ifndef POINT_H
+#define POINT_H
 
 #include <QObject>
 #include <QVector3D>
 
-class KnotPoint : public QObject
+class Point : public QObject
 {
     Q_OBJECT
 public:
-    explicit KnotPoint(QObject *parent = nullptr);
-    explicit KnotPoint(float x, float y, float z, QObject *parent = nullptr);
+    explicit Point(QObject *parent = nullptr);
+    explicit Point(float x, float y, float z, QObject *parent = nullptr);
 
     bool selected() const;
     void setSelected(bool newSelected);
@@ -22,6 +22,7 @@ private:
     QVector3D mPosition;
 };
 
-typedef KnotPoint ControlPoint;
+typedef Point ControlPoint;
+typedef Point KnotPoint;
 
-#endif // KNOTPOINT_H
+#endif // POINT_H

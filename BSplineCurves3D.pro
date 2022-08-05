@@ -15,10 +15,10 @@ SOURCES += \
     CameraManager.cpp \
     Controller.cpp \
     Curve.cpp \
+    CurveManager.cpp \
     DummyCamera.cpp \
     FreeCamera.cpp \
     Helper.cpp \
-    KnotPoint.cpp \
     Light.cpp \
     LightManager.cpp \
     Main.cpp \
@@ -28,6 +28,7 @@ SOURCES += \
     ModelManager.cpp \
     Node.cpp \
     PathShader.cpp \
+    Point.cpp \
     RendererManager.cpp \
     Spline.cpp \
     Ticks.cpp \
@@ -40,10 +41,10 @@ HEADERS += \
     CameraManager.h \
     Controller.h \
     Curve.h \
+    CurveManager.h \
     DummyCamera.h \
     FreeCamera.h \
     Helper.h \
-    KnotPoint.h \
     Light.h \
     LightManager.h \
     Material.h \
@@ -52,6 +53,7 @@ HEADERS += \
     ModelManager.h \
     Node.h \
     PathShader.h \
+    Point.h \
     RendererManager.h \
     Spline.h \
     Ticks.h \
