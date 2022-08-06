@@ -50,16 +50,17 @@ bool PipeShader::init()
         return false;
     }
 
-    mLocations.insert("viewMatrix", mProgram->uniformLocation("viewMatrix"));
-    mLocations.insert("projectionMatrix", mProgram->uniformLocation("projectionMatrix"));
+    mLocations.insert("view_matrix", mProgram->uniformLocation("view_matrix"));
+    mLocations.insert("projection_matrix", mProgram->uniformLocation("projection_matrix"));
+    mLocations.insert("camera_position", mProgram->uniformLocation("camera_position"));
 
-    mLocations.insert("controlPoints", mProgram->uniformLocation("controlPoints"));
-    mLocations.insert("controlPointsCount", mProgram->uniformLocation("controlPointsCount"));
+    mLocations.insert("control_points", mProgram->uniformLocation("control_points"));
+    mLocations.insert("control_points_count", mProgram->uniformLocation("control_points_count"));
 
     mLocations.insert("dt", mProgram->uniformLocation("dt"));
     mLocations.insert("r", mProgram->uniformLocation("r"));
-    mLocations.insert("sectorAngle0", mProgram->uniformLocation("sectorAngle0"));
-    mLocations.insert("sectorAngle1", mProgram->uniformLocation("sectorAngle1"));
+    mLocations.insert("sector_angle_0", mProgram->uniformLocation("sector_angle_0"));
+    mLocations.insert("sector_angle_1", mProgram->uniformLocation("sector_angle_1"));
 
     mLocations.insert("light.color", mProgram->uniformLocation("light.color"));
     mLocations.insert("light.position", mProgram->uniformLocation("light.position"));
@@ -72,8 +73,6 @@ bool PipeShader::init()
     mLocations.insert("node.diffuse", mProgram->uniformLocation("node.diffuse"));
     mLocations.insert("node.specular", mProgram->uniformLocation("node.specular"));
     mLocations.insert("node.shininess", mProgram->uniformLocation("node.shininess"));
-
-    mLocations.insert("cameraPosition", mProgram->uniformLocation("cameraPosition"));
 
     mProgram->bindAttributeLocation("t", 0);
     mProgram->release();

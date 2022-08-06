@@ -19,7 +19,7 @@ struct Light {
 in vec3 fs_position;
 in vec3 fs_normal;
 
-uniform vec3 cameraPosition;
+uniform vec3 camera_position;
 uniform Node node;
 uniform Light light;
 
@@ -37,7 +37,7 @@ void main()
     float diffuse = light.diffuse * (diff * node.diffuse);
 
     // Specular
-    vec3 viewDir = normalize(cameraPosition - fs_position);
+    vec3 viewDir = normalize(camera_position - fs_position);
     vec3 reflectDir = reflect(-lightDir, norm);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), node.shininess);
     float specular = light.specular * (spec * node.specular);

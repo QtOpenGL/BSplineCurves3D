@@ -57,12 +57,12 @@ bool BasicShader::init()
     mLocations.insert("node.specular", mProgram->uniformLocation("node.specular"));
     mLocations.insert("node.shininess", mProgram->uniformLocation("node.shininess"));
 
-    mLocations.insert("cameraPosition", mProgram->uniformLocation("cameraPosition"));
-    mLocations.insert("viewMatrix", mProgram->uniformLocation("viewMatrix"));
-    mLocations.insert("projectionMatrix", mProgram->uniformLocation("projectionMatrix"));
+    mLocations.insert("camera_position", mProgram->uniformLocation("camera_position"));
+    mLocations.insert("view_matrix", mProgram->uniformLocation("view_matrix"));
+    mLocations.insert("projection_matrix", mProgram->uniformLocation("projection_matrix"));
 
-    mProgram->bindAttributeLocation("vPosition", 0);
-    mProgram->bindAttributeLocation("vNormal", 1);
+    mProgram->bindAttributeLocation("position", 0);
+    mProgram->bindAttributeLocation("normal", 1);
 
     mProgram->release();
 

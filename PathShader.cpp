@@ -44,12 +44,12 @@ bool PathShader::init()
         return false;
     }
 
-    mLocations.insert("controlPoints", mProgram->uniformLocation("controlPoints"));
-    mLocations.insert("controlPointsCount", mProgram->uniformLocation("controlPointsCount"));
+    mLocations.insert("control_points", mProgram->uniformLocation("control_points"));
+    mLocations.insert("control_points_count", mProgram->uniformLocation("control_points_count"));
     mLocations.insert("color", mProgram->uniformLocation("color"));
 
-    mLocations.insert("viewMatrix", mProgram->uniformLocation("viewMatrix"));
-    mLocations.insert("projectionMatrix", mProgram->uniformLocation("projectionMatrix"));
+    mLocations.insert("view_matrix", mProgram->uniformLocation("view_matrix"));
+    mLocations.insert("projection_matrix", mProgram->uniformLocation("projection_matrix"));
 
     mProgram->bindAttributeLocation("t", 0);
     mProgram->release();

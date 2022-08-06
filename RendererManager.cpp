@@ -119,9 +119,9 @@ void RendererManager::renderModels(float ifps)
 
     if (camera)
     {
-        mBasicShader->setUniformValue("projectionMatrix", camera->projection());
-        mBasicShader->setUniformValue("viewMatrix", camera->transformation());
-        mBasicShader->setUniformValue("cameraPosition", camera->position());
+        mBasicShader->setUniformValue("projection_matrix", camera->projection());
+        mBasicShader->setUniformValue("view_matrix", camera->transformation());
+        mBasicShader->setUniformValue("camera_position", camera->position());
     }
 
     if (light)
@@ -172,9 +172,9 @@ void RendererManager::renderCurves(float ifps)
 
     if (camera)
     {
-        mBasicShader->setUniformValue("projectionMatrix", camera->projection());
-        mBasicShader->setUniformValue("viewMatrix", camera->transformation());
-        mBasicShader->setUniformValue("cameraPosition", camera->position());
+        mBasicShader->setUniformValue("projection_matrix", camera->projection());
+        mBasicShader->setUniformValue("view_matrix", camera->transformation());
+        mBasicShader->setUniformValue("camera_position", camera->position());
     }
 
     if (light)
@@ -195,6 +195,7 @@ void RendererManager::renderCurves(float ifps)
         mBasicShader->setUniformValue("node.diffuse", mControlPointModel->material().diffuse());
         mBasicShader->setUniformValue("node.specular", mControlPointModel->material().specular());
         mBasicShader->setUniformValue("node.shininess", mControlPointModel->material().shininess());
+
         ModelData *data = mTypeToModelData.value(mControlPointModel->type(), nullptr);
 
         for (auto &controlPoint : qAsConst(bezier->controlPoints()))
@@ -221,8 +222,8 @@ void RendererManager::renderCurves(float ifps)
 
     if (camera)
     {
-        mPathShader->setUniformValue("projectionMatrix", camera->projection());
-        mPathShader->setUniformValue("viewMatrix", camera->transformation());
+        mPathShader->setUniformValue("projection_matrix", camera->projection());
+        mPathShader->setUniformValue("view_matrix", camera->transformation());
     }
 
     mPathShader->setUniformValue("color", QVector4D(1, 0, 0, 1));
@@ -235,8 +236,8 @@ void RendererManager::renderCurves(float ifps)
         {
             auto controlPointPositions = bezier->getControlPointPositions();
 
-            mPathShader->setUniformValue("controlPointsCount", controlPointPositions.size());
-            mPathShader->setUniformValueArray("controlPoints", controlPointPositions);
+            mPathShader->setUniformValue("control_points_count", controlPointPositions.size());
+            mPathShader->setUniformValueArray("control_points", controlPointPositions);
 
             mPathTicks->bind();
             glDrawArrays(GL_LINE_STRIP, 0, mPathTicks->size());
@@ -252,9 +253,9 @@ void RendererManager::renderCurves(float ifps)
 
     if (camera)
     {
-        mPipeShader->setUniformValue("projectionMatrix", camera->projection());
-        mPipeShader->setUniformValue("viewMatrix", camera->transformation());
-        mPipeShader->setUniformValue("cameraPosition", camera->position());
+        mPipeShader->setUniformValue("projection_matrix", camera->projection());
+        mPipeShader->setUniformValue("view_matrix", camera->transformation());
+        mPipeShader->setUniformValue("camera_position", camera->position());
     }
 
     if (light)
@@ -266,7 +267,6 @@ void RendererManager::renderCurves(float ifps)
         mPipeShader->setUniformValue("light.specular", light->specular());
     }
 
-    mPipeShader->setUniformValue("color", QVector4D(1, 1, 1, 1));
     mPipeShader->setUniformValue("dt", mPipeTicks->ticksDelta());
     mPipeShader->setUniformValue("r", 0.125f);
 
@@ -278,8 +278,8 @@ void RendererManager::renderCurves(float ifps)
         {
             auto controlPointPositions = bezier->getControlPointPositions();
 
-            mPipeShader->setUniformValue("controlPointsCount", controlPointPositions.size());
-            mPipeShader->setUniformValueArray("controlPoints", controlPointPositions);
+            mPipeShader->setUniformValue("control_points_count", controlPointPositions.size());
+            mPipeShader->setUniformValueArray("control_points", controlPointPositions);
 
             mPipeShader->setUniformValue("node.color", bezier->material().color());
             mPipeShader->setUniformValue("node.ambient", bezier->material().ambient());
@@ -293,8 +293,8 @@ void RendererManager::renderCurves(float ifps)
                 float sectorAngle0 = 2 * float(i) / n * M_PI;
                 float sectorAngle1 = 2 * float(i + 1) / n * M_PI;
 
-                mPipeShader->setUniformValue("sectorAngle0", sectorAngle0);
-                mPipeShader->setUniformValue("sectorAngle1", sectorAngle1);
+                mPipeShader->setUniformValue("sector_angle_0", sectorAngle0);
+                mPipeShader->setUniformValue("sector_angle_1", sectorAngle1);
 
                 glDrawArrays(GL_POINTS, 0, mPipeTicks->size());
             }

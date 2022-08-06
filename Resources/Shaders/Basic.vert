@@ -1,9 +1,9 @@
 #version 330 core
-layout (location = 0) in vec3 vPosition;
-layout (location = 1) in vec3 vNormal;
+layout (location = 0) in vec3 position;
+layout (location = 1) in vec3 normal;
 
-out vec3 fPosition;
-out vec3 fNormal;
+out vec3 fs_position;
+out vec3 fs_normal;
 
 struct Node {
     mat4 transformation;
@@ -15,13 +15,13 @@ struct Node {
 };
 
 uniform Node node;
-uniform mat4 viewMatrix;
-uniform mat4 projectionMatrix;
+uniform mat4 view_matrix;
+uniform mat4 projection_matrix;
 
 void main()
 {
-    fPosition = vec3(node.transformation * vec4(vPosition, 1.0));
-    fNormal = mat3(transpose(inverse(node.transformation))) * vNormal;
+    fs_position = vec3(node.transformation * vec4(position, 1.0));
+    fs_normal = mat3(transpose(inverse(node.transformation))) * normal;
 
-    gl_Position = projectionMatrix * viewMatrix * vec4(fPosition, 1.0);
+    gl_Position = projection_matrix * view_matrix * vec4(fs_position, 1.0);
 }
