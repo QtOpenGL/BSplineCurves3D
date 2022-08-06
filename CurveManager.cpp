@@ -1,5 +1,6 @@
 #include "CurveManager.h"
 #include "Bezier.h"
+#include <QDebug>
 
 CurveManager::CurveManager(QObject *parent)
     : QObject(parent)
@@ -39,7 +40,7 @@ Curve *CurveManager::selectCurve(const QVector3D &rayOrigin, const QVector3D &ra
 
         if (distance < minDistance)
         {
-            distance = minDistance;
+            minDistance = distance;
             selectedCurve = curve;
         }
     }

@@ -8,6 +8,8 @@
 
 #include <QObject>
 
+#include <Eigen/Dense>
+
 class Controller : public QObject
 {
     Q_OBJECT
@@ -37,11 +39,18 @@ private:
     Camera *mCamera;
     Light *mLight;
 
-    Bezier *mBezierTestCurve;
+    Bezier *mBezierTestCurve1;
+    Bezier *mBezierTestCurve2;
 
     Model *mPlane;
     Model *mCube;
     Model *mSphere;
+
+    Curve *mSelectedCurve;
+    Point *mSelectedPoint;
+
+    Qt::MouseButton mPressedButton;
+    Eigen::Hyperplane<float, 3> mTranslationPlane;
 };
 
 #endif // CONTROLLER_H

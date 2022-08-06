@@ -1,7 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>Resources/Shaders/Path/FragmentShader.frag</file>
-        <file>Resources/Shaders/Path/VertexShader.vert</file>
         <file>Resources/Models/Camera.obj</file>
         <file>Resources/Models/Capsule.obj</file>
         <file>Resources/Models/Cone.obj</file>
@@ -15,7 +13,9 @@
         <file>Resources/Models/Tetrahedron.obj</file>
         <file>Resources/Models/Torus.obj</file>
         <file>Resources/Models/TorusKnot.obj</file>
-        <file>Resources/Shaders/Basic/FragmentShader.frag</file>
-        <file>Resources/Shaders/Basic/VertexShader.vert</file>
+        <file>Resources/Shaders/Basic.frag</file>
+        <file>Resources/Shaders/Basic.vert</file>
+        <file>Resources/Shaders/Path.frag</file>
+        <file>Resources/Shaders/Path.vert</file>
     </qresource>
 </RCC>

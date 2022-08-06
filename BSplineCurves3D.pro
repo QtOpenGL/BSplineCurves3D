@@ -61,7 +61,7 @@ HEADERS += \
 
 include(Dependencies/qtimgui/qtimgui.pri)
 
-INCLUDEPATH += $$PWD/Dependencies/eigen3/Eigen
+INCLUDEPATH += $$PWD/Dependencies/eigen3/
 INCLUDEPATH += $$PWD/Dependencies/eigen3/unsupported
 
 # Default rules for deployment.

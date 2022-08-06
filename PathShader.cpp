@@ -20,13 +20,13 @@ bool PathShader::init()
 
     mProgram = new QOpenGLShaderProgram;
 
-    if (!mProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/Path/VertexShader.vert")))
+    if (!mProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/Path.vert")))
     {
         qWarning() << Q_FUNC_INFO << "Could not load vertex shader.";
         return false;
     }
 
-    if (!mProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/Path/FragmentShader.frag")))
+    if (!mProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/Path.frag")))
     {
         qWarning() << Q_FUNC_INFO << "Could not load fragment shader.";
         return false;

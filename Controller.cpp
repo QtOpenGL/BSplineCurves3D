@@ -1,8 +1,13 @@
 #include "Controller.h"
 #include "Light.h"
 
+#include <QDebug>
+
 Controller::Controller(QObject *parent)
     : QObject(parent)
+    , mSelectedCurve(nullptr)
+    , mSelectedPoint(nullptr)
+    , mPressedButton(Qt::NoButton)
 {
     mRendererManager = RendererManager::instance();
     mCameraManager = CameraManager::instance();
@@ -20,6 +25,12 @@ Controller::Controller(QObject *parent)
     connect(mWindow, &Window::resized, this, &Controller::onResized);
     connect(mWindow, &Window::init, this, &Controller::init);
     connect(mWindow, &Window::render, this, &Controller::render);
+
+    connect(mCurveManager, &CurveManager::selectedCurveChanged, this, [=](Curve *selectedCurve) { mSelectedCurve = selectedCurve; });
+    connect(mCurveManager, &CurveManager::selectedPointChanged, this, [=](Point *selectedPoint) {
+        mSelectedPoint = selectedPoint;
+        qDebug() << selectedPoint;
+    });
 }
 
 void Controller::init()
@@ -65,22 +76,30 @@ void Controller::init()
         //        mCube->setPosition(QVector3D(0, 2, 0));
     }
 
-    // TestCurve
+    // Test Curves
     {
-        mBezierTestCurve = new Bezier;
-        mBezierTestCurve->addControlPoint(new ControlPoint(0, 0, 0));
-        mBezierTestCurve->addControlPoint(new ControlPoint(5, 5, 0));
-        mBezierTestCurve->addControlPoint(new ControlPoint(0, 10, 0));
-        mBezierTestCurve->addControlPoint(new ControlPoint(0, 15, 0));
+        mBezierTestCurve1 = new Bezier;
+        mBezierTestCurve1->addControlPoint(new ControlPoint(0, 0, 0));
+        mBezierTestCurve1->addControlPoint(new ControlPoint(5, 5, 0));
+        mBezierTestCurve1->addControlPoint(new ControlPoint(0, 10, 0));
+        mBezierTestCurve1->addControlPoint(new ControlPoint(0, 15, 0));
 
-        mCurveManager->addCurve(mBezierTestCurve);
+        mCurveManager->addCurve(mBezierTestCurve1);
+
+        mBezierTestCurve2 = new Bezier;
+        mBezierTestCurve2->addControlPoint(new ControlPoint(5, 0, 0));
+        mBezierTestCurve2->addControlPoint(new ControlPoint(15, 5, 0));
+        mBezierTestCurve2->addControlPoint(new ControlPoint(5, 25, 5));
+
+        //mCurveManager->addCurve(mBezierTestCurve2);
     }
-
-    mWindow->resize(800, 800);
 }
 
 void Controller::run()
 {
+    //    mWindow->showMaximized();
+    //    mWindow->showFullScreen();
+    mWindow->resize(1024, 800);
     mWindow->show();
 }
 
@@ -88,22 +107,46 @@ void Controller::onWheelMoved(QWheelEvent *event) {}
 
 void Controller::onMousePressed(QMouseEvent *event)
 {
-    if (event->button() == Qt::RightButton)
+    mPressedButton = event->button();
+
+    if (mPressedButton == Qt::RightButton)
     {
         mCameraManager->onMousePressed(event);
     }
-    else if (event->button() == Qt::LeftButton)
+    else if (mPressedButton == Qt::LeftButton)
     {
-        //QVector3D rayDirection = mCameraManager->getDirectionFromScreen(event->x(), event->y(), mWindow->width(), mWindow->height());
+        QVector3D rayDirection = mCameraManager->getDirectionFromScreen(event->x(), event->y(), mWindow->width(), mWindow->height());
+        QVector3D rayOrigin = mCameraManager->activeCamera()->position();
 
-        //float distance = mBezierTestCurve->closestDistanceToRay(mCamera->position(), rayDirection);
+        // FIXME: Logic
+        if (mSelectedCurve)
+        {
+            mCurveManager->selectControlPoint(rayOrigin, rayDirection);
+        }
 
-        //qDebug() << distance;
+        if (!mSelectedPoint)
+        {
+            mCurveManager->selectCurve(rayOrigin, rayDirection);
+        }
+    }
+
+    if (mSelectedPoint)
+    {
+        QVector3D viewDirection = mCameraManager->activeCamera()->getViewDirection();
+        Eigen::Vector3f normal = Eigen::Vector3f(viewDirection.x(), viewDirection.y(), viewDirection.z());
+        Eigen::Vector3f eigenControlPointPosition = Eigen::Vector3f(mSelectedPoint->position().x(),
+                                                                    mSelectedPoint->position().y(),
+                                                                    mSelectedPoint->position().z());
+
+        normal.normalize();
+        mTranslationPlane = Eigen::Hyperplane<float, 3>(normal, -normal.dot(eigenControlPointPosition));
     }
 }
 
 void Controller::onMouseReleased(QMouseEvent *event)
 {
+    mPressedButton = Qt::NoButton;
+
     if (event->button() == Qt::RightButton)
     {
         mCameraManager->onMouseReleased(event);
@@ -112,11 +155,31 @@ void Controller::onMouseReleased(QMouseEvent *event)
 
 void Controller::onMouseMoved(QMouseEvent *event)
 {
-    // FIXME
-    //    QVector3D dir = mCameraManager->getDirectionFromScreen(event->x(), event->y(), mWindow->width(), mWindow->height());
-    //    mSphere->setPosition(mCamera->position() + 10 * dir);
+    if (mPressedButton == Qt::RightButton)
+    {
+        mCameraManager->onMouseMoved(event);
+    }
+    else if (mPressedButton == Qt::LeftButton)
+    {
+        if (mSelectedPoint)
+        {
+            QVector3D rayDirection = mCameraManager->getDirectionFromScreen(event->x(), event->y(), mWindow->width(), mWindow->height());
+            QVector3D rayOrigin = mCamera->position();
 
-    mCameraManager->onMouseMoved(event);
+            Eigen::Vector3f eigenRayDirection = Eigen::Vector3f(rayDirection.x(), rayDirection.y(), rayDirection.z());
+            Eigen::Vector3f eigenRayOrigin = Eigen::Vector3f(rayOrigin.x(), rayOrigin.y(), rayOrigin.z());
+
+            auto line = Eigen::ParametrizedLine<float, 3>(eigenRayOrigin, eigenRayDirection);
+            float t = line.intersection(mTranslationPlane);
+            Eigen::Vector3f intersection = line.pointAt(t);
+
+            if (!isnan(t) && !isinf(t))
+            {
+                qDebug() << QVector3D(intersection.x(), intersection.y(), intersection.z()) << t;
+                mSelectedPoint->setPosition(QVector3D(intersection.x(), intersection.y(), intersection.z()));
+            }
+        }
+    }
 }
 
 void Controller::onKeyPressed(QKeyEvent *event)

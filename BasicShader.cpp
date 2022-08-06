@@ -20,13 +20,13 @@ bool BasicShader::init()
 
     mProgram = new QOpenGLShaderProgram;
 
-    if (!mProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/Basic/VertexShader.vert")))
+    if (!mProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/Basic.vert")))
     {
         qWarning() << Q_FUNC_INFO << "Could not load vertex shader.";
         return false;
     }
 
-    if (!mProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/Basic/FragmentShader.frag")))
+    if (!mProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/Basic.frag")))
     {
         qWarning() << Q_FUNC_INFO << "Could not load fragment shader.";
         return false;

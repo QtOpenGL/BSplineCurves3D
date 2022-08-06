@@ -83,7 +83,7 @@ bool RendererManager::init()
         qWarning() << Q_FUNC_INFO << "PathShader could not be initialized.";
     }
 
-    mTicks = new Ticks(0, 1, 200);
+    mTicks = new Ticks(0, 1, 500);
     mTicks->create();
 
     return true;
