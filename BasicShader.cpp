@@ -59,7 +59,6 @@ bool BasicShader::init()
 
     mLocations.insert("cameraPosition", mProgram->uniformLocation("cameraPosition"));
     mLocations.insert("viewMatrix", mProgram->uniformLocation("viewMatrix"));
-
     mLocations.insert("projectionMatrix", mProgram->uniformLocation("projectionMatrix"));
 
     mProgram->bindAttributeLocation("vPosition", 0);

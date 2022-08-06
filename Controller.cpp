@@ -79,17 +79,16 @@ void Controller::init()
     // Test Curves
     {
         mBezierTestCurve1 = new Bezier;
-        mBezierTestCurve1->addControlPoint(new ControlPoint(0, 0, 0));
-        mBezierTestCurve1->addControlPoint(new ControlPoint(5, 5, 0));
-        mBezierTestCurve1->addControlPoint(new ControlPoint(0, 10, 0));
-        mBezierTestCurve1->addControlPoint(new ControlPoint(0, 15, 0));
+        mBezierTestCurve1->addControlPoint(new ControlPoint(1, 1, 1));
+        mBezierTestCurve1->addControlPoint(new ControlPoint(0, 0, 5));
+        mBezierTestCurve1->addControlPoint(new ControlPoint(0, 5, 0));
+        mBezierTestCurve1->addControlPoint(new ControlPoint(5, 5, 5));
 
         mCurveManager->addCurve(mBezierTestCurve1);
 
         mBezierTestCurve2 = new Bezier;
-        mBezierTestCurve2->addControlPoint(new ControlPoint(5, 0, 0));
-        mBezierTestCurve2->addControlPoint(new ControlPoint(15, 5, 0));
-        mBezierTestCurve2->addControlPoint(new ControlPoint(5, 25, 5));
+        mBezierTestCurve2->addControlPoint(new ControlPoint(5, 0, 5));
+        mBezierTestCurve2->addControlPoint(new ControlPoint(5, 5, 5));
 
         //mCurveManager->addCurve(mBezierTestCurve2);
     }

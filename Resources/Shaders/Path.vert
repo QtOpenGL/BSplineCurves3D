@@ -1,13 +1,10 @@
 #version 430 core
-layout (location = 0) in float vertex;
+layout (location = 0) in float t; // [0,...,1]
 
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 uniform vec3 controlPoints[16];
-uniform vec4 color;
 uniform int controlPointsCount;
-
-out vec4 fColor;
 
 float customPow(float x, float y)
 {
@@ -70,7 +67,6 @@ vec3 tangentAt(float t)
 
 void main()
 {
-    gl_Position = projectionMatrix * viewMatrix * vec4(valueAt(vertex), 1.0);
-    fColor = color;
+    gl_Position = projectionMatrix * viewMatrix * vec4(valueAt(t), 1.0);
 }
 

@@ -28,6 +28,7 @@ SOURCES += \
     ModelManager.cpp \
     Node.cpp \
     PathShader.cpp \
+    PipeShader.cpp \
     Point.cpp \
     RendererManager.cpp \
     Spline.cpp \
@@ -53,6 +54,7 @@ HEADERS += \
     ModelManager.h \
     Node.h \
     PathShader.h \
+    PipeShader.h \
     Point.h \
     RendererManager.h \
     Spline.h \

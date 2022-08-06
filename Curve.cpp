@@ -27,3 +27,13 @@ void Curve::setDirty(bool newDirty)
 {
     mDirty = newDirty;
 }
+
+const Material &Curve::material() const
+{
+    return mMaterial;
+}
+
+void Curve::setMaterial(const Material &newMaterial)
+{
+    mMaterial = newMaterial;
+}

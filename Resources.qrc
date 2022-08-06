@@ -17,5 +17,8 @@
         <file>Resources/Shaders/Basic.vert</file>
         <file>Resources/Shaders/Path.frag</file>
         <file>Resources/Shaders/Path.vert</file>
+        <file>Resources/Shaders/Pipe.frag</file>
+        <file>Resources/Shaders/Pipe.geom</file>
+        <file>Resources/Shaders/Pipe.vert</file>
     </qresource>
 </RCC>

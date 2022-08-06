@@ -8,9 +8,11 @@
 #include "ModelData.h"
 #include "ModelManager.h"
 #include "PathShader.h"
+#include "PipeShader.h"
 #include "Ticks.h"
 
 #include <QMap>
+#include <QMatrix4x4>
 #include <QObject>
 
 class RendererManager : public QObject, protected QOpenGLFunctions
@@ -32,10 +34,13 @@ private slots:
 
 private:
     QMap<Model::Type, ModelData *> mTypeToModelData;
-    BasicShader *mBasicShader;
 
+    BasicShader *mBasicShader;
     PathShader *mPathShader;
-    Ticks *mTicks;
+    PipeShader *mPipeShader;
+
+    Ticks *mPathTicks;
+    Ticks *mPipeTicks;
 
     ModelManager *mModelManager;
     CameraManager *mCameraManager;

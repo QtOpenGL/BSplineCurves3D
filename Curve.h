@@ -1,6 +1,8 @@
 #ifndef CURVE_H
 #define CURVE_H
 
+#include "Material.h"
+
 #include <QObject>
 
 class Curve : public QObject
@@ -23,9 +25,13 @@ public:
     virtual QVector3D tangentAt(float t) const = 0;
     virtual QVector3D normalAt(float t) const = 0;
 
+    const Material &material() const;
+    void setMaterial(const Material &newMaterial);
+
 protected:
     bool mSelected;
     bool mDirty;
+    Material mMaterial;
 };
 
 #endif // CURVE_H

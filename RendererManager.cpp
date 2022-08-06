@@ -3,6 +3,8 @@
 #include "Camera.h"
 #include "Light.h"
 
+#include <QtMath>
+
 RendererManager::RendererManager(QObject *parent)
     : QObject(parent)
     , mBasicShader(nullptr)
@@ -63,7 +65,7 @@ bool RendererManager::init()
         mKnotPointModel = Model::create(Model::Sphere);
         mKnotPointModel->setObjectName("KnotPointModel");
         mKnotPointModel->material().setColor(QVector4D(0, 1, 0, 1));
-        mKnotPointModel->setScale(QVector3D(0.001f, 0.001f, 0.001f));
+        mKnotPointModel->setScale(QVector3D(0.0025f, 0.0025f, 0.0025f));
         mKnotPointModel->setVisible(false);
     }
 
@@ -71,7 +73,7 @@ bool RendererManager::init()
         mControlPointModel = Model::create(Model::Sphere);
         mControlPointModel->setObjectName("ControlPointModel");
         mControlPointModel->material().setColor(QVector4D(0, 1, 0, 1));
-        mControlPointModel->setScale(QVector3D(0.001f, 0.001f, 0.001f));
+        mControlPointModel->setScale(QVector3D(0.0025f, 0.0025f, 0.0025f));
         mControlPointModel->setVisible(false);
     }
 
@@ -83,8 +85,19 @@ bool RendererManager::init()
         qWarning() << Q_FUNC_INFO << "PathShader could not be initialized.";
     }
 
-    mTicks = new Ticks(0, 1, 500);
-    mTicks->create();
+    mPathTicks = new Ticks(0, 1, 500);
+    mPathTicks->create();
+
+    qInfo() << Q_FUNC_INFO << "Initializing PipeShader...";
+    mPipeShader = new PipeShader;
+
+    if (!mPipeShader->init())
+    {
+        qWarning() << Q_FUNC_INFO << "PipeShader could not be initialized.";
+    }
+
+    mPipeTicks = new Ticks(0, 1, 500);
+    mPipeTicks->create();
 
     return true;
 }
@@ -225,11 +238,69 @@ void RendererManager::renderCurves(float ifps)
             mPathShader->setUniformValue("controlPointsCount", controlPointPositions.size());
             mPathShader->setUniformValueArray("controlPoints", controlPointPositions);
 
-            mTicks->bind();
-            glDrawArrays(GL_LINE_STRIP, 0, mTicks->size());
-            mTicks->release();
+            mPathTicks->bind();
+            glDrawArrays(GL_LINE_STRIP, 0, mPathTicks->size());
+            mPathTicks->release();
         }
     }
 
     mPathShader->release();
+
+    // Pipe
+    mPipeShader->bind();
+    mPipeTicks->bind();
+
+    if (camera)
+    {
+        mPipeShader->setUniformValue("projectionMatrix", camera->projection());
+        mPipeShader->setUniformValue("viewMatrix", camera->transformation());
+        mPipeShader->setUniformValue("cameraPosition", camera->position());
+    }
+
+    if (light)
+    {
+        mPipeShader->setUniformValue("light.position", light->position());
+        mPipeShader->setUniformValue("light.color", light->color());
+        mPipeShader->setUniformValue("light.ambient", light->ambient());
+        mPipeShader->setUniformValue("light.diffuse", light->diffuse());
+        mPipeShader->setUniformValue("light.specular", light->specular());
+    }
+
+    mPipeShader->setUniformValue("color", QVector4D(1, 1, 1, 1));
+    mPipeShader->setUniformValue("dt", mPipeTicks->ticksDelta());
+    mPipeShader->setUniformValue("r", 0.125f);
+
+    for (auto &curve : qAsConst(mCurveManager->curves()))
+    {
+        Bezier *bezier = dynamic_cast<Bezier *>(curve);
+
+        if (bezier)
+        {
+            auto controlPointPositions = bezier->getControlPointPositions();
+
+            mPipeShader->setUniformValue("controlPointsCount", controlPointPositions.size());
+            mPipeShader->setUniformValueArray("controlPoints", controlPointPositions);
+
+            mPipeShader->setUniformValue("node.color", bezier->material().color());
+            mPipeShader->setUniformValue("node.ambient", bezier->material().ambient());
+            mPipeShader->setUniformValue("node.diffuse", bezier->material().diffuse());
+            mPipeShader->setUniformValue("node.specular", bezier->material().specular());
+            mPipeShader->setUniformValue("node.shininess", bezier->material().shininess());
+
+            int n = 128;
+            for (int i = 0; i < n; i++)
+            {
+                float sectorAngle0 = 2 * float(i) / n * M_PI;
+                float sectorAngle1 = 2 * float(i + 1) / n * M_PI;
+
+                mPipeShader->setUniformValue("sectorAngle0", sectorAngle0);
+                mPipeShader->setUniformValue("sectorAngle1", sectorAngle1);
+
+                glDrawArrays(GL_POINTS, 0, mPipeTicks->size());
+            }
+        }
+    }
+
+    mPipeTicks->release();
+    mPipeShader->release();
 }

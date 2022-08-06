@@ -51,7 +51,7 @@ bool PathShader::init()
     mLocations.insert("viewMatrix", mProgram->uniformLocation("viewMatrix"));
     mLocations.insert("projectionMatrix", mProgram->uniformLocation("projectionMatrix"));
 
-    mProgram->bindAttributeLocation("vertex", 0);
+    mProgram->bindAttributeLocation("t", 0);
     mProgram->release();
 
     qInfo() << Q_FUNC_INFO << "PathShader is initialized.";
