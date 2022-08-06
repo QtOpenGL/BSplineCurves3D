@@ -6,8 +6,8 @@
 
 FreeCamera::FreeCamera(QObject *parent)
     : Camera(parent)
-    , mMovementSpeed(10.0f)
-    , mAngularSpeed(15.0f)
+    , mMovementSpeed(5.0f)
+    , mAngularSpeed(25.0f)
     , mMousePressed(false)
     , mMousePreviousX(0.0f)
     , mMousePreviousY(0.0f)
@@ -75,11 +75,11 @@ void FreeCamera::update(float ifps)
         const QList<Qt::Key> keys = mPressedKeys.keys();
 
         if (mPressedKeys[Qt::Key_Shift])
-            mMovementSpeed = 20.0f;
-        else if (mPressedKeys[Qt::Key_Control])
-            mMovementSpeed = 5.0f;
-        else
             mMovementSpeed = 10.0f;
+        else if (mPressedKeys[Qt::Key_Control])
+            mMovementSpeed = 1.0f;
+        else
+            mMovementSpeed = 5.0f;
 
         for (auto key : keys)
             if (mPressedKeys.value(key, false))
