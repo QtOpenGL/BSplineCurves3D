@@ -1,6 +1,9 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
+#include "Light.h"
+#include "LightManager.h"
+
 #include <QOpenGLFunctions>
 #include <QOpenGLWindow>
 
@@ -12,6 +15,8 @@ class Window : public QOpenGLWindow, protected QOpenGLFunctions
 
 public:
     Window(QWindow *parent = nullptr);
+
+    bool imguiWantCapture() const;
 
 signals:
     void init();
@@ -37,5 +42,10 @@ private:
 
     long long mPreviousTime;
     long long mCurrentTime;
+
+    bool mImguiWantCapture;
+
+    LightManager *mLightManager;
+    Light *mActiveLight;
 };
 #endif // WINDOW_H
