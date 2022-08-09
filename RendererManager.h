@@ -4,6 +4,7 @@
 #include "BasicShader.h"
 #include "CameraManager.h"
 #include "CurveManager.h"
+#include "Light.h"
 #include "LightManager.h"
 #include "ModelData.h"
 #include "ModelManager.h"
@@ -30,7 +31,9 @@ public:
 
 private slots:
     void renderModels(float ifps);
-    void renderCurves(float ifps);
+    void renderKnotPoints(float ifps);
+    void renderPaths(float ifps);
+    void renderPipes(float ifps);
 
 private:
     QMap<Model::Type, ModelData *> mTypeToModelData;
@@ -47,12 +50,14 @@ private:
     LightManager *mLightManager;
     CurveManager *mCurveManager;
 
-    Curve *mSelectedCurve;
-    Point *mSelectedPoint;
+    Spline *mSelectedCurve;
+    KnotPoint *mSelectedKnotPoint;
 
-    // FIXME
+    Camera *mCamera;
+    Light *mLight;
+
     Model *mKnotPointModel;
-    Model *mControlPointModel;
+    ModelData *mKnotPointModelData;
 };
 
 #endif // RENDERERMANAGER_H

@@ -1,8 +1,8 @@
 #ifndef CURVEMANAGER_H
 #define CURVEMANAGER_H
 
-#include "Curve.h"
 #include "Point.h"
+#include "Spline.h"
 
 #include <QObject>
 
@@ -15,29 +15,29 @@ private:
 public:
     static CurveManager *instance();
 
-    const QList<Curve *> &curves() const;
-    QList<Curve *> &getCurvesNonConst();
+    const QList<Spline *> &curves() const;
+    QList<Spline *> &getCurvesNonConst();
 
-    void addCurve(Curve *curve);
-    void removeCurve(Curve *curve);
+    void addCurve(Spline *curve);
+    void removeCurve(Spline *curve);
 
-    Curve *selectCurve(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance = 0.5f);
-    ControlPoint *selectControlPoint(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance = 0.5f);
+    Spline *selectCurve(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance = 0.5f);
+    ControlPoint *selectKnotPoint(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance = 0.5f);
 
-    Curve *selectedCurve() const;
-    void setSelectedCurve(Curve *newSelectedCurve);
+    Spline *selectedCurve() const;
+    void setSelectedCurve(Spline *newSelectedCurve);
 
-    Point *selectedPoint() const;
-    void setSelectedPoint(Point *newSelectedPoint);
+    Point *selectedKnotPoint() const;
+    void setSelectedKnotPoint(Point *newSelectedPoint);
 
 signals:
-    void selectedCurveChanged(Curve *curve);
-    void selectedPointChanged(Point *point);
+    void selectedCurveChanged(Spline *curve);
+    void selectedKnotPointChanged(KnotPoint *point);
 
 private:
-    QList<Curve *> mCurves;
-    Curve *mSelectedCurve;
-    Point *mSelectedPoint;
+    QList<Spline *> mCurves;
+    Spline *mSelectedCurve;
+    KnotPoint *mSelectedPoint;
 };
 
 #endif // CURVEMANAGER_H

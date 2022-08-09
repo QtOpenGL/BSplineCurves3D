@@ -10,6 +10,7 @@ class Point : public QObject
 public:
     explicit Point(QObject *parent = nullptr);
     explicit Point(float x, float y, float z, QObject *parent = nullptr);
+    explicit Point(const QVector3D &position, QObject *parent = nullptr);
 
     bool selected() const;
     void setSelected(bool newSelected);

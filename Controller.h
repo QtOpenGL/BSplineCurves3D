@@ -1,14 +1,13 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
-#include "Bezier.h"
 #include "Camera.h"
 #include "RendererManager.h"
 #include "Window.h"
 
 #include <QObject>
 
-#include <Eigen/Dense>
+#include <Dense>
 
 class Controller : public QObject
 {
@@ -39,15 +38,15 @@ private:
     Camera *mCamera;
     Light *mLight;
 
-    Bezier *mBezierTestCurve1;
-    Bezier *mBezierTestCurve2;
+    Spline *mTestCurve1;
+    Spline *mTestCurve2;
 
     Model *mPlane;
     Model *mCube;
     Model *mSphere;
 
-    Curve *mSelectedCurve;
-    Point *mSelectedPoint;
+    Spline *mSelectedCurve;
+    KnotPoint *mSelectedKnotPoint;
 
     Qt::MouseButton mPressedButton;
     Eigen::Hyperplane<float, 3> mTranslationPlane;

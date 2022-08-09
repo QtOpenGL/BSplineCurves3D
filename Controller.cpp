@@ -6,9 +6,8 @@
 Controller::Controller(QObject *parent)
     : QObject(parent)
     , mSelectedCurve(nullptr)
-    , mSelectedPoint(nullptr)
-    , mPressedButton(Qt::NoButton)
-{
+    , mSelectedKnotPoint(nullptr)
+    , mPressedButton(Qt::NoButton) {
     mRendererManager = RendererManager::instance();
     mCameraManager = CameraManager::instance();
     mLightManager = LightManager::instance();
@@ -26,12 +25,11 @@ Controller::Controller(QObject *parent)
     connect(mWindow, &Window::init, this, &Controller::init);
     connect(mWindow, &Window::render, this, &Controller::render);
 
-    connect(mCurveManager, &CurveManager::selectedCurveChanged, this, [=](Curve *selectedCurve) { mSelectedCurve = selectedCurve; });
-    connect(mCurveManager, &CurveManager::selectedPointChanged, this, [=](Point *selectedPoint) { mSelectedPoint = selectedPoint; });
+    connect(mCurveManager, &CurveManager::selectedCurveChanged, this, [=](Spline *selectedCurve) { mSelectedCurve = selectedCurve; });
+    connect(mCurveManager, &CurveManager::selectedKnotPointChanged, this, [=](KnotPoint *selectedPoint) { mSelectedKnotPoint = selectedPoint; });
 }
 
-void Controller::init()
-{
+void Controller::init() {
     // Initialize Managers
     mRendererManager->init();
 
@@ -62,6 +60,7 @@ void Controller::init()
         mPlane = Model::create(Model::Plane);
         mPlane->setObjectName("Plane");
         mPlane->setPosition(QVector3D(0, 0, 0));
+        mPlane->setVisible(false);
     }
 
     // Cube
@@ -75,24 +74,29 @@ void Controller::init()
 
     // Test Curves
     {
-        mBezierTestCurve1 = new Bezier;
-        mBezierTestCurve1->addControlPoint(new ControlPoint(1, 1, 1));
-        mBezierTestCurve1->addControlPoint(new ControlPoint(0, 0, 5));
-        mBezierTestCurve1->addControlPoint(new ControlPoint(0, 5, 0));
-        mBezierTestCurve1->addControlPoint(new ControlPoint(5, 5, 5));
+        mTestCurve1 = new Spline;
+        //        mTestCurve1->addKnotPoint(new KnotPoint(0, 0, 0));
+        //        mTestCurve1->addKnotPoint(new KnotPoint(2.5, 2.5, 0));
+        //        mTestCurve1->addKnotPoint(new KnotPoint(0, 5, 0));
+        //        mTestCurve1->addKnotPoint(new KnotPoint(0, 10, 0));
+        //        mTestCurve1->addKnotPoint(new KnotPoint(0, 15, 0));
+        //        mTestCurve1->addKnotPoint(new KnotPoint(0, 25, 0));
+        //        mTestCurve1->addKnotPoint(new KnotPoint(0, 30, 0));
+        //        mTestCurve1->addKnotPoint(new KnotPoint(0, 35, 0));
 
-        mCurveManager->addCurve(mBezierTestCurve1);
+        mTestCurve1->addKnotPoint(new KnotPoint(1, -1, 0));
+        mTestCurve1->addKnotPoint(new KnotPoint(-1, 2, 0));
+        mTestCurve1->addKnotPoint(new KnotPoint(1, 4, 0));
+        mTestCurve1->addKnotPoint(new KnotPoint(4, 3, 0));
+        mTestCurve1->addKnotPoint(new KnotPoint(7, 5, 0));
+        mTestCurve1->addKnotPoint(new KnotPoint(7, 7, 0));
+        mTestCurve1->addKnotPoint(new KnotPoint(5, 7, 0));
 
-        mBezierTestCurve2 = new Bezier;
-        mBezierTestCurve2->addControlPoint(new ControlPoint(5, 0, 5));
-        mBezierTestCurve2->addControlPoint(new ControlPoint(5, 5, 5));
-
-        //mCurveManager->addCurve(mBezierTestCurve2);
+        mCurveManager->addCurve(mTestCurve1);
     }
 }
 
-void Controller::run()
-{
+void Controller::run() {
     //    mWindow->showMaximized();
     //    mWindow->showFullScreen();
     mWindow->resize(1024, 800);
@@ -101,64 +105,52 @@ void Controller::run()
 
 void Controller::onWheelMoved(QWheelEvent *event) {}
 
-void Controller::onMousePressed(QMouseEvent *event)
-{
+void Controller::onMousePressed(QMouseEvent *event) {
     mPressedButton = event->button();
 
-    if (mPressedButton == Qt::RightButton)
-    {
+    if (mPressedButton == Qt::RightButton) {
         mCameraManager->onMousePressed(event);
-    }
-    else if (mPressedButton == Qt::LeftButton)
-    {
+    } else if (mPressedButton == Qt::LeftButton) {
         QVector3D rayDirection = mCameraManager->getDirectionFromScreen(event->x(), event->y(), mWindow->width(), mWindow->height());
         QVector3D rayOrigin = mCameraManager->activeCamera()->position();
 
         // FIXME: Logic
-        if (mSelectedCurve)
-        {
-            mCurveManager->selectControlPoint(rayOrigin, rayDirection);
+        if (mSelectedCurve) {
+            mCurveManager->selectKnotPoint(rayOrigin, rayDirection);
         }
 
-        if (!mSelectedPoint)
-        {
+        if (!mSelectedKnotPoint) {
             mCurveManager->selectCurve(rayOrigin, rayDirection);
         }
     }
 
-    if (mSelectedPoint)
-    {
+    if (mSelectedKnotPoint) {
+        float x = mSelectedKnotPoint->position().x();
+        float y = mSelectedKnotPoint->position().y();
+        float z = mSelectedKnotPoint->position().z();
+
         QVector3D viewDirection = mCameraManager->activeCamera()->getViewDirection();
         Eigen::Vector3f normal = Eigen::Vector3f(viewDirection.x(), viewDirection.y(), viewDirection.z());
-        Eigen::Vector3f eigenControlPointPosition = Eigen::Vector3f(mSelectedPoint->position().x(),
-                                                                    mSelectedPoint->position().y(),
-                                                                    mSelectedPoint->position().z());
+        Eigen::Vector3f eigenControlPointPosition = Eigen::Vector3f(x, y, z);
 
         normal.normalize();
         mTranslationPlane = Eigen::Hyperplane<float, 3>(normal, -normal.dot(eigenControlPointPosition));
     }
 }
 
-void Controller::onMouseReleased(QMouseEvent *event)
-{
+void Controller::onMouseReleased(QMouseEvent *event) {
     mPressedButton = Qt::NoButton;
 
-    if (event->button() == Qt::RightButton)
-    {
+    if (event->button() == Qt::RightButton) {
         mCameraManager->onMouseReleased(event);
     }
 }
 
-void Controller::onMouseMoved(QMouseEvent *event)
-{
-    if (mPressedButton == Qt::RightButton)
-    {
+void Controller::onMouseMoved(QMouseEvent *event) {
+    if (mPressedButton == Qt::RightButton) {
         mCameraManager->onMouseMoved(event);
-    }
-    else if (mPressedButton == Qt::LeftButton)
-    {
-        if (mSelectedPoint)
-        {
+    } else if (mPressedButton == Qt::LeftButton) {
+        if (mSelectedKnotPoint) {
             QVector3D rayDirection = mCameraManager->getDirectionFromScreen(event->x(), event->y(), mWindow->width(), mWindow->height());
             QVector3D rayOrigin = mCamera->position();
 
@@ -169,31 +161,26 @@ void Controller::onMouseMoved(QMouseEvent *event)
             float t = line.intersection(mTranslationPlane);
             Eigen::Vector3f intersection = line.pointAt(t);
 
-            if (!isnan(t) && !isinf(t))
-            {
-                mSelectedPoint->setPosition(QVector3D(intersection.x(), intersection.y(), intersection.z()));
+            if (!isnan(t) && !isinf(t)) {
+                mSelectedKnotPoint->setPosition(QVector3D(intersection.x(), intersection.y(), intersection.z()));
             }
         }
     }
 }
 
-void Controller::onKeyPressed(QKeyEvent *event)
-{
+void Controller::onKeyPressed(QKeyEvent *event) {
     mCameraManager->onKeyPressed(event);
 }
 
-void Controller::onKeyReleased(QKeyEvent *event)
-{
+void Controller::onKeyReleased(QKeyEvent *event) {
     mCameraManager->onKeyReleased(event);
 }
 
-void Controller::onResized(int w, int h)
-{
+void Controller::onResized(int w, int h) {
     mCamera->setAspectRatio((float) (w) / h);
 }
 
-void Controller::render(float ifps)
-{
+void Controller::render(float ifps) {
     mCameraManager->update(ifps);
 
     mRendererManager->render(ifps);

@@ -63,8 +63,7 @@ HEADERS += \
 
 include(Dependencies/qtimgui/qtimgui.pri)
 
-INCLUDEPATH += $$PWD/Dependencies/eigen3/
-INCLUDEPATH += $$PWD/Dependencies/eigen3/unsupported
+INCLUDEPATH += $$PWD/Dependencies/Eigen/
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
