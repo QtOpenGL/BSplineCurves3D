@@ -6,6 +6,8 @@ uniform mat4 projection_matrix;
 uniform vec3 control_points[16];
 uniform int control_points_count;
 
+const int degree = control_points_count - 1;
+
 float custom_pow(float x, float y)
 {
     if(x == 0 && y == 0)
@@ -34,7 +36,6 @@ float choose(int n, int k)
 vec3 value_at(float t)
 {
     vec3 value = vec3(0, 0, 0);
-    int degree = control_points_count - 1;
 
     for(int i = 0; i <= degree; ++i)
     {
@@ -52,7 +53,6 @@ vec3 value_at(float t)
 vec3 tangent_at(float t)
 {
     vec3 tangent = vec3(0,0,0);
-    int degree = control_points_count - 1;
 
     for(int i = 0; i <= degree - 1; i++)
     {

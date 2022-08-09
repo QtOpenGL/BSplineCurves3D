@@ -35,6 +35,7 @@ public:
     virtual QVector3D normalAt(float t) const override;
     virtual float closestDistanceToRay(const QVector3D &rayOrigin, const QVector3D &rayDirection, float epsilon) override;
     virtual void update() override;
+    virtual void translate(const QVector3D &translation) override;
 
 private:
     QList<ControlPoint *> mControlPoints;

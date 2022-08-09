@@ -16,6 +16,8 @@ public:
     static CurveManager *instance();
 
     const QList<Curve *> &curves() const;
+    QList<Curve *> &getCurvesNonConst();
+
     void addCurve(Curve *curve);
     void removeCurve(Curve *curve);
 

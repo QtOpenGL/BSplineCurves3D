@@ -18,6 +18,11 @@ const QList<Curve *> &CurveManager::curves() const
     return mCurves;
 }
 
+QList<Curve *> &CurveManager::getCurvesNonConst()
+{
+    return mCurves;
+}
+
 void CurveManager::addCurve(Curve *curve)
 {
     mCurves << curve;

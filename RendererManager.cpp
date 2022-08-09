@@ -268,7 +268,6 @@ void RendererManager::renderCurves(float ifps)
     }
 
     mPipeShader->setUniformValue("dt", mPipeTicks->ticksDelta());
-    mPipeShader->setUniformValue("r", 0.125f);
 
     for (auto &curve : qAsConst(mCurveManager->curves()))
     {
@@ -287,12 +286,15 @@ void RendererManager::renderCurves(float ifps)
             mPipeShader->setUniformValue("node.specular", bezier->material().specular());
             mPipeShader->setUniformValue("node.shininess", bezier->material().shininess());
 
-            int n = 128;
+            int n = bezier->sectorCount();
+            float r = bezier->radius();
+
             for (int i = 0; i < n; i++)
             {
                 float sectorAngle0 = 2 * float(i) / n * M_PI;
                 float sectorAngle1 = 2 * float(i + 1) / n * M_PI;
 
+                mPipeShader->setUniformValue("r", r);
                 mPipeShader->setUniformValue("sector_angle_0", sectorAngle0);
                 mPipeShader->setUniformValue("sector_angle_1", sectorAngle1);
 

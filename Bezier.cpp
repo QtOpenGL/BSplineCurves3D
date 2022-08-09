@@ -112,6 +112,14 @@ float Bezier::closestDistanceToRay(const QVector3D &rayOrigin, const QVector3D &
 
 void Bezier::update() {}
 
+void Bezier::translate(const QVector3D &translation)
+{
+    for (auto &controlPoint : mControlPoints)
+    {
+        controlPoint->setPosition(controlPoint->position() + translation);
+    }
+}
+
 ControlPoint *Bezier::getClosestControlPointToRay(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance, float epsilon)
 {
     float minDistance = std::numeric_limits<float>::infinity();

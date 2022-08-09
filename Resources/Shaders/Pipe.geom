@@ -148,7 +148,6 @@ float atan2(float num, float denum) {
 
 }
 
-
 void main()
 {
     float t0 = gs_t[0];

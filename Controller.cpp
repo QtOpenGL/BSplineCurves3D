@@ -27,10 +27,7 @@ Controller::Controller(QObject *parent)
     connect(mWindow, &Window::render, this, &Controller::render);
 
     connect(mCurveManager, &CurveManager::selectedCurveChanged, this, [=](Curve *selectedCurve) { mSelectedCurve = selectedCurve; });
-    connect(mCurveManager, &CurveManager::selectedPointChanged, this, [=](Point *selectedPoint) {
-        mSelectedPoint = selectedPoint;
-        qDebug() << selectedPoint;
-    });
+    connect(mCurveManager, &CurveManager::selectedPointChanged, this, [=](Point *selectedPoint) { mSelectedPoint = selectedPoint; });
 }
 
 void Controller::init()
@@ -174,7 +171,6 @@ void Controller::onMouseMoved(QMouseEvent *event)
 
             if (!isnan(t) && !isinf(t))
             {
-                qDebug() << QVector3D(intersection.x(), intersection.y(), intersection.z()) << t;
                 mSelectedPoint->setPosition(QVector3D(intersection.x(), intersection.y(), intersection.z()));
             }
         }
