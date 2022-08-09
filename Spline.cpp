@@ -5,9 +5,7 @@
 Spline::Spline(QObject *parent)
     : Curve(parent) {}
 
-Spline::~Spline() {
-    //TODO
-}
+Spline::~Spline() {}
 
 void Spline::addKnotPoint(KnotPoint *knotPoint) {
     mKnotPoints << knotPoint;
@@ -32,7 +30,7 @@ void Spline::removeAllPatches() {
     mBezierPatches.clear();
 }
 
-KnotPoint *Spline::getClosestKnotPointToRay(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance, float epsilon) {
+KnotPoint *Spline::getClosestKnotPointToRay(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance) {
     float minDistance = std::numeric_limits<float>::infinity();
     KnotPoint *closestPoint = nullptr;
 
@@ -71,8 +69,6 @@ void Spline::update() {
     } else {
         QVector<QVector3D> splineControlPoints = getSplineControlPoints();
 
-        qDebug() << splineControlPoints;
-
         // Generate Bezier Patches
         for (int i = 1; i < mKnotPoints.size(); ++i) {
             Bezier *patch = new Bezier;
@@ -86,6 +82,8 @@ void Spline::update() {
             patch->addControlPoint(cp2);
             patch->addControlPoint(cp3);
 
+            patch->setParent(this);
+
             mBezierPatches << patch;
         }
     }
@@ -94,19 +92,23 @@ void Spline::update() {
 }
 
 QVector3D Spline::valueAt(float t) const {
-    return QVector3D();
+    int n = qMin((int) t, mBezierPatches.size() - 1);
+
+    return mBezierPatches[n]->valueAt(t - n);
 }
 
 QVector3D Spline::tangentAt(float t) const {
-    return QVector3D();
-}
+    int n = qMin((int) t, mBezierPatches.size() - 1);
 
-QVector3D Spline::normalAt(float t) const {
-    return QVector3D();
+    return mBezierPatches[n]->tangentAt(t - n);
 }
 
 void Spline::translate(const QVector3D &translation) {
-    //  TODO
+    for (auto &point : mKnotPoints) {
+        point->setPosition(point->position() + translation);
+    }
+
+    mDirty = true;
 }
 
 float Spline::closestDistanceToRay(const QVector3D &cameraPosition, const QVector3D &rayDirection, float epsilon) {
@@ -123,6 +125,19 @@ float Spline::closestDistanceToRay(const QVector3D &cameraPosition, const QVecto
     }
 
     return minDistance;
+}
+
+float Spline::length() {
+    if (mDirty)
+        update();
+
+    float length = 0.0f;
+
+    for (auto &patch : mBezierPatches) {
+        length += patch->length();
+    }
+
+    return length;
 }
 
 Eigen::MatrixXf Spline::createCoefficientMatrix() {

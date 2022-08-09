@@ -21,7 +21,7 @@ public:
     void removeKnotPoint(KnotPoint *knotPoint);
     void removeAllPatches();
 
-    KnotPoint *getClosestKnotPointToRay(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance = 0.5f, float epsilon = 0.001f);
+    KnotPoint *getClosestKnotPointToRay(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance = 0.5f);
 
     const QList<Bezier *> &bezierPatches();
     const QList<KnotPoint *> &knotPoints();
@@ -30,9 +30,9 @@ public:
     void update();
     QVector3D valueAt(float t) const;
     QVector3D tangentAt(float t) const;
-    QVector3D normalAt(float t) const;
     void translate(const QVector3D &translation);
     float closestDistanceToRay(const QVector3D &rayOrigin, const QVector3D &rayDirection, float epsilon = 0.01f);
+    float length();
 
 private:
     Eigen::MatrixXf createCoefficientMatrix();

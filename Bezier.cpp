@@ -1,43 +1,40 @@
 #include "Bezier.h"
 
 Bezier::Bezier(QObject *parent)
-    : Curve(parent)
-{}
+    : Curve(parent) {}
 
 Bezier::~Bezier() {}
 
-void Bezier::addControlPoint(ControlPoint *controlPoint)
-{
+void Bezier::addControlPoint(ControlPoint *controlPoint) {
     mControlPoints << controlPoint;
     controlPoint->setParent(this);
+    mDirty = true;
 }
 
-void Bezier::removeControlPoint(ControlPoint *controlPoint)
-{
+void Bezier::removeControlPoint(ControlPoint *controlPoint) {
     mControlPoints.removeAll(controlPoint);
     controlPoint->deleteLater();
+    mDirty = true;
 }
 
-void Bezier::insertControlPoint(int index, ControlPoint *controlPoint)
-{
+void Bezier::insertControlPoint(int index, ControlPoint *controlPoint) {
     mControlPoints.insert(index, controlPoint);
     controlPoint->setParent(this);
+    mDirty = true;
 }
 
-void Bezier::removeControlPoint(int index)
-{
+void Bezier::removeControlPoint(int index) {
     ControlPoint *controlPoint = mControlPoints[index];
     mControlPoints.removeAt(index);
     controlPoint->deleteLater();
+    mDirty = true;
 }
 
-const QList<ControlPoint *> &Bezier::controlPoints() const
-{
+const QList<ControlPoint *> &Bezier::controlPoints() const {
     return mControlPoints;
 }
 
-QVector<QVector3D> Bezier::getControlPointPositions()
-{
+QVector<QVector3D> Bezier::getControlPointPositions() {
     QVector<QVector3D> positions;
 
     for (auto &controlPoint : mControlPoints)
@@ -46,8 +43,7 @@ QVector<QVector3D> Bezier::getControlPointPositions()
     return positions;
 }
 
-QVector3D Bezier::valueAt(float t) const
-{
+QVector3D Bezier::valueAt(float t) const {
     QVector3D value = QVector3D(0, 0, 0);
     int n = degree();
 
@@ -57,23 +53,25 @@ QVector3D Bezier::valueAt(float t) const
     return value;
 }
 
-QVector3D Bezier::tangentAt(float t) const
-{
-    return QVector3D();
+QVector3D Bezier::tangentAt(float t) const {
+    QVector3D tangent = QVector3D(0, 0, 0);
+    int order = degree();
+
+    for (int i = 0; i <= order - 1; i++) {
+        float coefficient = choose(order - 1, i) * pow(t, i) * pow(1 - t, order - 1 - i);
+        tangent += coefficient * (mControlPoints.at(i)->position() - mControlPoints.at(i + 1)->position());
+    }
+
+    tangent.normalize();
+
+    return tangent;
 }
 
-QVector3D Bezier::normalAt(float t) const
-{
-    return QVector3D();
-}
-
-int Bezier::degree() const
-{
+int Bezier::degree() const {
     return mControlPoints.size() - 1;
 }
 
-float Bezier::factorial(int n) const
-{
+float Bezier::factorial(int n) const {
     float result = 1.0f;
 
     for (int i = 1; i <= n; ++i)
@@ -82,26 +80,21 @@ float Bezier::factorial(int n) const
     return result;
 }
 
-float Bezier::choose(int n, int k) const
-{
+float Bezier::choose(int n, int k) const {
     return factorial(n) / (factorial(k) * factorial(n - k));
 }
 
-float Bezier::closestDistanceToRay(const QVector3D &rayOrigin, const QVector3D &rayDirection, float epsilon)
-{
+float Bezier::closestDistanceToRay(const QVector3D &rayOrigin, const QVector3D &rayDirection, float epsilon) {
     float minDistance = std::numeric_limits<float>::infinity();
 
-    for (float t = 0.0f; t <= 1.0f; t += epsilon)
-    {
+    for (float t = 0.0f; t <= 1.0f; t += epsilon) {
         QVector3D difference = valueAt(t) - rayOrigin;
 
         float dot = QVector3D::dotProduct(difference, rayDirection);
 
-        if (dot >= 0.0f)
-        {
+        if (dot >= 0.0f) {
             float distance = (difference - rayDirection * dot).length();
-            if (distance < minDistance)
-            {
+            if (distance < minDistance) {
                 minDistance = distance;
             }
         }
@@ -110,32 +103,45 @@ float Bezier::closestDistanceToRay(const QVector3D &rayOrigin, const QVector3D &
     return minDistance;
 }
 
-void Bezier::update() {}
+void Bezier::update() {
+    float epsilon = 0.01f;
+    float length = 0.0f;
 
-void Bezier::translate(const QVector3D &translation)
-{
-    for (auto &controlPoint : mControlPoints)
-    {
+    for (float t = epsilon; t <= 1.0f; t += epsilon) {
+        float delta = (valueAt(t - epsilon) - valueAt(t)).length();
+        length += delta;
+    }
+
+    mLength = length;
+
+    mDirty = false;
+}
+
+void Bezier::translate(const QVector3D &translation) {
+    for (auto &controlPoint : mControlPoints) {
         controlPoint->setPosition(controlPoint->position() + translation);
     }
 }
 
-ControlPoint *Bezier::getClosestControlPointToRay(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance, float epsilon)
-{
+float Bezier::length() {
+    if (mDirty)
+        update();
+
+    return mLength;
+}
+
+ControlPoint *Bezier::getClosestControlPointToRay(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance) {
     float minDistance = std::numeric_limits<float>::infinity();
     ControlPoint *closestControlPoint = nullptr;
 
-    for (auto &controlPoint : mControlPoints)
-    {
+    for (auto &controlPoint : mControlPoints) {
         QVector3D difference = controlPoint->position() - rayOrigin;
 
         float dot = QVector3D::dotProduct(difference, rayDirection);
 
-        if (dot >= 0.0f)
-        {
+        if (dot >= 0.0f) {
             float distance = (difference - rayDirection * dot).length();
-            if (distance < minDistance)
-            {
+            if (distance < minDistance) {
                 minDistance = distance;
                 closestControlPoint = controlPoint;
             }
