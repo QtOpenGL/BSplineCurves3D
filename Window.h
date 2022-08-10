@@ -1,13 +1,13 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
+#include "Enums.h"
 #include "Light.h"
 #include "LightManager.h"
+#include "RendererManager.h"
 
 #include <QOpenGLFunctions>
 #include <QOpenGLWindow>
-
-class Controller;
 
 class Window : public QOpenGLWindow, protected QOpenGLFunctions
 {
@@ -28,6 +28,7 @@ signals:
     void mouseReleased(QMouseEvent *);
     void mouseMoved(QMouseEvent *);
     void wheelMoved(QWheelEvent *);
+    void action(Action action, QVariant variant = QVariant());
 
 private:
     void initializeGL() override;
@@ -40,12 +41,27 @@ private:
     void mouseMoveEvent(QMouseEvent *) override;
     void wheelEvent(QWheelEvent *) override;
 
+private:
     long long mPreviousTime;
     long long mCurrentTime;
 
     bool mImguiWantCapture;
 
+    RendererManager *mRendererManager;
+    CurveManager *mCurveManager;
     LightManager *mLightManager;
+
     Light *mActiveLight;
+
+    Mode mMode;
+
+    bool mRenderPaths;
+    bool mRenderPipes;
+
+    Spline *mSelectedCurve;
+    KnotPoint *mSelectedKnotPoint;
+
+    float mGlobalPipeRadius;
+    int mGlobalPipeSectorCount;
 };
 #endif // WINDOW_H

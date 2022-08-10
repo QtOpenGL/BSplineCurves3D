@@ -44,6 +44,7 @@ HEADERS += \
     Curve.h \
     CurveManager.h \
     DummyCamera.h \
+    Enums.h \
     FreeCamera.h \
     Helper.h \
     Light.h \

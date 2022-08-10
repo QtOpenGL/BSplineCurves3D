@@ -7,7 +7,8 @@ Controller::Controller(QObject *parent)
     : QObject(parent)
     , mSelectedCurve(nullptr)
     , mSelectedKnotPoint(nullptr)
-    , mPressedButton(Qt::NoButton) {
+    , mPressedButton(Qt::NoButton)
+    , mMode(Mode::Select) {
     mRendererManager = RendererManager::instance();
     mCameraManager = CameraManager::instance();
     mLightManager = LightManager::instance();
@@ -24,9 +25,9 @@ Controller::Controller(QObject *parent)
     connect(mWindow, &Window::resized, this, &Controller::onResized);
     connect(mWindow, &Window::init, this, &Controller::init);
     connect(mWindow, &Window::render, this, &Controller::render);
-
     connect(mCurveManager, &CurveManager::selectedCurveChanged, this, [=](Spline *selectedCurve) { mSelectedCurve = selectedCurve; });
     connect(mCurveManager, &CurveManager::selectedKnotPointChanged, this, [=](KnotPoint *selectedPoint) { mSelectedKnotPoint = selectedPoint; });
+    connect(mWindow, &Window::action, this, &Controller::onAction);
 }
 
 void Controller::init() {
@@ -88,9 +89,13 @@ void Controller::init() {
         mTestCurve1->addKnotPoint(new KnotPoint(-1, 2, 0));
         mTestCurve1->addKnotPoint(new KnotPoint(1, 4, 0));
         mTestCurve1->addKnotPoint(new KnotPoint(4, 3, 0));
-        mTestCurve1->addKnotPoint(new KnotPoint(7, 5, 0));
-        mTestCurve1->addKnotPoint(new KnotPoint(7, 7, 0));
-        mTestCurve1->addKnotPoint(new KnotPoint(5, 7, 0));
+        //        mTestCurve1->addKnotPoint(new KnotPoint(7, 5, 0));
+        //        mTestCurve1->addKnotPoint(new KnotPoint(7, 7, 0));
+        //        mTestCurve1->addKnotPoint(new KnotPoint(5, 7, 0));
+        //        mTestCurve1->addKnotPoint(new KnotPoint(11, 7, 0));
+        //        mTestCurve1->addKnotPoint(new KnotPoint(7, 11, 0));
+        //        mTestCurve1->addKnotPoint(new KnotPoint(13, 9, 0));
+        //        mTestCurve1->addKnotPoint(new KnotPoint(9, 13, 0));
 
         mCurveManager->addCurve(mTestCurve1);
     }
@@ -103,18 +108,12 @@ void Controller::run() {
     mWindow->show();
 }
 
-void Controller::onWheelMoved(QWheelEvent *event) {}
-
-void Controller::onMousePressed(QMouseEvent *event) {
-    mPressedButton = event->button();
-
-    if (mPressedButton == Qt::RightButton) {
-        mCameraManager->onMousePressed(event);
-    } else if (mPressedButton == Qt::LeftButton) {
-        QVector3D rayDirection = mCameraManager->getDirectionFromScreen(event->x(), event->y(), mWindow->width(), mWindow->height());
+void Controller::onAction(Action action, QVariant variant) {
+    switch (action) {
+    case Action::Select: {
+        QVector3D rayDirection = mCameraManager->getDirectionFromScreen(variant.toPoint().x(), variant.toPoint().y(), mWindow->width(), mWindow->height());
         QVector3D rayOrigin = mCameraManager->activeCamera()->position();
 
-        // FIXME: Logic
         if (mSelectedCurve) {
             mCurveManager->selectKnotPoint(rayOrigin, rayDirection);
         }
@@ -122,36 +121,93 @@ void Controller::onMousePressed(QMouseEvent *event) {
         if (!mSelectedKnotPoint) {
             mCurveManager->selectCurve(rayOrigin, rayDirection);
         }
-    }
 
-    if (mSelectedKnotPoint) {
-        float x = mSelectedKnotPoint->position().x();
-        float y = mSelectedKnotPoint->position().y();
-        float z = mSelectedKnotPoint->position().z();
-
-        QVector3D viewDirection = mCameraManager->activeCamera()->getViewDirection();
-        Eigen::Vector3f normal = Eigen::Vector3f(viewDirection.x(), viewDirection.y(), viewDirection.z());
-        Eigen::Vector3f eigenControlPointPosition = Eigen::Vector3f(x, y, z);
-
-        normal.normalize();
-        mTranslationPlane = Eigen::Hyperplane<float, 3>(normal, -normal.dot(eigenControlPointPosition));
-    }
-}
-
-void Controller::onMouseReleased(QMouseEvent *event) {
-    mPressedButton = Qt::NoButton;
-
-    if (event->button() == Qt::RightButton) {
-        mCameraManager->onMouseReleased(event);
-    }
-}
-
-void Controller::onMouseMoved(QMouseEvent *event) {
-    if (mPressedButton == Qt::RightButton) {
-        mCameraManager->onMouseMoved(event);
-    } else if (mPressedButton == Qt::LeftButton) {
         if (mSelectedKnotPoint) {
-            QVector3D rayDirection = mCameraManager->getDirectionFromScreen(event->x(), event->y(), mWindow->width(), mWindow->height());
+            float x = mSelectedKnotPoint->position().x();
+            float y = mSelectedKnotPoint->position().y();
+            float z = mSelectedKnotPoint->position().z();
+
+            QVector3D viewDirection = mCameraManager->activeCamera()->getViewDirection();
+            Eigen::Vector3f normal = Eigen::Vector3f(viewDirection.x(), viewDirection.y(), viewDirection.z());
+            Eigen::Vector3f eigenControlPointPosition = Eigen::Vector3f(x, y, z);
+            normal.normalize();
+            mTranslationPlane = Eigen::Hyperplane<float, 3>(normal, -normal.dot(eigenControlPointPosition));
+        }
+
+        break;
+    }
+    case Action::AddKnot: {
+        QVector3D rayDirection = mCameraManager->getDirectionFromScreen(variant.toPoint().x(), variant.toPoint().y(), mWindow->width(), mWindow->height());
+        QVector3D rayOrigin = mCameraManager->activeCamera()->position();
+
+        Eigen::Vector3f eigenRayDirection = Eigen::Vector3f(rayDirection.x(), rayDirection.y(), rayDirection.z());
+        Eigen::Vector3f eigenRayOrigin = Eigen::Vector3f(rayOrigin.x(), rayOrigin.y(), rayOrigin.z());
+
+        auto line = Eigen::ParametrizedLine<float, 3>(eigenRayOrigin, eigenRayDirection);
+        QVector3D viewDirection = mCameraManager->activeCamera()->getViewDirection();
+        Eigen::Vector3f normal = Eigen::Vector3f(viewDirection.x(), viewDirection.y(), viewDirection.z()).normalized();
+
+        if (mSelectedCurve) {
+            float x = mSelectedCurve->knotPoints().last()->position().x();
+            float y = mSelectedCurve->knotPoints().last()->position().y();
+            float z = mSelectedCurve->knotPoints().last()->position().z();
+            Eigen::Vector3f lastKnotPosition = Eigen::Vector3f(x, y, z);
+
+            Eigen::Hyperplane<float, 3> plane = Eigen::Hyperplane<float, 3>(normal, -normal.dot(lastKnotPosition));
+            float t = line.intersection(plane);
+            Eigen::Vector3f intersection = line.pointAt(t);
+
+            if (!isnan(t) && !isinf(t)) {
+                KnotPoint *point = new KnotPoint(intersection.x(), intersection.y(), intersection.z());
+                mSelectedCurve->addKnotPoint(point);
+                mCurveManager->setSelectedKnotPoint(point);
+
+                for (auto &point : mSelectedCurve->knotPoints()) {
+                    qDebug() << point->position();
+                }
+            }
+        } else {
+            Eigen::Hyperplane<float, 3> plane = Eigen::Hyperplane<float, 3>(normal, -normal.dot(eigenRayOrigin + 20 * eigenRayDirection));
+            float t = line.intersection(plane);
+            Eigen::Vector3f intersection = line.pointAt(t);
+
+            if (!isnan(t) && !isinf(t)) {
+                Spline *spline = new Spline;
+                KnotPoint *point = new KnotPoint(intersection.x(), intersection.y(), intersection.z());
+                spline->addKnotPoint(point);
+                mCurveManager->addCurve(spline);
+                mCurveManager->setSelectedCurve(spline);
+                mCurveManager->setSelectedKnotPoint(point);
+            }
+        }
+
+        break;
+    }
+    case Action::UpdateMode: {
+        mMode = (Mode) variant.toInt();
+        if (mSelectedKnotPoint) {
+            float x = mSelectedKnotPoint->position().x();
+            float y = mSelectedKnotPoint->position().y();
+            float z = mSelectedKnotPoint->position().z();
+
+            QVector3D viewDirection = mCameraManager->activeCamera()->getViewDirection();
+            Eigen::Vector3f normal = Eigen::Vector3f(viewDirection.x(), viewDirection.y(), viewDirection.z()).normalized();
+            Eigen::Vector3f knotPosition = Eigen::Vector3f(x, y, z);
+            mTranslationPlane = Eigen::Hyperplane<float, 3>(normal, -normal.dot(knotPosition));
+        }
+        break;
+    }
+    case Action::UpdateRenderPaths: {
+        mRendererManager->setRenderPaths(variant.toBool());
+        break;
+    }
+    case Action::UpdateRenderPipes: {
+        mRendererManager->setRenderPipes(variant.toBool());
+        break;
+    }
+    case Action::UpdateKnotPointPositionFromScreen: {
+        if (mSelectedKnotPoint) {
+            QVector3D rayDirection = mCameraManager->getDirectionFromScreen(variant.toPoint().x(), variant.toPoint().y(), mWindow->width(), mWindow->height());
             QVector3D rayOrigin = mCamera->position();
 
             Eigen::Vector3f eigenRayDirection = Eigen::Vector3f(rayDirection.x(), rayDirection.y(), rayDirection.z());
@@ -164,6 +220,110 @@ void Controller::onMouseMoved(QMouseEvent *event) {
             if (!isnan(t) && !isinf(t)) {
                 mSelectedKnotPoint->setPosition(QVector3D(intersection.x(), intersection.y(), intersection.z()));
             }
+        }
+        break;
+    }
+    case Action::UpdateKnotPointPositionFromGui: {
+        if (mSelectedKnotPoint) {
+            QList<QVariant> coords = variant.toList();
+            float x = coords[0].toFloat();
+            float y = coords[1].toFloat();
+            float z = coords[2].toFloat();
+            mSelectedKnotPoint->setPosition(QVector3D(x, y, z));
+        }
+        break;
+    }
+    case Action::UpdateSelectedCurvePipeRadius: {
+        if (mSelectedCurve)
+            mSelectedCurve->setRadius(variant.toFloat());
+        break;
+    }
+    case Action::UpdateSelectedCurvePipeSectorCount: {
+        if (mSelectedCurve)
+            mSelectedCurve->setSectorCount(variant.toInt());
+        break;
+    }
+    case Action::UpdateGlobalPipeRadius: {
+        mCurveManager->setGlobalPipeRadius(variant.toFloat());
+        break;
+    }
+    case Action::UpdateGlobalPipeSectorCount: {
+        mCurveManager->setGlobalPipeSectorCount(variant.toInt());
+        break;
+    }
+    case Action::RemoveSelectedCurve: {
+        mCurveManager->removeCurve(mSelectedCurve);
+        break;
+    }
+    case Action::RemoveSelectedKnotPoint: {
+        if (mSelectedCurve) {
+            if (mSelectedKnotPoint) {
+                mSelectedCurve->removeKnotPoint(mSelectedKnotPoint);
+                mCurveManager->setSelectedKnotPoint(nullptr);
+            }
+        }
+        break;
+    }
+    case Action::ClearScene: {
+        mCurveManager->removeAllCurves();
+        break;
+    }
+    }
+}
+
+void Controller::onWheelMoved(QWheelEvent *event) {
+    if (mWindow->imguiWantCapture())
+        return;
+}
+
+void Controller::onMousePressed(QMouseEvent *event) {
+    if (mWindow->imguiWantCapture())
+        return;
+
+    mPressedButton = event->button();
+
+    if (mPressedButton == Qt::RightButton) {
+        mCameraManager->onMousePressed(event);
+    } else if (mPressedButton == Qt::LeftButton) {
+        switch (mMode) {
+        case Mode::Select: {
+            onAction(Action::Select, event->pos());
+            break;
+        }
+        case Mode::Add: {
+            onAction(Action::AddKnot, event->pos());
+            break;
+        }
+        }
+    }
+}
+
+void Controller::onMouseReleased(QMouseEvent *event) {
+    if (mWindow->imguiWantCapture())
+        return;
+
+    mPressedButton = Qt::NoButton;
+
+    if (event->button() == Qt::RightButton) {
+        mCameraManager->onMouseReleased(event);
+    }
+}
+
+void Controller::onMouseMoved(QMouseEvent *event) {
+    if (mWindow->imguiWantCapture())
+        return;
+
+    if (mPressedButton == Qt::RightButton) {
+        mCameraManager->onMouseMoved(event);
+    } else if (mPressedButton == Qt::LeftButton) {
+        switch (mMode) {
+        case Mode::Select: {
+            onAction(Action::UpdateKnotPointPositionFromScreen, event->pos());
+            break;
+        }
+        case Mode::Add: {
+            break;
+        }
         }
     }
 }
@@ -182,6 +342,5 @@ void Controller::onResized(int w, int h) {
 
 void Controller::render(float ifps) {
     mCameraManager->update(ifps);
-
     mRendererManager->render(ifps);
 }

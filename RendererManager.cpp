@@ -9,7 +9,9 @@ RendererManager::RendererManager(QObject *parent)
     : QObject(parent)
     , mBasicShader(nullptr)
     , mSelectedCurve(nullptr)
-    , mSelectedKnotPoint(nullptr) {
+    , mSelectedKnotPoint(nullptr)
+    , mRenderPaths(true)
+    , mRenderPipes(true) {
     mModelManager = ModelManager::instance();
     mCameraManager = CameraManager::instance();
     mLightManager = LightManager::instance();
@@ -93,9 +95,15 @@ void RendererManager::render(float ifps) {
     mLight = mLightManager->activeLight();
 
     renderModels(ifps);
-    renderKnotPoints(ifps);
-    renderPaths(ifps);
-    renderPipes(ifps);
+
+    if (mRenderPaths)
+        renderPaths(ifps);
+
+    if (mRenderPipes)
+        renderPipes(ifps);
+
+    if (mRenderPaths || mRenderPipes)
+        renderKnotPoints(ifps);
 }
 
 void RendererManager::renderModels(float ifps) {
@@ -267,4 +275,20 @@ void RendererManager::renderPipes(float ifps) {
 
     mPipeTicks->release();
     mPipeShader->release();
+}
+
+void RendererManager::setRenderPipes(bool newRenderPipes) {
+    mRenderPipes = newRenderPipes;
+}
+
+void RendererManager::setRenderPaths(bool newRenderPaths) {
+    mRenderPaths = newRenderPaths;
+}
+
+bool RendererManager::getRenderPaths() const {
+    return mRenderPaths;
+}
+
+bool RendererManager::getRenderPipes() const {
+    return mRenderPipes;
 }

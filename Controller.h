@@ -2,6 +2,7 @@
 #define CONTROLLER_H
 
 #include "Camera.h"
+#include "Enums.h"
 #include "RendererManager.h"
 #include "Window.h"
 
@@ -26,6 +27,7 @@ private slots:
     void onKeyReleased(QKeyEvent *event);
     void onResized(int w, int h);
     void render(float ifps);
+    void onAction(Action, QVariant variant = QVariant());
 
 private:
     RendererManager *mRendererManager;
@@ -50,6 +52,8 @@ private:
 
     Qt::MouseButton mPressedButton;
     Eigen::Hyperplane<float, 3> mTranslationPlane;
+
+    Mode mMode;
 };
 
 #endif // CONTROLLER_H

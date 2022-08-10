@@ -29,6 +29,12 @@ public:
     bool init();
     void render(float ifps);
 
+    void setRenderPaths(bool newRenderPaths);
+    void setRenderPipes(bool newRenderPipes);
+
+    bool getRenderPaths() const;
+    bool getRenderPipes() const;
+
 private slots:
     void renderModels(float ifps);
     void renderKnotPoints(float ifps);
@@ -58,6 +64,9 @@ private:
 
     Model *mKnotPointModel;
     ModelData *mKnotPointModelData;
+
+    bool mRenderPaths;
+    bool mRenderPipes;
 };
 
 #endif // RENDERERMANAGER_H

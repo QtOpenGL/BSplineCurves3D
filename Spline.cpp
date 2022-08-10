@@ -61,21 +61,19 @@ void Spline::update() {
         Bezier *patch = new Bezier;
 
         for (int i = 0; i < mKnotPoints.size(); ++i) {
-            patch->addControlPoint(mKnotPoints[i]);
+            patch->addControlPoint(new ControlPoint(mKnotPoints.at(i)->position()));
         }
 
+        patch->setParent(this);
         mBezierPatches << patch;
 
-    } else {
-        QVector<QVector3D> splineControlPoints = getSplineControlPoints();
-
-        // Generate Bezier Patches
-        for (int i = 1; i < mKnotPoints.size(); ++i) {
+    } else if (mKnotPoints.size() == 3) {
+        {
             Bezier *patch = new Bezier;
-            ControlPoint *cp0 = new ControlPoint(mKnotPoints[i - 1]->position());
-            ControlPoint *cp1 = new ControlPoint((2.0f / 3.0f) * splineControlPoints[i - 1] + (1.0f / 3.0f) * splineControlPoints[i]);
-            ControlPoint *cp2 = new ControlPoint((1.0f / 3.0f) * splineControlPoints[i - 1] + (2.0f / 3.0f) * splineControlPoints[i]);
-            ControlPoint *cp3 = new ControlPoint(mKnotPoints[i]->position());
+            ControlPoint *cp0 = new ControlPoint(mKnotPoints[0]->position());
+            ControlPoint *cp1 = new ControlPoint((2.0f / 3.0f) * mKnotPoints.at(0)->position() + (1.0f / 3.0f) * mKnotPoints.at(1)->position());
+            ControlPoint *cp2 = new ControlPoint((1.0f / 3.0f) * mKnotPoints.at(0)->position() + (2.0f / 3.0f) * mKnotPoints.at(1)->position());
+            ControlPoint *cp3 = new ControlPoint(mKnotPoints[1]->position());
 
             patch->addControlPoint(cp0);
             patch->addControlPoint(cp1);
@@ -83,7 +81,42 @@ void Spline::update() {
             patch->addControlPoint(cp3);
 
             patch->setParent(this);
+            mBezierPatches << patch;
+        }
 
+        {
+            Bezier *patch = new Bezier;
+            ControlPoint *cp0 = new ControlPoint(mKnotPoints.at(1)->position());
+            ControlPoint *cp1 = new ControlPoint((2.0f / 3.0f) * mKnotPoints.at(1)->position() + (1.0f / 3.0f) * mKnotPoints.at(2)->position());
+            ControlPoint *cp2 = new ControlPoint((1.0f / 3.0f) * mKnotPoints.at(1)->position() + (2.0f / 3.0f) * mKnotPoints.at(2)->position());
+            ControlPoint *cp3 = new ControlPoint(mKnotPoints.at(2)->position());
+
+            patch->addControlPoint(cp0);
+            patch->addControlPoint(cp1);
+            patch->addControlPoint(cp2);
+            patch->addControlPoint(cp3);
+
+            patch->setParent(this);
+            mBezierPatches << patch;
+        }
+
+    } else {
+        QVector<QVector3D> splineControlPoints = getSplineControlPoints();
+
+        // Generate Bezier Patches
+        for (int i = 1; i < mKnotPoints.size(); ++i) {
+            Bezier *patch = new Bezier;
+            ControlPoint *cp0 = new ControlPoint(mKnotPoints.at(i - 1)->position());
+            ControlPoint *cp1 = new ControlPoint((2.0f / 3.0f) * splineControlPoints[i - 1] + (1.0f / 3.0f) * splineControlPoints[i]);
+            ControlPoint *cp2 = new ControlPoint((1.0f / 3.0f) * splineControlPoints[i - 1] + (2.0f / 3.0f) * splineControlPoints[i]);
+            ControlPoint *cp3 = new ControlPoint(mKnotPoints.at(i)->position());
+
+            patch->addControlPoint(cp0);
+            patch->addControlPoint(cp1);
+            patch->addControlPoint(cp2);
+            patch->addControlPoint(cp3);
+
+            patch->setParent(this);
             mBezierPatches << patch;
         }
     }
@@ -173,9 +206,9 @@ QVector<QVector3D> Spline::getSplineControlPoints() {
     Eigen::MatrixXf knotPoints(n, 3);
 
     for (int i = 0; i < n; ++i) {
-        knotPoints(i, 0) = mKnotPoints[i]->position().x();
-        knotPoints(i, 1) = mKnotPoints[i]->position().y();
-        knotPoints(i, 2) = mKnotPoints[i]->position().z();
+        knotPoints(i, 0) = mKnotPoints.at(i)->position().x();
+        knotPoints(i, 1) = mKnotPoints.at(i)->position().y();
+        knotPoints(i, 2) = mKnotPoints.at(i)->position().z();
     }
 
     // Constants on the right side

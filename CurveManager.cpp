@@ -2,7 +2,11 @@
 #include <QDebug>
 
 CurveManager::CurveManager(QObject *parent)
-    : QObject(parent) {}
+    : QObject(parent)
+    , mSelectedCurve(nullptr)
+    , mSelectedPoint(nullptr)
+    , mGlobalPipeRadius(0.125f)
+    , mGlobalPipeSectorCount(128) {}
 
 CurveManager *CurveManager::instance() {
     static CurveManager instance;
@@ -23,8 +27,21 @@ void CurveManager::addCurve(Spline *curve) {
 }
 
 void CurveManager::removeCurve(Spline *curve) {
+    if (curve == mSelectedCurve)
+        setSelectedCurve(nullptr);
+
     mCurves.removeAll(curve);
     curve->deleteLater();
+}
+
+void CurveManager::removeAllCurves() {
+    for (auto &curve : mCurves) {
+        curve->deleteLater();
+    }
+
+    mCurves.clear();
+    setSelectedCurve(nullptr);
+    setSelectedKnotPoint(nullptr);
 }
 
 Spline *CurveManager::selectCurve(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance) {
@@ -96,4 +113,28 @@ void CurveManager::setSelectedKnotPoint(KnotPoint *newSelectedPoint) {
 
     mSelectedPoint = newSelectedPoint;
     emit selectedKnotPointChanged(mSelectedPoint);
+}
+
+float CurveManager::globalPipeRadius() const {
+    return mGlobalPipeRadius;
+}
+
+void CurveManager::setGlobalPipeRadius(float newGlobalPipeRadius) {
+    mGlobalPipeRadius = newGlobalPipeRadius;
+
+    for (auto &curve : mCurves) {
+        curve->setRadius(mGlobalPipeRadius);
+    }
+}
+
+int CurveManager::globalPipeSectorCount() const {
+    return mGlobalPipeSectorCount;
+}
+
+void CurveManager::setGlobalPipeSectorCount(int newGlobalPipeSectorCount) {
+    mGlobalPipeSectorCount = newGlobalPipeSectorCount;
+
+    for (auto &curve : mCurves) {
+        curve->setSectorCount(mGlobalPipeSectorCount);
+    }
 }
