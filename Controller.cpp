@@ -78,10 +78,10 @@ void Controller::init() {
 }
 
 void Controller::run() {
-    //    mWindow->showMaximized();
-    //    mWindow->showFullScreen();
-    mWindow->resize(1024, 800);
-    mWindow->show();
+    mWindow->showMaximized();
+    mWindow->showFullScreen();
+    // mWindow->resize(1024, 800);
+    // mWindow->show();
 }
 
 void Controller::onAction(Action action, QVariant variant) {
