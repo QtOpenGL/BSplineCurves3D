@@ -9,6 +9,7 @@
 #include <QObject>
 
 #include <Dense>
+#include <QFileDialog>
 
 class Controller : public QObject
 {
@@ -53,6 +54,9 @@ private:
     Eigen::Hyperplane<float, 3> mTranslationPlane;
 
     Mode mMode;
+
+    QFileDialog *mFileDialog;
+    Action mLastFileAction;
 };
 
 #endif // CONTROLLER_H

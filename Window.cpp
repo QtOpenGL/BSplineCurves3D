@@ -56,8 +56,20 @@ void Window::paintGL() {
 
     QtImGui::newFrame();
     ImGui::SetNextWindowSize(ImVec2(420, 820), ImGuiCond_FirstUseEver);
-    ImGui::Begin("Controls");
+    ImGui::Begin("Controls", NULL, ImGuiWindowFlags_MenuBar);
 
+    if (ImGui::BeginMenuBar()) {
+        if (ImGui::BeginMenu("File")) {
+            if (ImGui::MenuItem("Import"))
+                emit action(Action::ShowImportWindow);
+
+            if (ImGui::MenuItem("Export"))
+                emit action(Action::ShowExportWindow);
+
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+    }
     // Mode
     if (!ImGui::CollapsingHeader("Mode")) {
         int mode = (int) mMode;
@@ -223,6 +235,8 @@ void Window::paintGL() {
 
         ImGui::EndDisabled();
     }
+
+    ImGui::Spacing();
 
     if (ImGui::Button("Clear Scene"))
         emit action(Action::ClearScene);

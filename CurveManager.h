@@ -21,6 +21,7 @@ public:
     void addCurve(Spline *curve);
     void removeCurve(Spline *curve);
     void removeAllCurves();
+    void addCurves(QList<Spline *> curves);
 
     Spline *selectCurve(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance = 0.5f);
     ControlPoint *selectKnotPoint(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance = 0.5f);

@@ -1,4 +1,5 @@
 #include "Controller.h"
+#include "Helper.h"
 #include "Light.h"
 
 #include <QDebug>
@@ -16,6 +17,8 @@ Controller::Controller(QObject *parent)
     mCurveManager = CurveManager::instance();
     mWindow = new Window;
 
+    mFileDialog = new QFileDialog;
+
     connect(mWindow, &Window::wheelMoved, this, &Controller::onWheelMoved);
     connect(mWindow, &Window::mousePressed, this, &Controller::onMousePressed);
     connect(mWindow, &Window::mouseReleased, this, &Controller::onMouseReleased);
@@ -32,6 +35,20 @@ Controller::Controller(QObject *parent)
     connect(mCurveManager, &CurveManager::selectedKnotPointChanged, this, [=](KnotPoint *selectedPoint) { mSelectedKnotPoint = selectedPoint; });
 
     connect(this, &Controller::modeChanged, mWindow, &Window::onModeChanged);
+
+    connect(mFileDialog, &QFileDialog::fileSelected, this, [=](const QString &path) {
+        if (!path.isEmpty())
+            switch (mLastFileAction) {
+            case Action::ShowExportWindow:
+                onAction(Action::Export, path);
+                break;
+            case Action::ShowImportWindow:
+                onAction(Action::Import, path);
+                break;
+            default:
+                break;
+            }
+    });
 }
 
 void Controller::init() {
@@ -57,49 +74,7 @@ void Controller::init() {
         mPlane->setVisible(true);
     }
 
-    // Test Curves
-    {
-        Spline *curve = new Spline;
-        curve->addKnotPoint(new KnotPoint(0.790, 1.43));
-        curve->addKnotPoint(new KnotPoint(11.589, 13.452));
-        mCurveManager->addCurve(curve);
-
-        for (int x = -100; x <= 100; x += 50) {
-            for (int z = -100; z <= 100; z += 50) {
-                Spline *copy = curve->deepCopy();
-                copy->translate(QVector3D(x, 0, z));
-                mCurveManager->addCurve(copy);
-            }
-        }
-    }
-
-    {
-        Spline *curve = new Spline;
-        curve->addKnotPoint(new KnotPoint(9.9, 2.169));
-        curve->addKnotPoint(new KnotPoint(9.508, 1.465));
-        curve->addKnotPoint(new KnotPoint(10.265, 0.708));
-        curve->addKnotPoint(new KnotPoint(12.221, 0.969));
-        curve->addKnotPoint(new KnotPoint(13.865, 1.934));
-        curve->addKnotPoint(new KnotPoint(15.0, 3.656));
-        curve->addKnotPoint(new KnotPoint(14.178, 6.604));
-        curve->addKnotPoint(new KnotPoint(10.004, 8.052));
-        curve->addKnotPoint(new KnotPoint(6.613, 8.052));
-        curve->addKnotPoint(new KnotPoint(3.260, 6.682));
-        curve->addKnotPoint(new KnotPoint(3.221, 6.2));
-        curve->addKnotPoint(new KnotPoint(5.943, 6.1087));
-        curve->addKnotPoint(new KnotPoint(9.952, 8.065));
-        curve->addKnotPoint(new KnotPoint(15.117, 11.952));
-        curve->addKnotPoint(new KnotPoint(15.169, 12.565));
-        mCurveManager->addCurve(curve);
-
-        for (int x = -100; x <= 100; x += 50) {
-            for (int z = -100; z <= 100; z += 50) {
-                Spline *copy = curve->deepCopy();
-                copy->translate(QVector3D(x, 0, z));
-                mCurveManager->addCurve(copy);
-            }
-        }
-    }
+    mCurveManager->addCurves(Helper::loadCurveDataFromJson(":/Resources/Data/test-curves-light.json"));
 }
 
 void Controller::run() {
@@ -271,6 +246,37 @@ void Controller::onAction(Action action, QVariant variant) {
     }
     case Action::ClearScene: {
         mCurveManager->removeAllCurves();
+        break;
+    }
+    case Action::ShowImportWindow: {
+        mLastFileAction = Action::ShowImportWindow;
+        mFileDialog->setFileMode(QFileDialog::ExistingFile);
+        mFileDialog->setAcceptMode(QFileDialog::AcceptOpen);
+        mFileDialog->setNameFilter("*.json");
+        mFileDialog->show();
+        break;
+    }
+    case Action::ShowExportWindow: {
+        mLastFileAction = Action::ShowExportWindow;
+        mFileDialog->setFileMode(QFileDialog::AnyFile);
+        mFileDialog->setAcceptMode(QFileDialog::AcceptSave);
+        mFileDialog->setDefaultSuffix(".json");
+        mFileDialog->setNameFilter("*.json");
+        mFileDialog->show();
+        break;
+    }
+    case Action::Export: {
+        Helper::saveCurveDataToJson(mCurveManager->getCurvesNonConst(), variant.toString());
+        break;
+    }
+    case Action::Import: {
+        QList<Spline *> curves = Helper::loadCurveDataFromJson(variant.toString());
+
+        if (!curves.isEmpty()) {
+            mCurveManager->setSelectedCurve(nullptr);
+            mCurveManager->removeAllCurves();
+            mCurveManager->addCurves(curves);
+        }
         break;
     }
     }

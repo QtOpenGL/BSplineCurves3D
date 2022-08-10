@@ -20,5 +20,7 @@
         <file>Resources/Shaders/Pipe.frag</file>
         <file>Resources/Shaders/Pipe.geom</file>
         <file>Resources/Shaders/Pipe.vert</file>
+        <file>Resources/Data/test-curves-heavy.json</file>
+        <file>Resources/Data/test-curves-light.json</file>
     </qresource>
 </RCC>

@@ -20,7 +20,11 @@ enum class Action {
     UpdateGlobalPipeSectorCount,
     RemoveSelectedCurve,
     RemoveSelectedKnotPoint,
-    ClearScene
+    ClearScene,
+    ShowImportWindow,
+    ShowExportWindow,
+    Import,
+    Export
 
 };
 

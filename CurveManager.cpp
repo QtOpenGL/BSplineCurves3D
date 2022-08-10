@@ -44,6 +44,12 @@ void CurveManager::removeAllCurves() {
     setSelectedKnotPoint(nullptr);
 }
 
+void CurveManager::addCurves(QList<Spline *> curves) {
+    for (auto &curve : curves) {
+        mCurves << curve;
+    }
+}
+
 Spline *CurveManager::selectCurve(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance) {
     float minDistance = std::numeric_limits<float>::infinity();
     Spline *selectedCurve = nullptr;
