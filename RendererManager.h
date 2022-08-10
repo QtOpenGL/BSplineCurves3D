@@ -1,15 +1,13 @@
 #ifndef RENDERERMANAGER_H
 #define RENDERERMANAGER_H
 
-#include "BasicShader.h"
 #include "CameraManager.h"
 #include "CurveManager.h"
 #include "Light.h"
 #include "LightManager.h"
 #include "ModelData.h"
 #include "ModelManager.h"
-#include "PathShader.h"
-#include "PipeShader.h"
+#include "ShaderManager.h"
 #include "Ticks.h"
 
 #include <QMap>
@@ -44,10 +42,6 @@ private slots:
 private:
     QMap<Model::Type, ModelData *> mTypeToModelData;
 
-    BasicShader *mBasicShader;
-    PathShader *mPathShader;
-    PipeShader *mPipeShader;
-
     Ticks *mPathTicks;
     Ticks *mPipeTicks;
 
@@ -55,6 +49,7 @@ private:
     CameraManager *mCameraManager;
     LightManager *mLightManager;
     CurveManager *mCurveManager;
+    ShaderManager *mShaderManager;
 
     Spline *mSelectedCurve;
     KnotPoint *mSelectedKnotPoint;

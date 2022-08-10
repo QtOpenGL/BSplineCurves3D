@@ -9,7 +9,6 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    BasicShader.cpp \
     Bezier.cpp \
     Camera.cpp \
     CameraManager.cpp \
@@ -27,16 +26,14 @@ SOURCES += \
     ModelData.cpp \
     ModelManager.cpp \
     Node.cpp \
-    PathShader.cpp \
-    PipeShader.cpp \
     Point.cpp \
     RendererManager.cpp \
+    ShaderManager.cpp \
     Spline.cpp \
     Ticks.cpp \
     Window.cpp
 
 HEADERS += \
-    BasicShader.h \
     Bezier.h \
     Camera.h \
     CameraManager.h \
@@ -54,10 +51,9 @@ HEADERS += \
     ModelData.h \
     ModelManager.h \
     Node.h \
-    PathShader.h \
-    PipeShader.h \
     Point.h \
     RendererManager.h \
+    ShaderManager.h \
     Spline.h \
     Ticks.h \
     Window.h

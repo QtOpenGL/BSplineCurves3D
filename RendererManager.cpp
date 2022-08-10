@@ -7,7 +7,6 @@
 
 RendererManager::RendererManager(QObject *parent)
     : QObject(parent)
-    , mBasicShader(nullptr)
     , mSelectedCurve(nullptr)
     , mSelectedKnotPoint(nullptr)
     , mRenderPaths(true)
@@ -16,6 +15,7 @@ RendererManager::RendererManager(QObject *parent)
     mCameraManager = CameraManager::instance();
     mLightManager = LightManager::instance();
     mCurveManager = CurveManager::instance();
+    mShaderManager = ShaderManager::instance();
 
     connect(mCurveManager, &CurveManager::selectedCurveChanged, this, [=](Spline *selectedCurve) { mSelectedCurve = selectedCurve; });
     connect(mCurveManager, &CurveManager::selectedKnotPointChanged, this, [=](KnotPoint *selectedPoint) { mSelectedKnotPoint = selectedPoint; });
@@ -34,11 +34,10 @@ bool RendererManager::init() {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glLineWidth(2.5f);
 
-    qInfo() << Q_FUNC_INFO << "Initializing BasicShader...";
-    mBasicShader = new BasicShader;
+    qInfo() << Q_FUNC_INFO << "Initializing ShaderManager...";
 
-    if (!mBasicShader->init()) {
-        qWarning() << Q_FUNC_INFO << "BasicShader could not be initialized.";
+    if (!mShaderManager->init()) {
+        qWarning() << Q_FUNC_INFO << "ShaderManager could not be initialized.";
         return false;
     }
 
@@ -65,22 +64,8 @@ bool RendererManager::init() {
         mKnotPointModelData = mTypeToModelData.value(mKnotPointModel->type(), nullptr);
     }
 
-    qInfo() << Q_FUNC_INFO << "Initializing PathShader...";
-    mPathShader = new PathShader;
-
-    if (!mPathShader->init()) {
-        qWarning() << Q_FUNC_INFO << "PathShader could not be initialized.";
-    }
-
     mPathTicks = new Ticks(0, 1, 500);
     mPathTicks->create();
-
-    qInfo() << Q_FUNC_INFO << "Initializing PipeShader...";
-    mPipeShader = new PipeShader;
-
-    if (!mPipeShader->init()) {
-        qWarning() << Q_FUNC_INFO << "PipeShader could not be initialized.";
-    }
 
     mPipeTicks = new Ticks(0, 1, 500);
     mPipeTicks->create();
@@ -107,20 +92,20 @@ void RendererManager::render(float ifps) {
 }
 
 void RendererManager::renderModels(float ifps) {
-    mBasicShader->bind();
+    mShaderManager->bind(ShaderManager::Shader::Basic);
 
     if (mCamera) {
-        mBasicShader->setUniformValue("projection_matrix", mCamera->projection());
-        mBasicShader->setUniformValue("view_matrix", mCamera->transformation());
-        mBasicShader->setUniformValue("camera_position", mCamera->position());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "projection_matrix", mCamera->projection());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "view_matrix", mCamera->transformation());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "camera_position", mCamera->position());
     }
 
     if (mLight) {
-        mBasicShader->setUniformValue("light.position", mLight->position());
-        mBasicShader->setUniformValue("light.color", mLight->color());
-        mBasicShader->setUniformValue("light.ambient", mLight->ambient());
-        mBasicShader->setUniformValue("light.diffuse", mLight->diffuse());
-        mBasicShader->setUniformValue("light.specular", mLight->specular());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "light.position", mLight->position());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "light.color", mLight->color());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "light.ambient", mLight->ambient());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "light.diffuse", mLight->diffuse());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "light.specular", mLight->specular());
     }
 
     QList<Model *> models = mModelManager->models();
@@ -134,12 +119,12 @@ void RendererManager::renderModels(float ifps) {
         if (data) {
             data->bind();
 
-            mBasicShader->setUniformValue("node.transformation", model->transformation());
-            mBasicShader->setUniformValue("node.color", model->material().color());
-            mBasicShader->setUniformValue("node.ambient", model->material().ambient());
-            mBasicShader->setUniformValue("node.diffuse", model->material().diffuse());
-            mBasicShader->setUniformValue("node.specular", model->material().specular());
-            mBasicShader->setUniformValue("node.shininess", model->material().shininess());
+            mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "node.transformation", model->transformation());
+            mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "node.color", model->material().color());
+            mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "node.ambient", model->material().ambient());
+            mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "node.diffuse", model->material().diffuse());
+            mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "node.specular", model->material().specular());
+            mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "node.shininess", model->material().shininess());
 
             // Draw
             glDrawArrays(GL_TRIANGLES, 0, data->count());
@@ -148,58 +133,58 @@ void RendererManager::renderModels(float ifps) {
         }
     }
 
-    mBasicShader->release();
+    mShaderManager->release(ShaderManager::Shader::Basic);
 }
 
 void RendererManager::renderKnotPoints(float ifps) {
-    mBasicShader->bind();
+    mShaderManager->bind(ShaderManager::Shader::Basic);
     mKnotPointModelData->bind();
 
     if (mCamera) {
-        mBasicShader->setUniformValue("projection_matrix", mCamera->projection());
-        mBasicShader->setUniformValue("view_matrix", mCamera->transformation());
-        mBasicShader->setUniformValue("camera_position", mCamera->position());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "projection_matrix", mCamera->projection());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "view_matrix", mCamera->transformation());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "camera_position", mCamera->position());
     }
 
     if (mLight) {
-        mBasicShader->setUniformValue("light.position", mLight->position());
-        mBasicShader->setUniformValue("light.color", mLight->color());
-        mBasicShader->setUniformValue("light.ambient", mLight->ambient());
-        mBasicShader->setUniformValue("light.diffuse", mLight->diffuse());
-        mBasicShader->setUniformValue("light.specular", mLight->specular());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "light.position", mLight->position());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "light.color", mLight->color());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "light.ambient", mLight->ambient());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "light.diffuse", mLight->diffuse());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "light.specular", mLight->specular());
     }
 
     if (mSelectedCurve) {
-        mBasicShader->setUniformValue("node.ambient", mKnotPointModel->material().ambient());
-        mBasicShader->setUniformValue("node.diffuse", mKnotPointModel->material().diffuse());
-        mBasicShader->setUniformValue("node.specular", mKnotPointModel->material().specular());
-        mBasicShader->setUniformValue("node.shininess", mKnotPointModel->material().shininess());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "node.ambient", mKnotPointModel->material().ambient());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "node.diffuse", mKnotPointModel->material().diffuse());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "node.specular", mKnotPointModel->material().specular());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "node.shininess", mKnotPointModel->material().shininess());
 
         for (auto &point : qAsConst(mSelectedCurve->knotPoints())) {
             mKnotPointModel->setPosition(point->position());
             mKnotPointModel->material().setColor(point->selected() ? QVector4D(1, 1, 0, 1) : QVector4D(0, 1, 0, 1));
 
-            mBasicShader->setUniformValue("node.color", mKnotPointModel->material().color());
-            mBasicShader->setUniformValue("node.transformation", mKnotPointModel->transformation());
+            mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "node.color", mKnotPointModel->material().color());
+            mShaderManager->setUniformValue(ShaderManager::Shader::Basic, "node.transformation", mKnotPointModel->transformation());
 
             glDrawArrays(GL_TRIANGLES, 0, mKnotPointModelData->count());
         }
     }
 
     mKnotPointModelData->release();
-    mBasicShader->release();
+    mShaderManager->release(ShaderManager::Shader::Basic);
 }
 
 void RendererManager::renderPaths(float ifps) {
-    mPathShader->bind();
+    mShaderManager->bind(ShaderManager::Shader::Path);
     mPathTicks->bind();
 
     if (mCamera) {
-        mPathShader->setUniformValue("projection_matrix", mCamera->projection());
-        mPathShader->setUniformValue("view_matrix", mCamera->transformation());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Path, "projection_matrix", mCamera->projection());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Path, "view_matrix", mCamera->transformation());
     }
 
-    mPathShader->setUniformValue("color", QVector4D(1, 0, 0, 1));
+    mShaderManager->setUniformValue(ShaderManager::Shader::Path, "color", QVector4D(1, 0, 0, 1));
 
     for (auto &curve : qAsConst(mCurveManager->curves())) {
         if (curve) {
@@ -207,8 +192,8 @@ void RendererManager::renderPaths(float ifps) {
             for (auto &patch : qAsConst(patches)) {
                 auto controlPointPositions = patch->getControlPointPositions();
 
-                mPathShader->setUniformValue("control_points_count", controlPointPositions.size());
-                mPathShader->setUniformValueArray("control_points", controlPointPositions);
+                mShaderManager->setUniformValue(ShaderManager::Shader::Path, "control_points_count", controlPointPositions.size());
+                mShaderManager->setUniformValueArray(ShaderManager::Shader::Path, "control_points", controlPointPositions);
 
                 glDrawArrays(GL_LINE_STRIP, 0, mPathTicks->size());
             }
@@ -216,29 +201,29 @@ void RendererManager::renderPaths(float ifps) {
     }
 
     mPathTicks->release();
-    mPathShader->release();
+    mShaderManager->release(ShaderManager::Shader::Path);
 }
 
 void RendererManager::renderPipes(float ifps) {
     // Pipe
-    mPipeShader->bind();
+    mShaderManager->bind(ShaderManager::Shader::Pipe);
     mPipeTicks->bind();
 
     if (mCamera) {
-        mPipeShader->setUniformValue("projection_matrix", mCamera->projection());
-        mPipeShader->setUniformValue("view_matrix", mCamera->transformation());
-        mPipeShader->setUniformValue("camera_position", mCamera->position());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Pipe, "projection_matrix", mCamera->projection());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Pipe, "view_matrix", mCamera->transformation());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Pipe, "camera_position", mCamera->position());
     }
 
     if (mLight) {
-        mPipeShader->setUniformValue("light.position", mLight->position());
-        mPipeShader->setUniformValue("light.color", mLight->color());
-        mPipeShader->setUniformValue("light.ambient", mLight->ambient());
-        mPipeShader->setUniformValue("light.diffuse", mLight->diffuse());
-        mPipeShader->setUniformValue("light.specular", mLight->specular());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Pipe, "light.position", mLight->position());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Pipe, "light.color", mLight->color());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Pipe, "light.ambient", mLight->ambient());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Pipe, "light.diffuse", mLight->diffuse());
+        mShaderManager->setUniformValue(ShaderManager::Shader::Pipe, "light.specular", mLight->specular());
     }
 
-    mPipeShader->setUniformValue("dt", mPipeTicks->ticksDelta());
+    mShaderManager->setUniformValue(ShaderManager::Shader::Pipe, "dt", mPipeTicks->ticksDelta());
 
     for (auto &curve : qAsConst(mCurveManager->curves())) {
         if (curve) {
@@ -247,14 +232,14 @@ void RendererManager::renderPipes(float ifps) {
             for (auto &patch : patches) {
                 auto controlPointPositions = patch->getControlPointPositions();
 
-                mPipeShader->setUniformValue("control_points_count", controlPointPositions.size());
-                mPipeShader->setUniformValueArray("control_points", controlPointPositions);
+                mShaderManager->setUniformValue(ShaderManager::Shader::Pipe, "control_points_count", controlPointPositions.size());
+                mShaderManager->setUniformValueArray(ShaderManager::Shader::Pipe, "control_points", controlPointPositions);
 
-                mPipeShader->setUniformValue("node.color", curve->material().color());
-                mPipeShader->setUniformValue("node.ambient", curve->material().ambient());
-                mPipeShader->setUniformValue("node.diffuse", curve->material().diffuse());
-                mPipeShader->setUniformValue("node.specular", curve->material().specular());
-                mPipeShader->setUniformValue("node.shininess", curve->material().shininess());
+                mShaderManager->setUniformValue(ShaderManager::Shader::Pipe, "node.color", curve->material().color());
+                mShaderManager->setUniformValue(ShaderManager::Shader::Pipe, "node.ambient", curve->material().ambient());
+                mShaderManager->setUniformValue(ShaderManager::Shader::Pipe, "node.diffuse", curve->material().diffuse());
+                mShaderManager->setUniformValue(ShaderManager::Shader::Pipe, "node.specular", curve->material().specular());
+                mShaderManager->setUniformValue(ShaderManager::Shader::Pipe, "node.shininess", curve->material().shininess());
 
                 int n = curve->sectorCount();
                 float r = curve->radius();
@@ -263,9 +248,9 @@ void RendererManager::renderPipes(float ifps) {
                     float sectorAngle0 = 2 * float(i) / n * M_PI;
                     float sectorAngle1 = 2 * float(i + 1) / n * M_PI;
 
-                    mPipeShader->setUniformValue("r", r);
-                    mPipeShader->setUniformValue("sector_angle_0", sectorAngle0);
-                    mPipeShader->setUniformValue("sector_angle_1", sectorAngle1);
+                    mShaderManager->setUniformValue(ShaderManager::Shader::Pipe, "r", r);
+                    mShaderManager->setUniformValue(ShaderManager::Shader::Pipe, "sector_angle_0", sectorAngle0);
+                    mShaderManager->setUniformValue(ShaderManager::Shader::Pipe, "sector_angle_1", sectorAngle1);
 
                     glDrawArrays(GL_POINTS, 0, mPipeTicks->size());
                 }
@@ -274,7 +259,7 @@ void RendererManager::renderPipes(float ifps) {
     }
 
     mPipeTicks->release();
-    mPipeShader->release();
+    mShaderManager->release(ShaderManager::Shader::Pipe);
 }
 
 void RendererManager::setRenderPipes(bool newRenderPipes) {
