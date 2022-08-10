@@ -143,13 +143,13 @@ void Controller::onAction(Action action, QVariant variant) {
     case Action::AddKnot: {
         QVector3D rayDirection = mCameraManager->getDirectionFromScreen(variant.toPoint().x(), variant.toPoint().y(), mWindow->width(), mWindow->height());
         QVector3D rayOrigin = mCameraManager->activeCamera()->position();
+        QVector3D viewDirection = mCameraManager->activeCamera()->getViewDirection();
 
         Eigen::Vector3f eigenRayDirection = Eigen::Vector3f(rayDirection.x(), rayDirection.y(), rayDirection.z());
         Eigen::Vector3f eigenRayOrigin = Eigen::Vector3f(rayOrigin.x(), rayOrigin.y(), rayOrigin.z());
+        Eigen::Vector3f normal = Eigen::Vector3f(viewDirection.x(), viewDirection.y(), viewDirection.z()).normalized();
 
         auto line = Eigen::ParametrizedLine<float, 3>(eigenRayOrigin, eigenRayDirection);
-        QVector3D viewDirection = mCameraManager->activeCamera()->getViewDirection();
-        Eigen::Vector3f normal = Eigen::Vector3f(viewDirection.x(), viewDirection.y(), viewDirection.z()).normalized();
 
         if (mSelectedCurve) {
             float x = mSelectedCurve->knotPoints().last()->position().x();
@@ -171,7 +171,7 @@ void Controller::onAction(Action action, QVariant variant) {
                 }
             }
         } else {
-            Eigen::Hyperplane<float, 3> plane = Eigen::Hyperplane<float, 3>(normal, -normal.dot(eigenRayOrigin + 20 * eigenRayDirection));
+            Eigen::Hyperplane<float, 3> plane = Eigen::Hyperplane<float, 3>(normal, -normal.dot(eigenRayOrigin + 20 * normal));
             float t = line.intersection(plane);
             Eigen::Vector3f intersection = line.pointAt(t);
 
@@ -189,8 +189,6 @@ void Controller::onAction(Action action, QVariant variant) {
     }
     case Action::UpdateMode: {
         mMode = (Mode) variant.toInt();
-        mCurveManager->setSelectedCurve(nullptr);
-        emit modeChanged(mMode);
 
         if (mSelectedKnotPoint) {
             float x = mSelectedKnotPoint->position().x();
@@ -202,6 +200,13 @@ void Controller::onAction(Action action, QVariant variant) {
             Eigen::Vector3f knotPosition = Eigen::Vector3f(x, y, z);
             mTranslationPlane = Eigen::Hyperplane<float, 3>(normal, -normal.dot(knotPosition));
         }
+
+        if (mMode == Mode::Select) {
+            mCurveManager->setSelectedCurve(nullptr);
+        }
+
+        emit modeChanged(mMode);
+
         break;
     }
     case Action::UpdateRenderPaths: {
@@ -342,9 +347,13 @@ void Controller::onKeyPressed(QKeyEvent *event) {
         else if (mSelectedCurve)
             onAction(Action::RemoveSelectedCurve);
 
-    } else {
-        mCameraManager->onKeyPressed(event);
+    } else if (event->key() == Qt::Key_Control) {
+        onAction(Action::UpdateMode, (int) Mode::Add);
+    } else if (event->key() == Qt::Key_Shift) {
+        onAction(Action::UpdateMode, (int) Mode::Select);
     }
+
+    mCameraManager->onKeyPressed(event);
 }
 
 void Controller::onKeyReleased(QKeyEvent *event) {
