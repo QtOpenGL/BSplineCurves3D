@@ -16,7 +16,8 @@ public:
         None,
         Basic,
         Path,
-        Pipe
+        PipeDumb,
+        PipeSmart
     };
 
     bool init();

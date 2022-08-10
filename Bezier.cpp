@@ -1,9 +1,19 @@
 #include "Bezier.h"
+#include "Helper.h"
+
+#include <QQuaternion>
+#include <QtConcurrent>
 
 Bezier::Bezier(QObject *parent)
-    : Curve(parent) {}
+    : Curve(parent)
+    , mVertexGenerationStatus(VertexGenerationStatus::NotInitializedYet)
+    , mTickCount(100) {
+    initializeOpenGLFunctions();
+}
 
-Bezier::~Bezier() {}
+Bezier::~Bezier() {
+    clearOpenGLStuff();
+}
 
 void Bezier::addControlPoint(ControlPoint *controlPoint) {
     mControlPoints << controlPoint;
@@ -129,6 +139,138 @@ float Bezier::length() {
         update();
 
     return mLength;
+}
+
+Bezier::VertexGenerationStatus Bezier::vertexGenerationStatus() const {
+    return mVertexGenerationStatus;
+}
+
+void Bezier::setVertexGenerationStatus(Bezier::VertexGenerationStatus newVertexGenerationStatus) {
+    mVertexGenerationStatus = newVertexGenerationStatus;
+}
+
+void Bezier::generateVertices() {
+    mVertexGenerationStatus = VertexGenerationStatus::GeneratingVertices;
+
+    QtConcurrent::run([=]() {
+        mVertices.clear();
+        mNormals.clear();
+
+        mVertices.reserve(2 * mSectorCount * mTickCount);
+        mNormals.reserve(2 * mSectorCount * mTickCount);
+
+        float dt = 1.0f / mTickCount;
+        float r = mRadius;
+
+        for (float t = 0.0f; t <= 1.0f; t += dt) {
+            float t0 = t;
+            float t1 = t0 + dt;
+
+            QVector3D value0 = valueAt(t0);
+            QVector3D value1 = valueAt(t1);
+
+            QVector3D tangent0 = tangentAt(t0);
+            QVector3D tangent1 = tangentAt(t1);
+
+            float theta0 = atan2(-tangent0.z(), tangent0.x());
+            float theta1 = atan2(-tangent1.z(), tangent1.x());
+
+            float sqrt0 = sqrt(tangent0.x() * tangent0.x() + tangent0.z() * tangent0.z());
+            float sqrt1 = sqrt(tangent1.x() * tangent1.x() + tangent1.z() * tangent1.z());
+
+            // What if sqrt = 0? We may use atan2 here.
+            // Check for singular cases.
+            float phi0 = atan(tangent0.y() / sqrt0);
+            float phi1 = atan(tangent1.y() / sqrt1);
+
+            QQuaternion rotation0 = Helper::rotateY(theta0) * Helper::rotateZ(phi0);
+            QQuaternion rotation1 = Helper::rotateY(theta1) * Helper::rotateZ(phi1);
+
+            for (int i = 0; i < mSectorCount; i += 2) {
+                float sectorAngle0 = 2 * float(i) / mSectorCount * M_PI;
+                float sectorAngle1 = 2 * float(i + 1) / mSectorCount * M_PI;
+
+                QVector3D position00 = value0 + rotation0 * QVector3D(0, r * cos(sectorAngle0), r * sin(sectorAngle0));
+                QVector3D position10 = value1 + rotation1 * QVector3D(0, r * cos(sectorAngle0), r * sin(sectorAngle0));
+                QVector3D position01 = value0 + rotation0 * QVector3D(0, r * cos(sectorAngle1), r * sin(sectorAngle1));
+                QVector3D position11 = value1 + rotation1 * QVector3D(0, r * cos(sectorAngle1), r * sin(sectorAngle1));
+
+                QVector3D normal = -1 * QVector3D::crossProduct((position00 - position10).normalized(), (position01 - position10).normalized());
+
+                mVertices << position00;
+                mVertices << position10;
+                mVertices << position01;
+                mVertices << position11;
+
+                // FIXME
+                mNormals << normal;
+                mNormals << normal;
+                mNormals << normal;
+                mNormals << normal;
+            }
+        }
+
+        mVertexGenerationStatus = VertexGenerationStatus::WaitingForInitialization;
+    });
+}
+
+void Bezier::initializeOpenGLStuff() {
+    mVertexArray.create();
+    mVertexArray.bind();
+
+    // Vertices
+    mVertexBuffer.create();
+    mVertexBuffer.bind();
+    mVertexBuffer.setUsagePattern(QOpenGLBuffer::UsagePattern::StaticDraw);
+    mVertexBuffer.allocate(mVertices.constData(), sizeof(QVector3D) * mVertices.size());
+    glVertexAttribPointer(0,
+                          3,                 // Size
+                          GL_FLOAT,          // Type
+                          GL_FALSE,          // Normalized
+                          sizeof(QVector3D), // Stride
+                          nullptr            // Offset
+    );
+
+    glEnableVertexAttribArray(0);
+    mVertexBuffer.release();
+
+    // Normals
+    mNormalBuffer.create();
+    mNormalBuffer.bind();
+    mNormalBuffer.setUsagePattern(QOpenGLBuffer::UsagePattern::StaticDraw);
+    mNormalBuffer.allocate(mNormals.constData(), sizeof(QVector3D) * mNormals.size());
+
+    glVertexAttribPointer(1,
+                          3,                 // Size
+                          GL_FLOAT,          // Type
+                          GL_FALSE,          // Normalized
+                          sizeof(QVector3D), // Stride
+                          nullptr            // Offset
+    );
+    glEnableVertexAttribArray(1);
+    mNormalBuffer.release();
+
+    mVertexArray.release();
+
+    mVertexGenerationStatus = VertexGenerationStatus::Initialized;
+}
+
+void Bezier::clearOpenGLStuff() {
+    mVertexArray.destroy();
+    mVertexBuffer.destroy();
+    mNormalBuffer.destroy();
+}
+
+void Bezier::bind() {
+    mVertexArray.bind();
+}
+
+void Bezier::release() {
+    mVertexArray.release();
+}
+
+int Bezier::count() {
+    return mVertices.size();
 }
 
 ControlPoint *Bezier::getClosestControlPointToRay(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance) {

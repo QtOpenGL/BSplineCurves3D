@@ -152,7 +152,6 @@ void main()
 {
     float t0 = gs_t[0];
     float t1 = t0 + dt;
-    float t2 = t1 + dt;
 
     vec3 value0 = value_at(t0);
     vec3 value1 = value_at(t1);

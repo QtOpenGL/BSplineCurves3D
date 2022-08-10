@@ -17,10 +17,12 @@
         <file>Resources/Shaders/Basic.vert</file>
         <file>Resources/Shaders/Path.frag</file>
         <file>Resources/Shaders/Path.vert</file>
-        <file>Resources/Shaders/Pipe.frag</file>
-        <file>Resources/Shaders/Pipe.geom</file>
-        <file>Resources/Shaders/Pipe.vert</file>
+        <file>Resources/Shaders/PipeDumb.frag</file>
+        <file>Resources/Shaders/PipeDumb.geom</file>
+        <file>Resources/Shaders/PipeDumb.vert</file>
         <file>Resources/Data/test-curves-heavy.json</file>
         <file>Resources/Data/test-curves-light.json</file>
+        <file>Resources/Shaders/PipeSmart.frag</file>
+        <file>Resources/Shaders/PipeSmart.vert</file>
     </qresource>
 </RCC>

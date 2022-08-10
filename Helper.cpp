@@ -5,7 +5,9 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QQuaternion>
 #include <QTextStream>
+#include <QtMath>
 
 Helper::Helper() {}
 
@@ -105,4 +107,16 @@ bool Helper::saveCurveDataToJson(const QList<Spline *> &curves, const QString &f
         qCritical() << Q_FUNC_INFO << "Couldn't write to file" << filename;
         return false;
     }
+}
+
+QQuaternion Helper::rotateX(float angleRadians) {
+    return QQuaternion::fromAxisAndAngle(QVector3D(1, 0, 0), qRadiansToDegrees(angleRadians));
+}
+
+QQuaternion Helper::rotateY(float angleRadians) {
+    return QQuaternion::fromAxisAndAngle(QVector3D(0, 1, 0), qRadiansToDegrees(angleRadians));
+}
+
+QQuaternion Helper::rotateZ(float angleRadians) {
+    return QQuaternion::fromAxisAndAngle(QVector3D(0, 0, 1), qRadiansToDegrees(angleRadians));
 }

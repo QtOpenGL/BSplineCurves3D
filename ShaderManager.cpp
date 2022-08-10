@@ -10,52 +10,52 @@ bool ShaderManager::init() {
 
     // Basic
     {
-        QOpenGLShaderProgram *basicShader = new QOpenGLShaderProgram;
-        mPrograms.insert(Shader::Basic, basicShader);
+        QOpenGLShaderProgram *shader = new QOpenGLShaderProgram;
+        mPrograms.insert(Shader::Basic, shader);
 
-        if (!basicShader->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/Basic.vert"))) {
+        if (!shader->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/Basic.vert"))) {
             qWarning() << Q_FUNC_INFO << "Could not load vertex shader.";
             return false;
         }
 
-        if (!basicShader->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/Basic.frag"))) {
+        if (!shader->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/Basic.frag"))) {
             qWarning() << Q_FUNC_INFO << "Could not load fragment shader.";
             return false;
         }
 
-        if (!basicShader->link()) {
+        if (!shader->link()) {
             qWarning() << Q_FUNC_INFO << "Could not link shader program.";
             return false;
         }
 
-        if (!basicShader->bind()) {
+        if (!shader->bind()) {
             qWarning() << Q_FUNC_INFO << "Could not bind shader program.";
             return false;
         }
 
         QMap<QString, GLuint> locations;
 
-        locations.insert("light.color", basicShader->uniformLocation("light.color"));
-        locations.insert("light.position", basicShader->uniformLocation("light.position"));
-        locations.insert("light.ambient", basicShader->uniformLocation("light.ambient"));
-        locations.insert("light.diffuse", basicShader->uniformLocation("light.diffuse"));
-        locations.insert("light.specular", basicShader->uniformLocation("light.specular"));
+        locations.insert("light.color", shader->uniformLocation("light.color"));
+        locations.insert("light.position", shader->uniformLocation("light.position"));
+        locations.insert("light.ambient", shader->uniformLocation("light.ambient"));
+        locations.insert("light.diffuse", shader->uniformLocation("light.diffuse"));
+        locations.insert("light.specular", shader->uniformLocation("light.specular"));
 
-        locations.insert("node.transformation", basicShader->uniformLocation("node.transformation"));
-        locations.insert("node.color", basicShader->uniformLocation("node.color"));
-        locations.insert("node.ambient", basicShader->uniformLocation("node.ambient"));
-        locations.insert("node.diffuse", basicShader->uniformLocation("node.diffuse"));
-        locations.insert("node.specular", basicShader->uniformLocation("node.specular"));
-        locations.insert("node.shininess", basicShader->uniformLocation("node.shininess"));
+        locations.insert("node.transformation", shader->uniformLocation("node.transformation"));
+        locations.insert("node.color", shader->uniformLocation("node.color"));
+        locations.insert("node.ambient", shader->uniformLocation("node.ambient"));
+        locations.insert("node.diffuse", shader->uniformLocation("node.diffuse"));
+        locations.insert("node.specular", shader->uniformLocation("node.specular"));
+        locations.insert("node.shininess", shader->uniformLocation("node.shininess"));
 
-        locations.insert("camera_position", basicShader->uniformLocation("camera_position"));
-        locations.insert("view_matrix", basicShader->uniformLocation("view_matrix"));
-        locations.insert("projection_matrix", basicShader->uniformLocation("projection_matrix"));
+        locations.insert("camera_position", shader->uniformLocation("camera_position"));
+        locations.insert("view_matrix", shader->uniformLocation("view_matrix"));
+        locations.insert("projection_matrix", shader->uniformLocation("projection_matrix"));
 
-        basicShader->bindAttributeLocation("position", 0);
-        basicShader->bindAttributeLocation("normal", 1);
+        shader->bindAttributeLocation("position", 0);
+        shader->bindAttributeLocation("normal", 1);
 
-        basicShader->release();
+        shader->release();
 
         mLocations.insert(Shader::Basic, locations);
 
@@ -65,40 +65,40 @@ bool ShaderManager::init() {
 
     // Path
     {
-        QOpenGLShaderProgram *pathShader = new QOpenGLShaderProgram;
-        mPrograms.insert(Shader::Path, pathShader);
+        QOpenGLShaderProgram *shader = new QOpenGLShaderProgram;
+        mPrograms.insert(Shader::Path, shader);
 
-        if (!pathShader->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/Path.vert"))) {
+        if (!shader->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/Path.vert"))) {
             qWarning() << Q_FUNC_INFO << "Could not load vertex shader.";
             return false;
         }
 
-        if (!pathShader->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/Path.frag"))) {
+        if (!shader->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/Path.frag"))) {
             qWarning() << Q_FUNC_INFO << "Could not load fragment shader.";
             return false;
         }
 
-        if (!pathShader->link()) {
+        if (!shader->link()) {
             qWarning() << Q_FUNC_INFO << "Could not link shader program.";
             return false;
         }
 
-        if (!pathShader->bind()) {
+        if (!shader->bind()) {
             qWarning() << Q_FUNC_INFO << "Could not bind shader program.";
             return false;
         }
 
         QMap<QString, GLuint> locations;
 
-        locations.insert("control_points", pathShader->uniformLocation("control_points"));
-        locations.insert("control_points_count", pathShader->uniformLocation("control_points_count"));
-        locations.insert("color", pathShader->uniformLocation("color"));
+        locations.insert("control_points", shader->uniformLocation("control_points"));
+        locations.insert("control_points_count", shader->uniformLocation("control_points_count"));
+        locations.insert("color", shader->uniformLocation("color"));
 
-        locations.insert("view_matrix", pathShader->uniformLocation("view_matrix"));
-        locations.insert("projection_matrix", pathShader->uniformLocation("projection_matrix"));
+        locations.insert("view_matrix", shader->uniformLocation("view_matrix"));
+        locations.insert("projection_matrix", shader->uniformLocation("projection_matrix"));
 
-        pathShader->bindAttributeLocation("t", 0);
-        pathShader->release();
+        shader->bindAttributeLocation("t", 0);
+        shader->release();
 
         mLocations.insert(Shader::Path, locations);
 
@@ -106,68 +106,122 @@ bool ShaderManager::init() {
         qInfo() << Q_FUNC_INFO << "Uniform locations are:" << locations;
     }
 
-    // Pipe
+    // PipeDumb
     {
-        QOpenGLShaderProgram *pipeShader = new QOpenGLShaderProgram;
-        mPrograms.insert(Shader::Pipe, pipeShader);
+        QOpenGLShaderProgram *shader = new QOpenGLShaderProgram;
+        mPrograms.insert(Shader::PipeDumb, shader);
 
-        if (!pipeShader->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/Pipe.vert"))) {
+        if (!shader->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/PipeDumb.vert"))) {
             qWarning() << Q_FUNC_INFO << "Could not load vertex shader.";
             return false;
         }
 
-        if (!pipeShader->addShaderFromSourceCode(QOpenGLShader::Geometry, Helper::getBytes(":/Resources/Shaders/Pipe.geom"))) {
+        if (!shader->addShaderFromSourceCode(QOpenGLShader::Geometry, Helper::getBytes(":/Resources/Shaders/PipeDumb.geom"))) {
             qWarning() << Q_FUNC_INFO << "Could not load geometry shader.";
             return false;
         }
 
-        if (!pipeShader->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/Pipe.frag"))) {
+        if (!shader->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/PipeDumb.frag"))) {
             qWarning() << Q_FUNC_INFO << "Could not load fragment shader.";
             return false;
         }
 
-        if (!pipeShader->link()) {
+        if (!shader->link()) {
             qWarning() << Q_FUNC_INFO << "Could not link shader program.";
             return false;
         }
 
-        if (!pipeShader->bind()) {
+        if (!shader->bind()) {
             qWarning() << Q_FUNC_INFO << "Could not bind shader program.";
             return false;
         }
 
         QMap<QString, GLuint> locations;
 
-        locations.insert("view_matrix", pipeShader->uniformLocation("view_matrix"));
-        locations.insert("projection_matrix", pipeShader->uniformLocation("projection_matrix"));
-        locations.insert("camera_position", pipeShader->uniformLocation("camera_position"));
+        locations.insert("view_matrix", shader->uniformLocation("view_matrix"));
+        locations.insert("projection_matrix", shader->uniformLocation("projection_matrix"));
+        locations.insert("camera_position", shader->uniformLocation("camera_position"));
 
-        locations.insert("control_points", pipeShader->uniformLocation("control_points"));
-        locations.insert("control_points_count", pipeShader->uniformLocation("control_points_count"));
+        locations.insert("control_points", shader->uniformLocation("control_points"));
+        locations.insert("control_points_count", shader->uniformLocation("control_points_count"));
 
-        locations.insert("dt", pipeShader->uniformLocation("dt"));
-        locations.insert("r", pipeShader->uniformLocation("r"));
-        locations.insert("sector_angle_0", pipeShader->uniformLocation("sector_angle_0"));
-        locations.insert("sector_angle_1", pipeShader->uniformLocation("sector_angle_1"));
+        locations.insert("dt", shader->uniformLocation("dt"));
+        locations.insert("r", shader->uniformLocation("r"));
+        locations.insert("sector_angle_0", shader->uniformLocation("sector_angle_0"));
+        locations.insert("sector_angle_1", shader->uniformLocation("sector_angle_1"));
 
-        locations.insert("light.color", pipeShader->uniformLocation("light.color"));
-        locations.insert("light.position", pipeShader->uniformLocation("light.position"));
-        locations.insert("light.ambient", pipeShader->uniformLocation("light.ambient"));
-        locations.insert("light.diffuse", pipeShader->uniformLocation("light.diffuse"));
-        locations.insert("light.specular", pipeShader->uniformLocation("light.specular"));
+        locations.insert("light.color", shader->uniformLocation("light.color"));
+        locations.insert("light.position", shader->uniformLocation("light.position"));
+        locations.insert("light.ambient", shader->uniformLocation("light.ambient"));
+        locations.insert("light.diffuse", shader->uniformLocation("light.diffuse"));
+        locations.insert("light.specular", shader->uniformLocation("light.specular"));
 
-        locations.insert("node.color", pipeShader->uniformLocation("node.color"));
-        locations.insert("node.ambient", pipeShader->uniformLocation("node.ambient"));
-        locations.insert("node.diffuse", pipeShader->uniformLocation("node.diffuse"));
-        locations.insert("node.specular", pipeShader->uniformLocation("node.specular"));
-        locations.insert("node.shininess", pipeShader->uniformLocation("node.shininess"));
+        locations.insert("node.color", shader->uniformLocation("node.color"));
+        locations.insert("node.ambient", shader->uniformLocation("node.ambient"));
+        locations.insert("node.diffuse", shader->uniformLocation("node.diffuse"));
+        locations.insert("node.specular", shader->uniformLocation("node.specular"));
+        locations.insert("node.shininess", shader->uniformLocation("node.shininess"));
 
-        pipeShader->bindAttributeLocation("t", 0);
-        pipeShader->release();
+        shader->bindAttributeLocation("t", 0);
+        shader->release();
 
-        mLocations.insert(Shader::Pipe, locations);
+        mLocations.insert(Shader::PipeDumb, locations);
 
-        qInfo() << Q_FUNC_INFO << "PipeShader is initialized.";
+        qInfo() << Q_FUNC_INFO << "PipeDumb is initialized.";
+        qInfo() << Q_FUNC_INFO << "Uniform locations are:" << locations;
+    }
+
+    // PipeSmart
+    {
+        QOpenGLShaderProgram *shader = new QOpenGLShaderProgram;
+        mPrograms.insert(Shader::PipeSmart, shader);
+
+        if (!shader->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/PipeSmart.vert"))) {
+            qWarning() << Q_FUNC_INFO << "Could not load vertex shader.";
+            return false;
+        }
+
+        if (!shader->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/PipeSmart.frag"))) {
+            qWarning() << Q_FUNC_INFO << "Could not load fragment shader.";
+            return false;
+        }
+
+        if (!shader->link()) {
+            qWarning() << Q_FUNC_INFO << "Could not link shader program.";
+            return false;
+        }
+
+        if (!shader->bind()) {
+            qWarning() << Q_FUNC_INFO << "Could not bind shader program.";
+            return false;
+        }
+
+        QMap<QString, GLuint> locations;
+
+        locations.insert("light.color", shader->uniformLocation("light.color"));
+        locations.insert("light.position", shader->uniformLocation("light.position"));
+        locations.insert("light.ambient", shader->uniformLocation("light.ambient"));
+        locations.insert("light.diffuse", shader->uniformLocation("light.diffuse"));
+        locations.insert("light.specular", shader->uniformLocation("light.specular"));
+
+        locations.insert("node.color", shader->uniformLocation("node.color"));
+        locations.insert("node.ambient", shader->uniformLocation("node.ambient"));
+        locations.insert("node.diffuse", shader->uniformLocation("node.diffuse"));
+        locations.insert("node.specular", shader->uniformLocation("node.specular"));
+        locations.insert("node.shininess", shader->uniformLocation("node.shininess"));
+
+        locations.insert("camera_position", shader->uniformLocation("camera_position"));
+        locations.insert("view_matrix", shader->uniformLocation("view_matrix"));
+        locations.insert("projection_matrix", shader->uniformLocation("projection_matrix"));
+
+        shader->bindAttributeLocation("position", 0);
+        shader->bindAttributeLocation("normal", 1);
+
+        shader->release();
+
+        mLocations.insert(Shader::PipeSmart, locations);
+
+        qInfo() << Q_FUNC_INFO << "PipeSmart is initialized.";
         qInfo() << Q_FUNC_INFO << "Uniform locations are:" << locations;
     }
 

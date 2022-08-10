@@ -4,13 +4,23 @@
 #include "Curve.h"
 #include "Point.h"
 #include <QObject>
+#include <QOpenGLBuffer>
+#include <QOpenGLFunctions>
+#include <QOpenGLVertexArrayObject>
 
-class Bezier : public Curve
+class Bezier : public Curve, protected QOpenGLFunctions
 {
     Q_OBJECT
 public:
     explicit Bezier(QObject *parent = nullptr);
     virtual ~Bezier();
+
+    enum class VertexGenerationStatus {
+        NotInitializedYet,
+        GeneratingVertices,
+        WaitingForInitialization,
+        Initialized,
+    };
 
     void addControlPoint(ControlPoint *controlPoint);
     void removeControlPoint(ControlPoint *controlPoint);
@@ -34,9 +44,29 @@ public:
     virtual void translate(const QVector3D &translation) override;
     virtual float length() override;
 
+    VertexGenerationStatus vertexGenerationStatus() const;
+    void setVertexGenerationStatus(VertexGenerationStatus newVertexGenerationStatus);
+
+    void generateVertices();
+    void initializeOpenGLStuff();
+    void clearOpenGLStuff();
+
+    void bind();
+    void release();
+    int count();
+
 private:
+    VertexGenerationStatus mVertexGenerationStatus;
     QList<ControlPoint *> mControlPoints;
     float mLength;
+    int mTickCount;
+
+    QOpenGLVertexArrayObject mVertexArray;
+    QOpenGLBuffer mVertexBuffer;
+    QOpenGLBuffer mNormalBuffer;
+
+    QVector<QVector3D> mVertices;
+    QVector<QVector3D> mNormals;
 };
 
 #endif // BEZIER_H

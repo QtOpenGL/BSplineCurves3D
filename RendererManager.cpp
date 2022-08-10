@@ -54,7 +54,6 @@ bool RendererManager::init() {
     }
 
     // Knot Point Model
-
     {
         mKnotPointModel = Model::create(Model::Sphere);
         mKnotPointModel->setObjectName("KnotPointModel");
@@ -64,10 +63,10 @@ bool RendererManager::init() {
         mKnotPointModelData = mTypeToModelData.value(mKnotPointModel->type(), nullptr);
     }
 
-    mPathTicks = new Ticks(0, 1, 500);
+    mPathTicks = new Ticks(0, 1, 100);
     mPathTicks->create();
 
-    mPipeTicks = new Ticks(0, 1, 500);
+    mPipeTicks = new Ticks(0, 1, 100);
     mPipeTicks->create();
 
     return true;
@@ -206,7 +205,32 @@ void RendererManager::renderPaths(float ifps) {
 
 void RendererManager::renderPipes(float ifps) {
     // Pipe
-    mShaderManager->bind(ShaderManager::Shader::Pipe);
+
+    for (auto &curve : qAsConst(mCurveManager->curves())) {
+        if (curve) {
+            QList<Bezier *> patches = curve->bezierPatches();
+
+            for (auto &patch : patches) {
+                if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::NotInitializedYet) {
+                    patch->generateVertices();
+                    renderUsingDumbShader(ifps, curve, patch);
+
+                } else if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::WaitingForInitialization) {
+                    patch->initializeOpenGLStuff();
+                    renderUsingSmartShader(ifps, curve, patch);
+
+                } else if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::Initialized) {
+                    renderUsingSmartShader(ifps, curve, patch);
+                } else if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::GeneratingVertices) {
+                    renderUsingDumbShader(ifps, curve, patch);
+                }
+            }
+        }
+    }
+}
+
+void RendererManager::renderUsingDumbShader(float ifps, Spline *curve, Bezier *patch) {
+    mShaderManager->bind(ShaderManager::Shader::PipeDumb);
     mPipeTicks->bind();
 
     if (mCamera) {
@@ -225,40 +249,62 @@ void RendererManager::renderPipes(float ifps) {
 
     mShaderManager->setUniformValue("dt", mPipeTicks->ticksDelta());
 
-    for (auto &curve : qAsConst(mCurveManager->curves())) {
-        if (curve) {
-            QList<Bezier *> patches = curve->bezierPatches();
+    auto controlPointPositions = patch->getControlPointPositions();
 
-            for (auto &patch : patches) {
-                auto controlPointPositions = patch->getControlPointPositions();
+    mShaderManager->setUniformValue("control_points_count", controlPointPositions.size());
+    mShaderManager->setUniformValueArray("control_points", controlPointPositions);
 
-                mShaderManager->setUniformValue("control_points_count", controlPointPositions.size());
-                mShaderManager->setUniformValueArray("control_points", controlPointPositions);
+    mShaderManager->setUniformValue("node.color", curve->material().color());
+    mShaderManager->setUniformValue("node.ambient", curve->material().ambient());
+    mShaderManager->setUniformValue("node.diffuse", curve->material().diffuse());
+    mShaderManager->setUniformValue("node.specular", curve->material().specular());
+    mShaderManager->setUniformValue("node.shininess", curve->material().shininess());
 
-                mShaderManager->setUniformValue("node.color", curve->material().color());
-                mShaderManager->setUniformValue("node.ambient", curve->material().ambient());
-                mShaderManager->setUniformValue("node.diffuse", curve->material().diffuse());
-                mShaderManager->setUniformValue("node.specular", curve->material().specular());
-                mShaderManager->setUniformValue("node.shininess", curve->material().shininess());
+    int n = curve->sectorCount();
+    float r = curve->radius();
 
-                int n = curve->sectorCount();
-                float r = curve->radius();
+    for (int i = 0; i < n; i++) {
+        float sectorAngle0 = 2 * float(i) / n * M_PI;
+        float sectorAngle1 = 2 * float(i + 1) / n * M_PI;
 
-                for (int i = 0; i < n; i++) {
-                    float sectorAngle0 = 2 * float(i) / n * M_PI;
-                    float sectorAngle1 = 2 * float(i + 1) / n * M_PI;
+        mShaderManager->setUniformValue("r", r);
+        mShaderManager->setUniformValue("sector_angle_0", sectorAngle0);
+        mShaderManager->setUniformValue("sector_angle_1", sectorAngle1);
 
-                    mShaderManager->setUniformValue("r", r);
-                    mShaderManager->setUniformValue("sector_angle_0", sectorAngle0);
-                    mShaderManager->setUniformValue("sector_angle_1", sectorAngle1);
-
-                    glDrawArrays(GL_POINTS, 0, mPipeTicks->size());
-                }
-            }
-        }
+        glDrawArrays(GL_POINTS, 0, mPipeTicks->size());
     }
 
     mPipeTicks->release();
+    mShaderManager->release();
+}
+
+void RendererManager::renderUsingSmartShader(float ifps, Spline *curve, Bezier *patch) {
+    mShaderManager->bind(ShaderManager::Shader::PipeSmart);
+
+    if (mCamera) {
+        mShaderManager->setUniformValue("projection_matrix", mCamera->projection());
+        mShaderManager->setUniformValue("view_matrix", mCamera->transformation());
+        mShaderManager->setUniformValue("camera_position", mCamera->position());
+    }
+
+    if (mLight) {
+        mShaderManager->setUniformValue("light.position", mLight->position());
+        mShaderManager->setUniformValue("light.color", mLight->color());
+        mShaderManager->setUniformValue("light.ambient", mLight->ambient());
+        mShaderManager->setUniformValue("light.diffuse", mLight->diffuse());
+        mShaderManager->setUniformValue("light.specular", mLight->specular());
+    }
+
+    mShaderManager->setUniformValue("node.color", curve->material().color());
+    mShaderManager->setUniformValue("node.ambient", curve->material().ambient());
+    mShaderManager->setUniformValue("node.diffuse", curve->material().diffuse());
+    mShaderManager->setUniformValue("node.specular", curve->material().specular());
+    mShaderManager->setUniformValue("node.shininess", curve->material().shininess());
+
+    patch->bind();
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, patch->count());
+    patch->release();
+
     mShaderManager->release();
 }
 

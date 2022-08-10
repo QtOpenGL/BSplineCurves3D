@@ -39,6 +39,9 @@ private slots:
     void renderPaths(float ifps);
     void renderPipes(float ifps);
 
+    void renderUsingDumbShader(float ifps, Spline *curve, Bezier *patch);
+    void renderUsingSmartShader(float ifps, Spline *curve, Bezier *patch);
+
 private:
     QMap<Model::Type, ModelData *> mTypeToModelData;
 
