@@ -74,8 +74,8 @@ void Window::paintGL() {
     if (!ImGui::CollapsingHeader("Mode")) {
         int mode = (int) mMode;
 
-        ImGui::RadioButton("Select", &mode, 0);
-        ImGui::RadioButton("Add Knot", &mode, 1);
+        ImGui::RadioButton("Select (Z)", &mode, 0);
+        ImGui::RadioButton("Add Knot (C)", &mode, 1);
 
         if (mode != (int) mMode) {
             mMode = (Mode) mode;
