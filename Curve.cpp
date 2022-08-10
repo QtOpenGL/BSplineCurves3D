@@ -3,9 +3,7 @@
 Curve::Curve(QObject *parent)
     : QObject(parent)
     , mSelected(false)
-    , mDirty(false)
-    , mSectorCount(128)
-    , mRadius(0.25f) {}
+    , mDirty(false) {}
 
 Curve::~Curve() {}
 
@@ -31,20 +29,4 @@ const Material &Curve::material() const {
 
 void Curve::setMaterial(const Material &newMaterial) {
     mMaterial = newMaterial;
-}
-
-int Curve::sectorCount() const {
-    return mSectorCount;
-}
-
-void Curve::setSectorCount(int newSectorCount) {
-    mSectorCount = newSectorCount;
-}
-
-float Curve::radius() const {
-    return mRadius;
-}
-
-void Curve::setRadius(float newRadius) {
-    mRadius = newRadius;
 }

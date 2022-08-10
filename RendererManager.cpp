@@ -224,6 +224,12 @@ void RendererManager::renderPipes(float ifps) {
                 } else if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::GeneratingVertices) {
                     renderUsingDumbShader(ifps, curve, patch);
                 }
+
+                else if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::UpdateVertices) {
+                    patch->clearOpenGLStuff();
+                    patch->generateVertices();
+                    renderUsingDumbShader(ifps, curve, patch);
+                }
             }
         }
     }
@@ -260,8 +266,8 @@ void RendererManager::renderUsingDumbShader(float ifps, Spline *curve, Bezier *p
     mShaderManager->setUniformValue("node.specular", curve->material().specular());
     mShaderManager->setUniformValue("node.shininess", curve->material().shininess());
 
-    int n = curve->sectorCount();
-    float r = curve->radius();
+    int n = patch->sectorCount();
+    float r = patch->radius();
 
     for (int i = 0; i < n; i++) {
         float sectorAngle0 = 2 * float(i) / n * M_PI;

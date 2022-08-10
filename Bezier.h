@@ -20,6 +20,7 @@ public:
         GeneratingVertices,
         WaitingForInitialization,
         Initialized,
+        UpdateVertices,
     };
 
     void addControlPoint(ControlPoint *controlPoint);
@@ -44,9 +45,6 @@ public:
     virtual void translate(const QVector3D &translation) override;
     virtual float length() override;
 
-    VertexGenerationStatus vertexGenerationStatus() const;
-    void setVertexGenerationStatus(VertexGenerationStatus newVertexGenerationStatus);
-
     void generateVertices();
     void initializeOpenGLStuff();
     void clearOpenGLStuff();
@@ -55,11 +53,21 @@ public:
     void release();
     int count();
 
+    int sectorCount() const;
+    void setSectorCount(int newSectorCount);
+
+    float radius() const;
+    void setRadius(float newRadius);
+
+    VertexGenerationStatus vertexGenerationStatus() const;
+    void setVertexGenerationStatus(VertexGenerationStatus newVertexGenerationStatus);
+
 private:
-    VertexGenerationStatus mVertexGenerationStatus;
     QList<ControlPoint *> mControlPoints;
     float mLength;
     int mTickCount;
+    int mSectorCount;
+    float mRadius;
 
     QOpenGLVertexArrayObject mVertexArray;
     QOpenGLBuffer mVertexBuffer;
@@ -67,6 +75,8 @@ private:
 
     QVector<QVector3D> mVertices;
     QVector<QVector3D> mNormals;
+
+    VertexGenerationStatus mVertexGenerationStatus;
 };
 
 #endif // BEZIER_H

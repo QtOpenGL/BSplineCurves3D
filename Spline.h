@@ -36,6 +36,12 @@ public:
     float closestDistanceToRay(const QVector3D &rayOrigin, const QVector3D &rayDirection, float epsilon = 0.01f);
     float length();
 
+    int sectorCount() const;
+    void setSectorCount(int newSectorCount);
+
+    float radius() const;
+    void setRadius(float newRadius);
+
 private:
     Eigen::MatrixXf createCoefficientMatrix();
     QVector<QVector3D> getSplineControlPoints();
@@ -43,6 +49,9 @@ private:
 private:
     QList<KnotPoint *> mKnotPoints;
     QList<Bezier *> mBezierPatches;
+
+    int mSectorCount;
+    float mRadius;
 };
 
 #endif // SPLINE_H

@@ -6,8 +6,10 @@
 
 Bezier::Bezier(QObject *parent)
     : Curve(parent)
-    , mVertexGenerationStatus(VertexGenerationStatus::NotInitializedYet)
-    , mTickCount(100) {
+    , mTickCount(100)
+    , mSectorCount(128)
+    , mRadius(0.25f)
+    , mVertexGenerationStatus(VertexGenerationStatus::NotInitializedYet) {
     initializeOpenGLFunctions();
 }
 
@@ -141,14 +143,6 @@ float Bezier::length() {
     return mLength;
 }
 
-Bezier::VertexGenerationStatus Bezier::vertexGenerationStatus() const {
-    return mVertexGenerationStatus;
-}
-
-void Bezier::setVertexGenerationStatus(Bezier::VertexGenerationStatus newVertexGenerationStatus) {
-    mVertexGenerationStatus = newVertexGenerationStatus;
-}
-
 void Bezier::generateVertices() {
     mVertexGenerationStatus = VertexGenerationStatus::GeneratingVertices;
 
@@ -271,6 +265,32 @@ void Bezier::release() {
 
 int Bezier::count() {
     return mVertices.size();
+}
+
+int Bezier::sectorCount() const {
+    return mSectorCount;
+}
+
+void Bezier::setSectorCount(int newSectorCount) {
+    mSectorCount = newSectorCount;
+    mVertexGenerationStatus = VertexGenerationStatus::UpdateVertices;
+}
+
+float Bezier::radius() const {
+    return mRadius;
+}
+
+void Bezier::setRadius(float newRadius) {
+    mRadius = newRadius;
+    mVertexGenerationStatus = VertexGenerationStatus::UpdateVertices;
+}
+
+Bezier::VertexGenerationStatus Bezier::vertexGenerationStatus() const {
+    return mVertexGenerationStatus;
+}
+
+void Bezier::setVertexGenerationStatus(VertexGenerationStatus newVertexGenerationStatus) {
+    mVertexGenerationStatus = newVertexGenerationStatus;
 }
 
 ControlPoint *Bezier::getClosestControlPointToRay(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance) {

@@ -241,6 +241,28 @@ QVector<QVector3D> Spline::getSplineControlPoints() {
     return result;
 }
 
+float Spline::radius() const {
+    return mRadius;
+}
+
+void Spline::setRadius(float newRadius) {
+    mRadius = newRadius;
+
+    for (auto &patch : mBezierPatches)
+        patch->setRadius(mRadius);
+}
+
+int Spline::sectorCount() const {
+    return mSectorCount;
+}
+
+void Spline::setSectorCount(int newSectorCount) {
+    mSectorCount = newSectorCount;
+
+    for (auto &patch : mBezierPatches)
+        patch->setSectorCount(mSectorCount);
+}
+
 const QList<KnotPoint *> &Spline::knotPoints() {
     if (mDirty)
         update();
