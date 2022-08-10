@@ -17,6 +17,9 @@ public:
     explicit Controller(QObject *parent = nullptr);
     void run();
 
+signals:
+    void modeChanged(Mode newMode);
+
 private slots:
     void init();
     void onWheelMoved(QWheelEvent *event);
@@ -26,6 +29,7 @@ private slots:
     void onKeyPressed(QKeyEvent *event);
     void onKeyReleased(QKeyEvent *event);
     void onResized(int w, int h);
+    void onMouseDoubleClicked(QMouseEvent *event);
     void render(float ifps);
     void onAction(Action, QVariant variant = QVariant());
 

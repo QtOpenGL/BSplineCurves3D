@@ -18,6 +18,9 @@ public:
 
     bool imguiWantCapture() const;
 
+public slots:
+    void onModeChanged(Mode newMode);
+
 signals:
     void init();
     void resized(int w, int h);
@@ -28,6 +31,7 @@ signals:
     void mouseReleased(QMouseEvent *);
     void mouseMoved(QMouseEvent *);
     void wheelMoved(QWheelEvent *);
+    void mouseDoubleClicked(QMouseEvent *);
     void action(Action action, QVariant variant = QVariant());
 
 private:
@@ -40,6 +44,7 @@ private:
     void mouseReleaseEvent(QMouseEvent *) override;
     void mouseMoveEvent(QMouseEvent *) override;
     void wheelEvent(QWheelEvent *) override;
+    void mouseDoubleClickEvent(QMouseEvent *) override;
 
 private:
     long long mPreviousTime;

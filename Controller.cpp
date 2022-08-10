@@ -25,9 +25,13 @@ Controller::Controller(QObject *parent)
     connect(mWindow, &Window::resized, this, &Controller::onResized);
     connect(mWindow, &Window::init, this, &Controller::init);
     connect(mWindow, &Window::render, this, &Controller::render);
+    connect(mWindow, &Window::action, this, &Controller::onAction);
+    connect(mWindow, &Window::mouseDoubleClicked, this, &Controller::onMouseDoubleClicked);
+
     connect(mCurveManager, &CurveManager::selectedCurveChanged, this, [=](Spline *selectedCurve) { mSelectedCurve = selectedCurve; });
     connect(mCurveManager, &CurveManager::selectedKnotPointChanged, this, [=](KnotPoint *selectedPoint) { mSelectedKnotPoint = selectedPoint; });
-    connect(mWindow, &Window::action, this, &Controller::onAction);
+
+    connect(this, &Controller::modeChanged, mWindow, &Window::onModeChanged);
 }
 
 void Controller::init() {
@@ -185,6 +189,9 @@ void Controller::onAction(Action action, QVariant variant) {
     }
     case Action::UpdateMode: {
         mMode = (Mode) variant.toInt();
+        mCurveManager->setSelectedCurve(nullptr);
+        emit modeChanged(mMode);
+
         if (mSelectedKnotPoint) {
             float x = mSelectedKnotPoint->position().x();
             float y = mSelectedKnotPoint->position().y();
@@ -329,7 +336,15 @@ void Controller::onMouseMoved(QMouseEvent *event) {
 }
 
 void Controller::onKeyPressed(QKeyEvent *event) {
-    mCameraManager->onKeyPressed(event);
+    if (event->key() == Qt::Key_Delete) {
+        if (mSelectedKnotPoint)
+            onAction(Action::RemoveSelectedKnotPoint);
+        else if (mSelectedCurve)
+            onAction(Action::RemoveSelectedCurve);
+
+    } else {
+        mCameraManager->onKeyPressed(event);
+    }
 }
 
 void Controller::onKeyReleased(QKeyEvent *event) {
@@ -338,6 +353,12 @@ void Controller::onKeyReleased(QKeyEvent *event) {
 
 void Controller::onResized(int w, int h) {
     mCamera->setAspectRatio((float) (w) / h);
+}
+
+void Controller::onMouseDoubleClicked(QMouseEvent *event) {
+    if (event->button() == Qt::RightButton) {
+        onAction(Action::UpdateMode, (int) Mode::Select);
+    }
 }
 
 void Controller::render(float ifps) {

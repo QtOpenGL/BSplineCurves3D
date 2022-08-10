@@ -260,6 +260,14 @@ void Window::wheelEvent(QWheelEvent *event) {
     emit wheelMoved(event);
 }
 
+void Window::mouseDoubleClickEvent(QMouseEvent *event) {
+    emit mouseDoubleClicked(event);
+}
+
 bool Window::imguiWantCapture() const {
     return mImguiWantCapture;
+}
+
+void Window::onModeChanged(Mode newMode) {
+    mMode = newMode;
 }
