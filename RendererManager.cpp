@@ -60,7 +60,7 @@ bool RendererManager::init() {
         mKnotPointModel = Model::create(Model::Sphere);
         mKnotPointModel->setObjectName("KnotPointModel");
         mKnotPointModel->material().setColor(QVector4D(0, 1, 0, 1));
-        mKnotPointModel->setScale(QVector3D(0.0025f, 0.0025f, 0.0025f));
+        mKnotPointModel->setScale(QVector3D(0.005f, 0.005f, 0.005f));
         mKnotPointModel->setVisible(false);
         mKnotPointModelData = mTypeToModelData.value(mKnotPointModel->type(), nullptr);
     }

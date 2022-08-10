@@ -16,8 +16,10 @@ void Spline::addKnotPoint(KnotPoint *knotPoint) {
 void Spline::removeKnotPoint(KnotPoint *knotPoint) {
     mKnotPoints.removeAll(knotPoint);
 
-    if (knotPoint)
+    if (knotPoint) {
+        knotPoint->setParent(nullptr);
         knotPoint->deleteLater();
+    }
 
     mDirty = true;
 }
@@ -244,6 +246,15 @@ const QList<KnotPoint *> &Spline::knotPoints() {
         update();
 
     return mKnotPoints;
+}
+
+Spline *Spline::deepCopy() {
+    Spline *copy = new Spline;
+
+    for (auto &point : mKnotPoints)
+        copy->addKnotPoint(new KnotPoint(point->position()));
+
+    return copy;
 }
 
 const QList<Bezier *> &Spline::bezierPatches() {

@@ -26,6 +26,7 @@ void Bezier::insertControlPoint(int index, ControlPoint *controlPoint) {
 void Bezier::removeControlPoint(int index) {
     ControlPoint *controlPoint = mControlPoints[index];
     mControlPoints.removeAt(index);
+    controlPoint->setParent(nullptr);
     controlPoint->deleteLater();
     mDirty = true;
 }

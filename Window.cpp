@@ -73,7 +73,7 @@ void Window::paintGL() {
 
     // Render Settings
     if (!ImGui::CollapsingHeader("Render Settings")) {
-        if (ImGui::SliderFloat("Pipe Radius (Global)", &mGlobalPipeRadius, 0.001f, 0.250f, "%.3f")) {
+        if (ImGui::SliderFloat("Pipe Radius (Global)", &mGlobalPipeRadius, 0.001f, 1.0f, "%.3f")) {
             emit action(Action::UpdateGlobalPipeRadius, mGlobalPipeRadius);
         }
 
@@ -152,7 +152,7 @@ void Window::paintGL() {
         ImGui::Text("Knots: %d", n);
         ImGui::Text("Length: %.2f", length);
 
-        if (ImGui::SliderFloat("Pipe Radius", &radius, 0.001f, 0.250f, "%.3f")) {
+        if (ImGui::SliderFloat("Pipe Radius", &radius, 0.001f, 1.0f, "%.3f")) {
             emit action(Action::UpdateSelectedCurvePipeRadius, radius);
         }
 

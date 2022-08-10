@@ -14,39 +14,32 @@ FreeCamera::FreeCamera(QObject *parent)
     , mMouseDeltaX(0.0f)
     , mMouseDeltaY(0.0f)
     , mUpdateRotation(true)
-    , mUpdatePosition(true)
-{
+    , mUpdatePosition(true) {
     mTransformation.setToIdentity();
     mProjection.setToIdentity();
 }
 
-void FreeCamera::onKeyPressed(QKeyEvent *event)
-{
+void FreeCamera::onKeyPressed(QKeyEvent *event) {
     mPressedKeys.insert((Qt::Key) event->key(), true);
     mUpdatePosition = true;
 }
 
-void FreeCamera::onKeyReleased(QKeyEvent *event)
-{
+void FreeCamera::onKeyReleased(QKeyEvent *event) {
     mPressedKeys.insert((Qt::Key) event->key(), false);
 }
 
-void FreeCamera::onMousePressed(QMouseEvent *event)
-{
+void FreeCamera::onMousePressed(QMouseEvent *event) {
     mMousePreviousX = event->x();
     mMousePreviousY = event->y();
     mMousePressed = true;
 }
 
-void FreeCamera::onMouseReleased(QMouseEvent *)
-{
+void FreeCamera::onMouseReleased(QMouseEvent *) {
     mMousePressed = false;
 }
 
-void FreeCamera::onMouseMoved(QMouseEvent *event)
-{
-    if (mMousePressed)
-    {
+void FreeCamera::onMouseMoved(QMouseEvent *event) {
+    if (mMousePressed) {
         mMouseDeltaX += mMousePreviousX - event->x();
         mMouseDeltaY += mMousePreviousY - event->y();
 
@@ -56,11 +49,9 @@ void FreeCamera::onMouseMoved(QMouseEvent *event)
     }
 }
 
-void FreeCamera::update(float ifps)
-{
+void FreeCamera::update(float ifps) {
     // Rotation
-    if (mUpdateRotation)
-    {
+    if (mUpdateRotation) {
         mRotation = QQuaternion::fromAxisAndAngle(QVector3D(0, 1, 0), mAngularSpeed * mMouseDeltaX * ifps) * mRotation;
         mRotation = mRotation * QQuaternion::fromAxisAndAngle(QVector3D(1, 0, 0), mAngularSpeed * mMouseDeltaY * ifps);
 
@@ -70,12 +61,11 @@ void FreeCamera::update(float ifps)
     }
 
     // Translation
-    if (mUpdatePosition)
-    {
+    if (mUpdatePosition) {
         const QList<Qt::Key> keys = mPressedKeys.keys();
 
         if (mPressedKeys[Qt::Key_Shift])
-            mMovementSpeed = 10.0f;
+            mMovementSpeed = 50.0f;
         else if (mPressedKeys[Qt::Key_Control])
             mMovementSpeed = 1.0f;
         else
@@ -86,28 +76,24 @@ void FreeCamera::update(float ifps)
                 mPosition += mMovementSpeed * ifps * mRotation.rotatedVector(KEY_BINDINGS.value(key, QVector3D(0, 0, 0)));
     }
 
-    if (mUpdatePosition | mUpdateRotation)
-    {
+    if (mUpdatePosition | mUpdateRotation) {
         mTransformation.setToIdentity();
         mTransformation.rotate(mRotation.conjugated());
         mTransformation.translate(-mPosition);
     }
 
-    if (mPressedKeys.empty())
-    {
+    if (mPressedKeys.empty()) {
         mUpdatePosition = false;
     }
 }
 
-FreeCamera *FreeCamera::create()
-{
+FreeCamera *FreeCamera::create() {
     FreeCamera *camera = new FreeCamera;
     CAMERA_MANAGER->addCamera(camera);
     return camera;
 }
 
-void FreeCamera::remove()
-{
+void FreeCamera::remove() {
     CAMERA_MANAGER->removeCamera(this);
 }
 

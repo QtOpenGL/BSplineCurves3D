@@ -26,6 +26,8 @@ public:
     const QList<Bezier *> &bezierPatches();
     const QList<KnotPoint *> &knotPoints();
 
+    Spline *deepCopy();
+
     // Curve interface
     void update();
     QVector3D valueAt(float t) const;

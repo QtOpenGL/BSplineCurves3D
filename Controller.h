@@ -44,12 +44,7 @@ private:
     Camera *mCamera;
     Light *mLight;
 
-    Spline *mTestCurve1;
-    Spline *mTestCurve2;
-
     Model *mPlane;
-    Model *mCube;
-    Model *mSphere;
 
     Spline *mSelectedCurve;
     KnotPoint *mSelectedKnotPoint;

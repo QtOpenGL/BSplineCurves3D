@@ -49,59 +49,56 @@ void Controller::init() {
     mLight->setPosition(QVector3D(5, 20, 35));
     mLightManager->setActiveLight(mLight);
 
-    // FIXME
-
-    // Sphere
-    {
-        //        mSphere = Model::create(Model::Sphere);
-        //        mSphere->setObjectName("Sphere");
-        //        mSphere->setPosition(QVector3D(0, 0, 0));
-        //        mSphere->setScale(QVector3D(0.001f, 0.001f, 0.001f));
-        //        mSphere->material().setColor(QVector4D(0, 1, 0, 1));
-    }
-
     // Plane
     {
         mPlane = Model::create(Model::Plane);
         mPlane->setObjectName("Plane");
         mPlane->setPosition(QVector3D(0, 0, 0));
-        mPlane->setVisible(false);
-    }
-
-    // Cube
-    {
-        //        mCube = Model::create(Model::Cube);
-        //        mCube->setObjectName("Cube");
-        //        mCube->material().setColor(QVector4D(1, 0, 0, 1));
-        //        mCube->setScale(QVector3D(0.01f, 0.01f, 0.01f));
-        //        mCube->setPosition(QVector3D(0, 2, 0));
+        mPlane->setVisible(true);
     }
 
     // Test Curves
     {
-        mTestCurve1 = new Spline;
-        //        mTestCurve1->addKnotPoint(new KnotPoint(0, 0, 0));
-        //        mTestCurve1->addKnotPoint(new KnotPoint(2.5, 2.5, 0));
-        //        mTestCurve1->addKnotPoint(new KnotPoint(0, 5, 0));
-        //        mTestCurve1->addKnotPoint(new KnotPoint(0, 10, 0));
-        //        mTestCurve1->addKnotPoint(new KnotPoint(0, 15, 0));
-        //        mTestCurve1->addKnotPoint(new KnotPoint(0, 25, 0));
-        //        mTestCurve1->addKnotPoint(new KnotPoint(0, 30, 0));
-        //        mTestCurve1->addKnotPoint(new KnotPoint(0, 35, 0));
+        Spline *curve = new Spline;
+        curve->addKnotPoint(new KnotPoint(0.790, 1.43));
+        curve->addKnotPoint(new KnotPoint(11.589, 13.452));
+        mCurveManager->addCurve(curve);
 
-        mTestCurve1->addKnotPoint(new KnotPoint(1, -1, 0));
-        mTestCurve1->addKnotPoint(new KnotPoint(-1, 2, 0));
-        mTestCurve1->addKnotPoint(new KnotPoint(1, 4, 0));
-        mTestCurve1->addKnotPoint(new KnotPoint(4, 3, 0));
-        //        mTestCurve1->addKnotPoint(new KnotPoint(7, 5, 0));
-        //        mTestCurve1->addKnotPoint(new KnotPoint(7, 7, 0));
-        //        mTestCurve1->addKnotPoint(new KnotPoint(5, 7, 0));
-        //        mTestCurve1->addKnotPoint(new KnotPoint(11, 7, 0));
-        //        mTestCurve1->addKnotPoint(new KnotPoint(7, 11, 0));
-        //        mTestCurve1->addKnotPoint(new KnotPoint(13, 9, 0));
-        //        mTestCurve1->addKnotPoint(new KnotPoint(9, 13, 0));
+        for (int x = -100; x <= 100; x += 50) {
+            for (int z = -100; z <= 100; z += 50) {
+                Spline *copy = curve->deepCopy();
+                copy->translate(QVector3D(x, 0, z));
+                mCurveManager->addCurve(copy);
+            }
+        }
+    }
 
-        mCurveManager->addCurve(mTestCurve1);
+    {
+        Spline *curve = new Spline;
+        curve->addKnotPoint(new KnotPoint(9.9, 2.169));
+        curve->addKnotPoint(new KnotPoint(9.508, 1.465));
+        curve->addKnotPoint(new KnotPoint(10.265, 0.708));
+        curve->addKnotPoint(new KnotPoint(12.221, 0.969));
+        curve->addKnotPoint(new KnotPoint(13.865, 1.934));
+        curve->addKnotPoint(new KnotPoint(15.0, 3.656));
+        curve->addKnotPoint(new KnotPoint(14.178, 6.604));
+        curve->addKnotPoint(new KnotPoint(10.004, 8.052));
+        curve->addKnotPoint(new KnotPoint(6.613, 8.052));
+        curve->addKnotPoint(new KnotPoint(3.260, 6.682));
+        curve->addKnotPoint(new KnotPoint(3.221, 6.2));
+        curve->addKnotPoint(new KnotPoint(5.943, 6.1087));
+        curve->addKnotPoint(new KnotPoint(9.952, 8.065));
+        curve->addKnotPoint(new KnotPoint(15.117, 11.952));
+        curve->addKnotPoint(new KnotPoint(15.169, 12.565));
+        mCurveManager->addCurve(curve);
+
+        for (int x = -100; x <= 100; x += 50) {
+            for (int z = -100; z <= 100; z += 50) {
+                Spline *copy = curve->deepCopy();
+                copy->translate(QVector3D(x, 0, z));
+                mCurveManager->addCurve(copy);
+            }
+        }
     }
 }
 
@@ -165,10 +162,6 @@ void Controller::onAction(Action action, QVariant variant) {
                 KnotPoint *point = new KnotPoint(intersection.x(), intersection.y(), intersection.z());
                 mSelectedCurve->addKnotPoint(point);
                 mCurveManager->setSelectedKnotPoint(point);
-
-                for (auto &point : mSelectedCurve->knotPoints()) {
-                    qDebug() << point->position();
-                }
             }
         } else {
             Eigen::Hyperplane<float, 3> plane = Eigen::Hyperplane<float, 3>(normal, -normal.dot(eigenRayOrigin + 20 * normal));
@@ -347,10 +340,10 @@ void Controller::onKeyPressed(QKeyEvent *event) {
         else if (mSelectedCurve)
             onAction(Action::RemoveSelectedCurve);
 
-    } else if (event->key() == Qt::Key_Control) {
-        onAction(Action::UpdateMode, (int) Mode::Add);
-    } else if (event->key() == Qt::Key_Shift) {
+    } else if (event->key() == Qt::Key_Z) {
         onAction(Action::UpdateMode, (int) Mode::Select);
+    } else if (event->key() == Qt::Key_C) {
+        onAction(Action::UpdateMode, (int) Mode::Add);
     }
 
     mCameraManager->onKeyPressed(event);
