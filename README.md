@@ -19,7 +19,7 @@ Simply open `BSplineCurves3D.pro` with `QtCreator` and build it with `Qt 5.15.2 
 
 ## UML Diagram
 
-// TODO
+![](UML.png)
 
 ## Keywords
 C++, Qt 5, OpenGL, GLSL, Curves, Bezier Curves, 3D BSplines, Eigen
