@@ -1,5 +1,5 @@
 # BSplineCurves3D
-Rendering 3D BSplines using OpenGL, QT, C++ and Eigen.
+Rendering 3D BSplines using OpenGL, Qt, C++ and Eigen.
 
 BSplines are parameterics curves which consists of several Bezier curves whose control points satisfy some special conditions.
 I used cubic Bezier curves for the interpolation of knots.
