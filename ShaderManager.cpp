@@ -2,7 +2,8 @@
 #include "Helper.h"
 
 ShaderManager::ShaderManager(QObject *parent)
-    : QObject{parent} {}
+    : QObject{parent}
+    , mActiveShader(Shader::None) {}
 
 bool ShaderManager::init() {
     initializeOpenGLFunctions();
@@ -174,39 +175,40 @@ bool ShaderManager::init() {
 }
 
 bool ShaderManager::bind(Shader shader) {
-    return mPrograms.value(shader)->bind();
+    mActiveShader = shader;
+    return mPrograms.value(mActiveShader)->bind();
 }
 
-void ShaderManager::release(Shader shader) {
-    mPrograms.value(shader)->release();
+void ShaderManager::release() {
+    mPrograms.value(mActiveShader)->release();
 }
 
-void ShaderManager::setUniformValue(Shader shader, const QString &name, int value) {
-    mPrograms.value(shader)->setUniformValue(mLocations.value(shader).value(name), value);
+void ShaderManager::setUniformValue(const QString &name, int value) {
+    mPrograms.value(mActiveShader)->setUniformValue(mLocations.value(mActiveShader).value(name), value);
 }
 
-void ShaderManager::setUniformValue(Shader shader, const QString &name, float value) {
-    mPrograms.value(shader)->setUniformValue(mLocations.value(shader).value(name), value);
+void ShaderManager::setUniformValue(const QString &name, float value) {
+    mPrograms.value(mActiveShader)->setUniformValue(mLocations.value(mActiveShader).value(name), value);
 }
 
-void ShaderManager::setUniformValue(Shader shader, const QString &name, const QVector3D &value) {
-    mPrograms.value(shader)->setUniformValue(mLocations.value(shader).value(name), value);
+void ShaderManager::setUniformValue(const QString &name, const QVector3D &value) {
+    mPrograms.value(mActiveShader)->setUniformValue(mLocations.value(mActiveShader).value(name), value);
 }
 
-void ShaderManager::setUniformValue(Shader shader, const QString &name, const QVector4D &value) {
-    mPrograms.value(shader)->setUniformValue(mLocations.value(shader).value(name), value);
+void ShaderManager::setUniformValue(const QString &name, const QVector4D &value) {
+    mPrograms.value(mActiveShader)->setUniformValue(mLocations.value(mActiveShader).value(name), value);
 }
 
-void ShaderManager::setUniformValue(Shader shader, const QString &name, const QMatrix4x4 &value) {
-    mPrograms.value(shader)->setUniformValue(mLocations.value(shader).value(name), value);
+void ShaderManager::setUniformValue(const QString &name, const QMatrix4x4 &value) {
+    mPrograms.value(mActiveShader)->setUniformValue(mLocations.value(mActiveShader).value(name), value);
 }
 
-void ShaderManager::setUniformValue(Shader shader, const QString &name, const QMatrix3x3 &value) {
-    mPrograms.value(shader)->setUniformValue(mLocations.value(shader).value(name), value);
+void ShaderManager::setUniformValue(const QString &name, const QMatrix3x3 &value) {
+    mPrograms.value(mActiveShader)->setUniformValue(mLocations.value(mActiveShader).value(name), value);
 }
 
-void ShaderManager::setUniformValueArray(Shader shader, const QString &name, const QVector<QVector3D> &values) {
-    mPrograms.value(shader)->setUniformValueArray(mLocations.value(shader).value(name), values.constData(), values.size());
+void ShaderManager::setUniformValueArray(const QString &name, const QVector<QVector3D> &values) {
+    mPrograms.value(mActiveShader)->setUniformValueArray(mLocations.value(mActiveShader).value(name), values.constData(), values.size());
 }
 
 ShaderManager *ShaderManager::instance() {

@@ -13,6 +13,7 @@ public:
     explicit ShaderManager(QObject *parent = nullptr);
 
     enum class Shader { //
+        None,
         Basic,
         Path,
         Pipe
@@ -20,19 +21,20 @@ public:
 
     bool init();
     bool bind(Shader shader);
-    void release(Shader shader);
+    void release();
 
-    void setUniformValue(Shader shader, const QString &name, int value);
-    void setUniformValue(Shader shader, const QString &name, float value);
-    void setUniformValue(Shader shader, const QString &name, const QVector3D &value);
-    void setUniformValue(Shader shader, const QString &name, const QVector4D &value);
-    void setUniformValue(Shader shader, const QString &name, const QMatrix4x4 &value);
-    void setUniformValue(Shader shader, const QString &name, const QMatrix3x3 &value);
-    void setUniformValueArray(Shader shader, const QString &name, const QVector<QVector3D> &values);
+    void setUniformValue(const QString &name, int value);
+    void setUniformValue(const QString &name, float value);
+    void setUniformValue(const QString &name, const QVector3D &value);
+    void setUniformValue(const QString &name, const QVector4D &value);
+    void setUniformValue(const QString &name, const QMatrix4x4 &value);
+    void setUniformValue(const QString &name, const QMatrix3x3 &value);
+    void setUniformValueArray(const QString &name, const QVector<QVector3D> &values);
 
     static ShaderManager *instance();
 
 private:
+    Shader mActiveShader;
     QMap<Shader, QOpenGLShaderProgram *> mPrograms;
     QMap<Shader, QMap<QString, GLuint>> mLocations;
 };
