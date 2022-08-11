@@ -3,14 +3,17 @@
 #include <QDebug>
 
 Spline::Spline(QObject *parent)
-    : Curve(parent) {}
+    : Curve(parent)
+    , mPointRemovedOrAdded(true) {}
 
 Spline::~Spline() {}
 
 void Spline::addKnotPoint(KnotPoint *knotPoint) {
     mKnotPoints << knotPoint;
     knotPoint->setParent(this);
+
     mDirty = true;
+    mPointRemovedOrAdded = true;
 }
 
 void Spline::removeKnotPoint(KnotPoint *knotPoint) {
@@ -22,14 +25,21 @@ void Spline::removeKnotPoint(KnotPoint *knotPoint) {
     }
 
     mDirty = true;
+    mPointRemovedOrAdded = true;
 }
 
-void Spline::removeAllPatches() {
+void Spline::recreateBezierPatches() {
     for (auto &patch : mBezierPatches) {
         patch->deleteLater();
     }
 
     mBezierPatches.clear();
+
+    for (int i = 0; i < mKnotPoints.size() - 1; ++i) {
+        Bezier *patch = new Bezier;
+        patch->setParent(this);
+        mBezierPatches << patch;
+    }
 }
 
 KnotPoint *Spline::getClosestKnotPointToRay(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance) {
@@ -57,72 +67,46 @@ KnotPoint *Spline::getClosestKnotPointToRay(const QVector3D &rayOrigin, const QV
 }
 
 void Spline::update() {
-    removeAllPatches();
+    if (mPointRemovedOrAdded)
+        recreateBezierPatches();
 
-    if (mKnotPoints.size() <= 2) {
-        Bezier *patch = new Bezier;
+    for (auto &patch : mBezierPatches)
+        patch->removeAllControlPoints();
 
-        for (int i = 0; i < mKnotPoints.size(); ++i) {
-            patch->addControlPoint(new ControlPoint(mKnotPoints.at(i)->position()));
-        }
-
-        patch->setParent(this);
-        mBezierPatches << patch;
+    if (mKnotPoints.size() == 2) {
+        for (int i = 0; i < mKnotPoints.size(); ++i)
+            mBezierPatches[0]->addControlPoint(new ControlPoint(mKnotPoints.at(i)->position()));
 
     } else if (mKnotPoints.size() == 3) {
-        {
-            Bezier *patch = new Bezier;
-            ControlPoint *cp0 = new ControlPoint(mKnotPoints[0]->position());
-            ControlPoint *cp1 = new ControlPoint((2.0f / 3.0f) * mKnotPoints.at(0)->position() + (1.0f / 3.0f) * mKnotPoints.at(1)->position());
-            ControlPoint *cp2 = new ControlPoint((1.0f / 3.0f) * mKnotPoints.at(0)->position() + (2.0f / 3.0f) * mKnotPoints.at(1)->position());
-            ControlPoint *cp3 = new ControlPoint(mKnotPoints[1]->position());
+        for (int i = 0; i < 2; i++) {
+            ControlPoint *cp0 = new ControlPoint(mKnotPoints.at(i)->position());
+            ControlPoint *cp1 = new ControlPoint((2.0f / 3.0f) * mKnotPoints.at(i)->position() + (1.0f / 3.0f) * mKnotPoints.at(i + 1)->position());
+            ControlPoint *cp2 = new ControlPoint((1.0f / 3.0f) * mKnotPoints.at(i)->position() + (2.0f / 3.0f) * mKnotPoints.at(i + 1)->position());
+            ControlPoint *cp3 = new ControlPoint(mKnotPoints.at(i + 1)->position());
 
-            patch->addControlPoint(cp0);
-            patch->addControlPoint(cp1);
-            patch->addControlPoint(cp2);
-            patch->addControlPoint(cp3);
-
-            patch->setParent(this);
-            mBezierPatches << patch;
-        }
-
-        {
-            Bezier *patch = new Bezier;
-            ControlPoint *cp0 = new ControlPoint(mKnotPoints.at(1)->position());
-            ControlPoint *cp1 = new ControlPoint((2.0f / 3.0f) * mKnotPoints.at(1)->position() + (1.0f / 3.0f) * mKnotPoints.at(2)->position());
-            ControlPoint *cp2 = new ControlPoint((1.0f / 3.0f) * mKnotPoints.at(1)->position() + (2.0f / 3.0f) * mKnotPoints.at(2)->position());
-            ControlPoint *cp3 = new ControlPoint(mKnotPoints.at(2)->position());
-
-            patch->addControlPoint(cp0);
-            patch->addControlPoint(cp1);
-            patch->addControlPoint(cp2);
-            patch->addControlPoint(cp3);
-
-            patch->setParent(this);
-            mBezierPatches << patch;
+            mBezierPatches[i]->addControlPoint(cp0);
+            mBezierPatches[i]->addControlPoint(cp1);
+            mBezierPatches[i]->addControlPoint(cp2);
+            mBezierPatches[i]->addControlPoint(cp3);
         }
 
     } else {
         QVector<QVector3D> splineControlPoints = getSplineControlPoints();
 
-        // Generate Bezier Patches
         for (int i = 1; i < mKnotPoints.size(); ++i) {
-            Bezier *patch = new Bezier;
             ControlPoint *cp0 = new ControlPoint(mKnotPoints.at(i - 1)->position());
             ControlPoint *cp1 = new ControlPoint((2.0f / 3.0f) * splineControlPoints[i - 1] + (1.0f / 3.0f) * splineControlPoints[i]);
             ControlPoint *cp2 = new ControlPoint((1.0f / 3.0f) * splineControlPoints[i - 1] + (2.0f / 3.0f) * splineControlPoints[i]);
             ControlPoint *cp3 = new ControlPoint(mKnotPoints.at(i)->position());
 
-            patch->addControlPoint(cp0);
-            patch->addControlPoint(cp1);
-            patch->addControlPoint(cp2);
-            patch->addControlPoint(cp3);
-
-            patch->setParent(this);
-            mBezierPatches << patch;
+            mBezierPatches[i - 1]->addControlPoint(cp0);
+            mBezierPatches[i - 1]->addControlPoint(cp1);
+            mBezierPatches[i - 1]->addControlPoint(cp2);
+            mBezierPatches[i - 1]->addControlPoint(cp3);
         }
     }
 
+    mPointRemovedOrAdded = false;
     mDirty = false;
 }
 

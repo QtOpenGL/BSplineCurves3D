@@ -9,12 +9,15 @@ Bezier::Bezier(QObject *parent)
     , mTickCount(100)
     , mSectorCount(128)
     , mRadius(0.25f)
-    , mVertexGenerationStatus(VertexGenerationStatus::NotInitializedYet) {
+    , mVertexGenerationStatus(VertexGenerationStatus::Dirty)
+    , mInitialized(false) {
     initializeOpenGLFunctions();
 }
 
 Bezier::~Bezier() {
-    clearOpenGLStuff();
+    mVertexArray.destroy();
+    mVertexBuffer.destroy();
+    mNormalBuffer.destroy();
 }
 
 void Bezier::addControlPoint(ControlPoint *controlPoint) {
@@ -33,6 +36,7 @@ void Bezier::insertControlPoint(int index, ControlPoint *controlPoint) {
     mControlPoints.insert(index, controlPoint);
     controlPoint->setParent(this);
     mDirty = true;
+    mVertexGenerationStatus = VertexGenerationStatus::Dirty;
 }
 
 void Bezier::removeControlPoint(int index) {
@@ -41,6 +45,18 @@ void Bezier::removeControlPoint(int index) {
     controlPoint->setParent(nullptr);
     controlPoint->deleteLater();
     mDirty = true;
+    mVertexGenerationStatus = VertexGenerationStatus::Dirty;
+}
+
+void Bezier::removeAllControlPoints() {
+    for (auto &point : mControlPoints) {
+        point->deleteLater();
+    }
+
+    mControlPoints.clear();
+
+    mDirty = true;
+    mVertexGenerationStatus = VertexGenerationStatus::Dirty;
 }
 
 const QList<ControlPoint *> &Bezier::controlPoints() const {
@@ -172,10 +188,8 @@ void Bezier::generateVertices() {
             float sqrt0 = sqrt(tangent0.x() * tangent0.x() + tangent0.z() * tangent0.z());
             float sqrt1 = sqrt(tangent1.x() * tangent1.x() + tangent1.z() * tangent1.z());
 
-            // What if sqrt = 0? We may use atan2 here.
-            // Check for singular cases.
-            float phi0 = atan(tangent0.y() / sqrt0);
-            float phi1 = atan(tangent1.y() / sqrt1);
+            float phi0 = atan2(tangent0.y(), sqrt0);
+            float phi1 = atan2(tangent1.y(), sqrt1);
 
             QQuaternion rotation0 = Helper::rotateY(theta0) * Helper::rotateZ(phi0);
             QQuaternion rotation1 = Helper::rotateY(theta1) * Helper::rotateZ(phi1);
@@ -189,12 +203,12 @@ void Bezier::generateVertices() {
                 QVector3D position01 = value0 + rotation0 * QVector3D(0, r * cos(sectorAngle1), r * sin(sectorAngle1));
                 QVector3D position11 = value1 + rotation1 * QVector3D(0, r * cos(sectorAngle1), r * sin(sectorAngle1));
 
-                QVector3D normal = -1 * QVector3D::crossProduct((position00 - position10).normalized(), (position01 - position10).normalized());
+                QVector3D normal = QVector3D::crossProduct((position10 - position00).normalized(), (position11 - position00).normalized());
 
-                mVertices << position00;
                 mVertices << position10;
-                mVertices << position01;
+                mVertices << position00;
                 mVertices << position11;
+                mVertices << position01;
 
                 // FIXME
                 mNormals << normal;
@@ -204,7 +218,7 @@ void Bezier::generateVertices() {
             }
         }
 
-        mVertexGenerationStatus = VertexGenerationStatus::WaitingForInitialization;
+        mVertexGenerationStatus = VertexGenerationStatus::WaitingForOpenGLUpdate;
     });
 }
 
@@ -215,8 +229,8 @@ void Bezier::initializeOpenGLStuff() {
     // Vertices
     mVertexBuffer.create();
     mVertexBuffer.bind();
-    mVertexBuffer.setUsagePattern(QOpenGLBuffer::UsagePattern::StaticDraw);
-    mVertexBuffer.allocate(mVertices.constData(), sizeof(QVector3D) * mVertices.size());
+    mVertexBuffer.setUsagePattern(QOpenGLBuffer::UsagePattern::DynamicDraw);
+    mVertexBuffer.allocate(sizeof(QVector3D) * 256 * 1000);
     glVertexAttribPointer(0,
                           3,                 // Size
                           GL_FLOAT,          // Type
@@ -231,8 +245,8 @@ void Bezier::initializeOpenGLStuff() {
     // Normals
     mNormalBuffer.create();
     mNormalBuffer.bind();
-    mNormalBuffer.setUsagePattern(QOpenGLBuffer::UsagePattern::StaticDraw);
-    mNormalBuffer.allocate(mNormals.constData(), sizeof(QVector3D) * mNormals.size());
+    mNormalBuffer.setUsagePattern(QOpenGLBuffer::UsagePattern::DynamicDraw);
+    mNormalBuffer.allocate(sizeof(QVector3D) * 256 * 1000);
 
     glVertexAttribPointer(1,
                           3,                 // Size
@@ -243,16 +257,25 @@ void Bezier::initializeOpenGLStuff() {
     );
     glEnableVertexAttribArray(1);
     mNormalBuffer.release();
+    mVertexArray.release();
+
+    mInitialized = true;
+}
+
+void Bezier::updateOpenGLStuff() {
+    mVertexArray.bind();
+
+    mVertexBuffer.bind();
+    mVertexBuffer.write(0, mVertices.constData(), sizeof(QVector3D) * mVertices.size());
+    mVertexBuffer.release();
+
+    mNormalBuffer.bind();
+    mNormalBuffer.write(0, mNormals.constData(), sizeof(QVector3D) * mNormals.size());
+    mNormalBuffer.release();
 
     mVertexArray.release();
 
-    mVertexGenerationStatus = VertexGenerationStatus::Initialized;
-}
-
-void Bezier::clearOpenGLStuff() {
-    mVertexArray.destroy();
-    mVertexBuffer.destroy();
-    mNormalBuffer.destroy();
+    mVertexGenerationStatus = VertexGenerationStatus::Ready;
 }
 
 void Bezier::bind() {
@@ -273,7 +296,7 @@ int Bezier::sectorCount() const {
 
 void Bezier::setSectorCount(int newSectorCount) {
     mSectorCount = newSectorCount;
-    mVertexGenerationStatus = VertexGenerationStatus::UpdateVertices;
+    mVertexGenerationStatus = VertexGenerationStatus::Dirty;
 }
 
 float Bezier::radius() const {
@@ -282,7 +305,7 @@ float Bezier::radius() const {
 
 void Bezier::setRadius(float newRadius) {
     mRadius = newRadius;
-    mVertexGenerationStatus = VertexGenerationStatus::UpdateVertices;
+    mVertexGenerationStatus = VertexGenerationStatus::Dirty;
 }
 
 Bezier::VertexGenerationStatus Bezier::vertexGenerationStatus() const {
@@ -291,6 +314,14 @@ Bezier::VertexGenerationStatus Bezier::vertexGenerationStatus() const {
 
 void Bezier::setVertexGenerationStatus(VertexGenerationStatus newVertexGenerationStatus) {
     mVertexGenerationStatus = newVertexGenerationStatus;
+}
+
+bool Bezier::initialized() const {
+    return mInitialized;
+}
+
+void Bezier::setInitialized(bool newInitialized) {
+    mInitialized = newInitialized;
 }
 
 ControlPoint *Bezier::getClosestControlPointToRay(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance) {

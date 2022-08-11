@@ -19,7 +19,7 @@ public:
 
     void addKnotPoint(KnotPoint *knotPoint);
     void removeKnotPoint(KnotPoint *knotPoint);
-    void removeAllPatches();
+    void recreateBezierPatches();
 
     KnotPoint *getClosestKnotPointToRay(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance = 0.5f);
 
@@ -52,6 +52,8 @@ private:
 
     int mSectorCount;
     float mRadius;
+
+    bool mPointRemovedOrAdded;
 };
 
 #endif // SPLINE_H

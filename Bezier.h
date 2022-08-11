@@ -16,11 +16,10 @@ public:
     virtual ~Bezier();
 
     enum class VertexGenerationStatus {
-        NotInitializedYet,
         GeneratingVertices,
-        WaitingForInitialization,
-        Initialized,
-        UpdateVertices,
+        WaitingForOpenGLUpdate,
+        Ready,
+        Dirty,
     };
 
     void addControlPoint(ControlPoint *controlPoint);
@@ -28,6 +27,7 @@ public:
 
     void insertControlPoint(int index, ControlPoint *controlPoint);
     void removeControlPoint(int index);
+    void removeAllControlPoints();
 
     const QList<ControlPoint *> &controlPoints() const;
     QVector<QVector3D> getControlPointPositions();
@@ -47,7 +47,7 @@ public:
 
     void generateVertices();
     void initializeOpenGLStuff();
-    void clearOpenGLStuff();
+    void updateOpenGLStuff();
 
     void bind();
     void release();
@@ -61,6 +61,9 @@ public:
 
     VertexGenerationStatus vertexGenerationStatus() const;
     void setVertexGenerationStatus(VertexGenerationStatus newVertexGenerationStatus);
+
+    bool initialized() const;
+    void setInitialized(bool newInitialized);
 
 private:
     QList<ControlPoint *> mControlPoints;
@@ -77,6 +80,8 @@ private:
     QVector<QVector3D> mNormals;
 
     VertexGenerationStatus mVertexGenerationStatus;
+
+    bool mInitialized;
 };
 
 #endif // BEZIER_H

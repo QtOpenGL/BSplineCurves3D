@@ -211,24 +211,20 @@ void RendererManager::renderPipes(float ifps) {
             QList<Bezier *> patches = curve->bezierPatches();
 
             for (auto &patch : patches) {
-                if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::NotInitializedYet) {
-                    patch->generateVertices();
-                    renderUsingDumbShader(ifps, curve, patch);
-
-                } else if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::WaitingForInitialization) {
+                if (!patch->initialized()) {
                     patch->initializeOpenGLStuff();
-                    renderUsingSmartShader(ifps, curve, patch);
-
-                } else if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::Initialized) {
-                    renderUsingSmartShader(ifps, curve, patch);
-                } else if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::GeneratingVertices) {
-                    renderUsingDumbShader(ifps, curve, patch);
                 }
 
-                else if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::UpdateVertices) {
-                    patch->clearOpenGLStuff();
+                if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::GeneratingVertices) {
+                    renderUsingDumbShader(ifps, curve, patch);
+                } else if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::WaitingForOpenGLUpdate) {
+                    patch->updateOpenGLStuff();
+                    renderUsingSmartShader(ifps, curve, patch);
+                } else if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::Dirty) {
                     patch->generateVertices();
                     renderUsingDumbShader(ifps, curve, patch);
+                } else if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::Ready) {
+                    renderUsingSmartShader(ifps, curve, patch);
                 }
             }
         }
