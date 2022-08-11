@@ -1,8 +1,10 @@
 #include "Bezier.h"
-#include "Helper.h"
 
 #include <QQuaternion>
 #include <QtConcurrent>
+#include <QtMath>
+
+#include <Dense>
 
 Bezier::Bezier(QObject *parent)
     : Curve(parent)
@@ -158,7 +160,7 @@ float Bezier::length() {
 
     return mLength;
 }
-
+int i = 0;
 void Bezier::generateVertices() {
     mVertexGenerationStatus = VertexGenerationStatus::GeneratingVertices;
 
@@ -166,13 +168,13 @@ void Bezier::generateVertices() {
         mVertices.clear();
         mNormals.clear();
 
-        mVertices.reserve(2 * mSectorCount * mTickCount);
-        mNormals.reserve(2 * mSectorCount * mTickCount);
+        mVertices.reserve(4 * mSectorCount * mTickCount);
+        mNormals.reserve(4 * mSectorCount * mTickCount);
 
         float dt = 1.0f / mTickCount;
         float r = mRadius;
 
-        for (float t = 0.0f; t <= 1.0f; t += dt) {
+        for (float t = 0.0f; t <= 1.0f - dt; t += dt) {
             float t0 = t;
             float t1 = t0 + dt;
 
@@ -182,26 +184,30 @@ void Bezier::generateVertices() {
             QVector3D tangent0 = tangentAt(t0);
             QVector3D tangent1 = tangentAt(t1);
 
-            float theta0 = atan2(-tangent0.z(), tangent0.x());
-            float theta1 = atan2(-tangent1.z(), tangent1.x());
+            Eigen::Vector3f normal = Eigen::Vector3f(tangent1.x(), tangent1.y(), tangent1.z());
+            Eigen::Vector3f point = Eigen::Vector3f(value1.x(), value1.y(), value1.z());
 
-            float sqrt0 = sqrt(tangent0.x() * tangent0.x() + tangent0.z() * tangent0.z());
-            float sqrt1 = sqrt(tangent1.x() * tangent1.x() + tangent1.z() * tangent1.z());
+            Eigen::Hyperplane<float, 3> plane = Eigen::Hyperplane<float, 3>(normal, -normal.dot(point));
 
-            float phi0 = atan2(tangent0.y(), sqrt0);
-            float phi1 = atan2(tangent1.y(), sqrt1);
+            QVector3D axis = QVector3D::crossProduct(QVector3D(1, 0, 0), tangent0);
+            float angle = acos(QVector3D::dotProduct(QVector3D(1, 0, 0), tangent0));
 
-            QQuaternion rotation0 = Helper::rotateY(theta0) * Helper::rotateZ(phi0);
-            QQuaternion rotation1 = Helper::rotateY(theta1) * Helper::rotateZ(phi1);
+            if (abs(angle) < 0.00001f || abs(angle - M_PI) < 0.00001f) {
+                axis = QVector3D(0, 1, 0);
+            }
 
-            for (int i = 0; i < mSectorCount; i += 2) {
+            QQuaternion rotation = QQuaternion::fromAxisAndAngle(axis, qRadiansToDegrees(angle));
+
+            for (int i = 0; i < mSectorCount; ++i) {
                 float sectorAngle0 = 2 * float(i) / mSectorCount * M_PI;
                 float sectorAngle1 = 2 * float(i + 1) / mSectorCount * M_PI;
 
-                QVector3D position00 = value0 + rotation0 * QVector3D(0, r * cos(sectorAngle0), r * sin(sectorAngle0));
-                QVector3D position10 = value1 + rotation1 * QVector3D(0, r * cos(sectorAngle0), r * sin(sectorAngle0));
-                QVector3D position01 = value0 + rotation0 * QVector3D(0, r * cos(sectorAngle1), r * sin(sectorAngle1));
-                QVector3D position11 = value1 + rotation1 * QVector3D(0, r * cos(sectorAngle1), r * sin(sectorAngle1));
+                QVector3D position00 = value0 + rotation * QVector3D(0, r * cos(sectorAngle0), r * sin(sectorAngle0));
+                QVector3D position01 = value0 + rotation * QVector3D(0, r * cos(sectorAngle1), r * sin(sectorAngle1));
+                Eigen::Vector3f position10e = plane.projection(Eigen::Vector3f(position00.x(), position00.y(), position00.z()));
+                Eigen::Vector3f position11e = plane.projection(Eigen::Vector3f(position01.x(), position01.y(), position01.z()));
+                QVector3D position10 = QVector3D(position10e.x(), position10e.y(), position10e.z());
+                QVector3D position11 = QVector3D(position11e.x(), position11e.y(), position11e.z());
 
                 QVector3D normal = QVector3D::crossProduct((position10 - position00).normalized(), (position11 - position00).normalized());
 
@@ -210,7 +216,6 @@ void Bezier::generateVertices() {
                 mVertices << position11;
                 mVertices << position01;
 
-                // FIXME
                 mNormals << normal;
                 mNormals << normal;
                 mNormals << normal;
@@ -230,7 +235,7 @@ void Bezier::initializeOpenGLStuff() {
     mVertexBuffer.create();
     mVertexBuffer.bind();
     mVertexBuffer.setUsagePattern(QOpenGLBuffer::UsagePattern::DynamicDraw);
-    mVertexBuffer.allocate(sizeof(QVector3D) * 256 * 1000);
+    mVertexBuffer.allocate(sizeof(QVector3D) * 6 * 256 * mTickCount);
     glVertexAttribPointer(0,
                           3,                 // Size
                           GL_FLOAT,          // Type
@@ -246,7 +251,7 @@ void Bezier::initializeOpenGLStuff() {
     mNormalBuffer.create();
     mNormalBuffer.bind();
     mNormalBuffer.setUsagePattern(QOpenGLBuffer::UsagePattern::DynamicDraw);
-    mNormalBuffer.allocate(sizeof(QVector3D) * 256 * 1000);
+    mNormalBuffer.allocate(sizeof(QVector3D) * 6 * 256 * mTickCount);
 
     glVertexAttribPointer(1,
                           3,                 // Size

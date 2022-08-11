@@ -266,8 +266,8 @@ void RendererManager::renderUsingDumbShader(float ifps, Spline *curve, Bezier *p
     float r = patch->radius();
 
     for (int i = 0; i < n; i++) {
-        float sectorAngle0 = 2 * float(i) / n * M_PI;
-        float sectorAngle1 = 2 * float(i + 1) / n * M_PI;
+        float sectorAngle0 = 2.0f * float(i) * M_PI / n;
+        float sectorAngle1 = 2.0f * float(i + 1) * M_PI / n;
 
         mShaderManager->setUniformValue("r", r);
         mShaderManager->setUniformValue("sector_angle_0", sectorAngle0);

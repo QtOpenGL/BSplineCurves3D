@@ -25,6 +25,7 @@ Window::Window(QWindow *parent)
 
 void Window::initializeGL() {
     initializeOpenGLFunctions();
+
     QtImGui::initialize(this);
 
     emit init();
@@ -89,7 +90,7 @@ void Window::paintGL() {
             emit action(Action::UpdateGlobalPipeRadius, mGlobalPipeRadius);
         }
 
-        if (ImGui::SliderInt("Pipe Sector Count (Global)", &mGlobalPipeSectorCount, 3, 256)) {
+        if (ImGui::SliderInt("Pipe Sector Count (Global)", &mGlobalPipeSectorCount, 3, 192)) {
             emit action(Action::UpdateGlobalPipeSectorCount, mGlobalPipeSectorCount);
         }
 
@@ -168,7 +169,7 @@ void Window::paintGL() {
             emit action(Action::UpdateSelectedCurvePipeRadius, radius);
         }
 
-        if (ImGui::SliderInt("Pipe Sector Count", &sectorCount, 3, 256)) {
+        if (ImGui::SliderInt("Pipe Sector Count", &sectorCount, 3, 192)) {
             emit action(Action::UpdateSelectedCurvePipeSectorCount, sectorCount);
         }
 

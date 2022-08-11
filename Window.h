@@ -6,7 +6,7 @@
 #include "LightManager.h"
 #include "RendererManager.h"
 
-#include <QOpenGLFunctions>
+#include <QOpenGLFunctionsPrivate>
 #include <QOpenGLWindow>
 
 class Window : public QOpenGLWindow, protected QOpenGLFunctions

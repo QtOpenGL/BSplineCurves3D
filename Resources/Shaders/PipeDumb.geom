@@ -78,17 +78,16 @@ vec3 tangent_at(float t)
 }
 
 // Rotation around axis by angle radians
-mat4 rotation_matrix(vec3 axis, float angle)
+mat3 rotation_matrix(vec3 axis, float angle)
 {
     axis = normalize(axis);
     float s = sin(angle);
     float c = cos(angle);
-    float oc = 1.0 - c;
+    float oc = 1.0f - c;
 
-    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
-                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
-                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
-                0.0,                                0.0,                                0.0,                                1.0);
+    return mat3(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,
+                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,
+                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c);
 }
 
 // Rotation matrix around the X axis.
@@ -148,6 +147,11 @@ float atan2(float num, float denum) {
 
 }
 
+// n: normal, o: point on the plane, p: subject
+vec3 project_onto_plane(vec3 n, vec3 o, vec3 p) {
+    return p - n *  dot(n, p-o);
+}
+
 void main()
 {
     float t0 = gs_t[0];
@@ -159,47 +163,42 @@ void main()
     vec3 tangent0 = tangent_at(t0);
     vec3 tangent1 = tangent_at(t1);
 
-    float theta0 = atan2(-tangent0.z, tangent0.x);
-    float theta1 = atan2(-tangent1.z, tangent1.x);
+    vec3 axis = cross(vec3(1.0f,0.0f,0.0f), tangent0);
+    float angle = -acos(dot(vec3(1.0f, 0.0f, 0.0f), tangent0));
 
-    float sqrt0 = sqrt(tangent0.x * tangent0.x + tangent0.z * tangent0.z);
-    float sqrt1 =  sqrt(tangent1.x * tangent1.x + tangent1.z * tangent1.z);
+    if (abs(angle) < 0.0001f || abs(angle - PI) < 0.0001f) {
+        axis = vec3(0, 1, 0);
+    }
 
-    // What if sqrt = 0? We may use atan2 here.
-    // Check for singular cases.
-    float phi0 = atan(tangent0.y / sqrt0);
-    float phi1 = atan(tangent1.y / sqrt1);
+    mat3 rotation = rotation_matrix(axis, angle);
 
-    mat3 rotation0 = rotate_y(-theta0) * rotate_z(-phi0);
-    mat3 rotation1 = rotate_y(-theta1) * rotate_z(-phi1);
+    vec3 position00 = value0 + rotation * vec3(0.0f, r * cos(sector_angle_0), r * sin(sector_angle_0));
+    vec3 position01 = value0 + rotation * vec3(0.0f, r * cos(sector_angle_1), r * sin(sector_angle_1));
+    vec3 position10 = project_onto_plane(tangent1, value1, position00);
+    vec3 position11 = project_onto_plane(tangent1, value1, position01);
+
+    vec3 normal = -cross(normalize(position10 - position00), normalize(position11 - position00));
 
     mat4 pm = projection_matrix * view_matrix;
 
-    vec3 position00 = value0 + rotation0 * vec3(0, r * cos(sector_angle_0), r * sin(sector_angle_0));
-    vec3 position10 = value1 + rotation1 * vec3(0, r * cos(sector_angle_0), r * sin(sector_angle_0));
-    vec3 position01 = value0 + rotation0 * vec3(0, r * cos(sector_angle_1), r * sin(sector_angle_1));
-    vec3 position11 = value1 + rotation1 * vec3(0, r * cos(sector_angle_1), r * sin(sector_angle_1));
-
-    vec3 normal = cross(normalize(position00 - position10), normalize(position01 - position10));
-
     fs_position = position00;
     fs_normal = normal;
-    gl_Position = pm * vec4(position00, 1.0);
-    EmitVertex();
-
-    fs_position = position10;
-    fs_normal = normal;
-    gl_Position = pm * vec4(position10, 1.0);
+    gl_Position = pm * vec4(position00, 1.0f);
     EmitVertex();
 
     fs_position = position01;
     fs_normal = normal;
-    gl_Position = pm * vec4(position01, 1.0);
+    gl_Position = pm * vec4(position01, 1.0f);
+    EmitVertex();
+
+    fs_position = position10;
+    fs_normal = normal;
+    gl_Position = pm * vec4(position10, 1.0f);
     EmitVertex();
 
     fs_position = position11;
     fs_normal = normal;
-    gl_Position = pm * vec4(position11, 1.0);
+    gl_Position = pm * vec4(position11, 1.0f);
     EmitVertex();
 
     EndPrimitive();
