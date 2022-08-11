@@ -90,7 +90,7 @@ void Spline::update() {
             mBezierPatches[i]->addControlPoint(cp3);
         }
 
-    } else {
+    } else if (mKnotPoints.size() >= 4) {
         QVector<QVector3D> splineControlPoints = getSplineControlPoints();
 
         for (int i = 1; i < mKnotPoints.size(); ++i) {
