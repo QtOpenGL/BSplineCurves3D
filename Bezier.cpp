@@ -160,7 +160,7 @@ float Bezier::length() {
 
     return mLength;
 }
-int i = 0;
+
 void Bezier::generateVertices() {
     mVertexGenerationStatus = VertexGenerationStatus::GeneratingVertices;
 
