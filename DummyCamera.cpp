@@ -1,5 +1,4 @@
 #include "DummyCamera.h"
-#include "CameraManager.h"
 
 DummyCamera::DummyCamera(QObject *parent)
     : Camera(parent)
@@ -7,16 +6,14 @@ DummyCamera::DummyCamera(QObject *parent)
 
 DummyCamera::~DummyCamera() {}
 
-DummyCamera *DummyCamera::create()
-{
-    DummyCamera *camera = new DummyCamera;
-    CAMERA_MANAGER->addCamera(camera);
-    return camera;
-}
+void DummyCamera::onKeyPressed(QKeyEvent *) {}
 
-void DummyCamera::remove()
-{
-    CAMERA_MANAGER->removeCamera(this);
-}
+void DummyCamera::onKeyReleased(QKeyEvent *) {}
 
-CameraManager *DummyCamera::CAMERA_MANAGER = CameraManager::instance();
+void DummyCamera::onMousePressed(QMouseEvent *) {}
+
+void DummyCamera::onMouseReleased(QMouseEvent *) {}
+
+void DummyCamera::onMouseMoved(QMouseEvent *) {}
+
+void DummyCamera::update(float) {}

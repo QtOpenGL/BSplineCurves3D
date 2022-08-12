@@ -35,18 +35,15 @@ bool ModelData::load()
             {
                 QStringList lineList = fileLine.split(" ");
                 normals << QVector3D(lineList[1].toFloat(), lineList[2].toFloat(), lineList[3].toFloat());
-            }
-            else if (fileLine.startsWith("vt "))
+            } else if (fileLine.startsWith("vt "))
             {
                 QStringList lineList = fileLine.split(" ");
                 textureCoords << QVector2D(lineList[1].toFloat(), lineList[2].toFloat());
-            }
-            else if (fileLine.startsWith("v "))
+            } else if (fileLine.startsWith("v "))
             {
                 QStringList lineList = fileLine.split(" ");
                 vertices << QVector3D(lineList[1].toFloat(), lineList[2].toFloat(), lineList[3].toFloat());
-            }
-            else if (fileLine.startsWith("f "))
+            } else if (fileLine.startsWith("f "))
             {
                 QStringList lineList = fileLine.split(" ");
                 for (int i = 1; i <= 3; i++)
@@ -59,8 +56,7 @@ bool ModelData::load()
 
                         if (arg[1].toInt() - 1 < normals.size())
                             mNormals << normals[arg[1].toInt() - 1];
-                    }
-                    else if (arg.size() == 3)
+                    } else if (arg.size() == 3)
                     {
                         if (arg[0].toInt() - 1 < vertices.size())
                             mVertices << vertices[arg[0].toInt() - 1];
@@ -72,15 +68,13 @@ bool ModelData::load()
                             mNormals << normals[arg[2].toInt() - 1];
                     }
                 }
-            }
-            else if (fileLine.startsWith("mtllib "))
+            } else if (fileLine.startsWith("mtllib "))
             {}
         }
         file.close();
         qInfo() << Q_FUNC_INFO << "Model" << (int) mType << "is loaded.";
         return true;
-    }
-    else
+    } else
     {
         qWarning() << Q_FUNC_INFO << QString("Could not open file '%1'.").arg(file.fileName());
         qWarning() << Q_FUNC_INFO << "Could not load model" << (int) mType;

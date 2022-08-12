@@ -4,31 +4,38 @@
 Point::Point(QObject *parent)
     : QObject(parent)
     , mSelected(false)
-    , mPosition(0, 0, 0) {}
+    , mPosition(0, 0, 0)
+{}
 
 Point::Point(float x, float y, float z, QObject *parent)
     : QObject(parent)
     , mSelected(false)
-    , mPosition(x, y, z) {}
+    , mPosition(x, y, z)
+{}
 
 Point::Point(const QVector3D &position, QObject *parent)
     : QObject(parent)
     , mSelected(false)
-    , mPosition(position) {}
+    , mPosition(position)
+{}
 
-bool Point::selected() const {
+bool Point::selected() const
+{
     return mSelected;
 }
 
-void Point::setSelected(bool newSelected) {
+void Point::setSelected(bool newSelected)
+{
     mSelected = newSelected;
 }
 
-const QVector3D &Point::position() const {
+const QVector3D &Point::position() const
+{
     return mPosition;
 }
 
-void Point::setPosition(const QVector3D &newPosition) {
+void Point::setPosition(const QVector3D &newPosition)
+{
     mPosition = newPosition;
 
     Curve *curve = dynamic_cast<Curve *>(parent());

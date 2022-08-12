@@ -4,11 +4,13 @@
 
 Spline::Spline(QObject *parent)
     : Curve(parent)
-    , mPointRemovedOrAdded(true) {}
+    , mPointRemovedOrAdded(true)
+{}
 
 Spline::~Spline() {}
 
-void Spline::addKnotPoint(KnotPoint *knotPoint) {
+void Spline::addKnotPoint(KnotPoint *knotPoint)
+{
     mKnotPoints << knotPoint;
     knotPoint->setParent(this);
 
@@ -16,10 +18,12 @@ void Spline::addKnotPoint(KnotPoint *knotPoint) {
     mPointRemovedOrAdded = true;
 }
 
-void Spline::removeKnotPoint(KnotPoint *knotPoint) {
+void Spline::removeKnotPoint(KnotPoint *knotPoint)
+{
     mKnotPoints.removeAll(knotPoint);
 
-    if (knotPoint) {
+    if (knotPoint)
+    {
         knotPoint->setParent(nullptr);
         knotPoint->deleteLater();
     }
@@ -28,32 +32,39 @@ void Spline::removeKnotPoint(KnotPoint *knotPoint) {
     mPointRemovedOrAdded = true;
 }
 
-void Spline::recreateBezierPatches() {
-    for (auto &patch : mBezierPatches) {
+void Spline::recreateBezierPatches()
+{
+    for (auto &patch : mBezierPatches)
+    {
         patch->deleteLater();
     }
 
     mBezierPatches.clear();
 
-    for (int i = 0; i < mKnotPoints.size() - 1; ++i) {
+    for (int i = 0; i < mKnotPoints.size() - 1; ++i)
+    {
         Bezier *patch = new Bezier;
         patch->setParent(this);
         mBezierPatches << patch;
     }
 }
 
-KnotPoint *Spline::getClosestKnotPointToRay(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance) {
+KnotPoint *Spline::getClosestKnotPointToRay(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance)
+{
     float minDistance = std::numeric_limits<float>::infinity();
     KnotPoint *closestPoint = nullptr;
 
-    for (auto &point : mKnotPoints) {
+    for (auto &point : mKnotPoints)
+    {
         QVector3D difference = point->position() - rayOrigin;
 
         float dot = QVector3D::dotProduct(difference, rayDirection);
 
-        if (dot >= 0.0f) {
+        if (dot >= 0.0f)
+        {
             float distance = (difference - rayDirection * dot).length();
-            if (distance < minDistance) {
+            if (distance < minDistance)
+            {
                 minDistance = distance;
                 closestPoint = point;
             }
@@ -66,19 +77,23 @@ KnotPoint *Spline::getClosestKnotPointToRay(const QVector3D &rayOrigin, const QV
     return closestPoint;
 }
 
-void Spline::update() {
+void Spline::update()
+{
     if (mPointRemovedOrAdded)
         recreateBezierPatches();
 
     for (auto &patch : mBezierPatches)
         patch->removeAllControlPoints();
 
-    if (mKnotPoints.size() == 2) {
+    if (mKnotPoints.size() == 2)
+    {
         for (int i = 0; i < mKnotPoints.size(); ++i)
             mBezierPatches[0]->addControlPoint(new ControlPoint(mKnotPoints.at(i)->position()));
 
-    } else if (mKnotPoints.size() == 3) {
-        for (int i = 0; i < 2; i++) {
+    } else if (mKnotPoints.size() == 3)
+    {
+        for (int i = 0; i < 2; i++)
+        {
             ControlPoint *cp0 = new ControlPoint(mKnotPoints.at(i)->position());
             ControlPoint *cp1 = new ControlPoint((2.0f / 3.0f) * mKnotPoints.at(i)->position() + (1.0f / 3.0f) * mKnotPoints.at(i + 1)->position());
             ControlPoint *cp2 = new ControlPoint((1.0f / 3.0f) * mKnotPoints.at(i)->position() + (2.0f / 3.0f) * mKnotPoints.at(i + 1)->position());
@@ -90,10 +105,12 @@ void Spline::update() {
             mBezierPatches[i]->addControlPoint(cp3);
         }
 
-    } else if (mKnotPoints.size() >= 4) {
+    } else if (mKnotPoints.size() >= 4)
+    {
         QVector<QVector3D> splineControlPoints = getSplineControlPoints();
 
-        for (int i = 1; i < mKnotPoints.size(); ++i) {
+        for (int i = 1; i < mKnotPoints.size(); ++i)
+        {
             ControlPoint *cp0 = new ControlPoint(mKnotPoints.at(i - 1)->position());
             ControlPoint *cp1 = new ControlPoint((2.0f / 3.0f) * splineControlPoints[i - 1] + (1.0f / 3.0f) * splineControlPoints[i]);
             ControlPoint *cp2 = new ControlPoint((1.0f / 3.0f) * splineControlPoints[i - 1] + (2.0f / 3.0f) * splineControlPoints[i]);
@@ -110,35 +127,42 @@ void Spline::update() {
     mDirty = false;
 }
 
-QVector3D Spline::valueAt(float t) const {
+QVector3D Spline::valueAt(float t) const
+{
     int n = qMin((int) t, mBezierPatches.size() - 1);
 
     return mBezierPatches[n]->valueAt(t - n);
 }
 
-QVector3D Spline::tangentAt(float t) const {
+QVector3D Spline::tangentAt(float t) const
+{
     int n = qMin((int) t, mBezierPatches.size() - 1);
 
     return mBezierPatches[n]->tangentAt(t - n);
 }
 
-void Spline::translate(const QVector3D &translation) {
-    for (auto &point : mKnotPoints) {
+void Spline::translate(const QVector3D &translation)
+{
+    for (auto &point : mKnotPoints)
+    {
         point->setPosition(point->position() + translation);
     }
 
     mDirty = true;
 }
 
-float Spline::closestDistanceToRay(const QVector3D &cameraPosition, const QVector3D &rayDirection, float epsilon) {
+float Spline::closestDistanceToRay(const QVector3D &cameraPosition, const QVector3D &rayDirection, float epsilon)
+{
     if (mDirty)
         update();
 
     float minDistance = std::numeric_limits<float>::infinity();
 
-    for (auto &patch : mBezierPatches) {
+    for (auto &patch : mBezierPatches)
+    {
         float distance = patch->closestDistanceToRay(cameraPosition, rayDirection);
-        if (distance < minDistance) {
+        if (distance < minDistance)
+        {
             minDistance = distance;
         }
     }
@@ -146,25 +170,30 @@ float Spline::closestDistanceToRay(const QVector3D &cameraPosition, const QVecto
     return minDistance;
 }
 
-float Spline::length() {
+float Spline::length()
+{
     if (mDirty)
         update();
 
     float length = 0.0f;
 
-    for (auto &patch : mBezierPatches) {
+    for (auto &patch : mBezierPatches)
+    {
         length += patch->length();
     }
 
     return length;
 }
 
-Eigen::MatrixXf Spline::createCoefficientMatrix() {
+Eigen::MatrixXf Spline::createCoefficientMatrix()
+{
     int n = mKnotPoints.size() - 2;
     Eigen::MatrixXf coef(n, n);
 
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < n; ++j) {
+    for (int i = 0; i < n; ++i)
+    {
+        for (int j = 0; j < n; ++j)
+        {
             coef(i, j) = 0;
         }
     }
@@ -173,7 +202,8 @@ Eigen::MatrixXf Spline::createCoefficientMatrix() {
     coef(0, 0) = 4;
     coef(0, 1) = 1;
 
-    for (int i = 1; i < n - 1; ++i) {
+    for (int i = 1; i < n - 1; ++i)
+    {
         coef(i, i - 1) = 1;
         coef(i, i) = 4;
         coef(i, i + 1) = 1;
@@ -186,12 +216,14 @@ Eigen::MatrixXf Spline::createCoefficientMatrix() {
     return coef;
 }
 
-QVector<QVector3D> Spline::getSplineControlPoints() {
+QVector<QVector3D> Spline::getSplineControlPoints()
+{
     int n = mKnotPoints.size();
 
     Eigen::MatrixXf knotPoints(n, 3);
 
-    for (int i = 0; i < n; ++i) {
+    for (int i = 0; i < n; ++i)
+    {
         knotPoints(i, 0) = mKnotPoints.at(i)->position().x();
         knotPoints(i, 1) = mKnotPoints.at(i)->position().y();
         knotPoints(i, 2) = mKnotPoints.at(i)->position().z();
@@ -200,13 +232,16 @@ QVector<QVector3D> Spline::getSplineControlPoints() {
     // Constants on the right side
     Eigen::MatrixXf constants(n - 2, 3);
 
-    for (int j = 0; j < 3; ++j) {
+    for (int j = 0; j < 3; ++j)
+    {
         constants(0, j) = 6 * knotPoints(1, j) - knotPoints(0, j);
         constants(n - 3, j) = 6 * knotPoints(n - 2, j) - knotPoints(n - 1, j);
     }
 
-    for (int i = 1; i < n - 3; ++i) {
-        for (int j = 0; j < 3; ++j) {
+    for (int i = 1; i < n - 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
             constants(i, j) = 6 * knotPoints(i + 1, j);
         }
     }
@@ -225,36 +260,42 @@ QVector<QVector3D> Spline::getSplineControlPoints() {
     return result;
 }
 
-float Spline::radius() const {
+float Spline::radius() const
+{
     return mRadius;
 }
 
-void Spline::setRadius(float newRadius) {
+void Spline::setRadius(float newRadius)
+{
     mRadius = newRadius;
 
     for (auto &patch : mBezierPatches)
         patch->setRadius(mRadius);
 }
 
-int Spline::sectorCount() const {
+int Spline::sectorCount() const
+{
     return mSectorCount;
 }
 
-void Spline::setSectorCount(int newSectorCount) {
+void Spline::setSectorCount(int newSectorCount)
+{
     mSectorCount = newSectorCount;
 
     for (auto &patch : mBezierPatches)
         patch->setSectorCount(mSectorCount);
 }
 
-const QList<KnotPoint *> &Spline::knotPoints() {
+const QList<KnotPoint *> &Spline::knotPoints()
+{
     if (mDirty)
         update();
 
     return mKnotPoints;
 }
 
-Spline *Spline::deepCopy() {
+Spline *Spline::deepCopy()
+{
     Spline *copy = new Spline;
 
     for (auto &point : mKnotPoints)
@@ -263,7 +304,8 @@ Spline *Spline::deepCopy() {
     return copy;
 }
 
-const QList<Bezier *> &Spline::bezierPatches() {
+const QList<Bezier *> &Spline::bezierPatches()
+{
     if (mDirty)
         update();
 

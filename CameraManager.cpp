@@ -16,9 +16,7 @@ void CameraManager::removeCamera(Camera *camera)
     if (camera)
     {
         if (camera == mActiveCamera)
-        {
             mActiveCamera = nullptr;
-        }
 
         mCameras.removeAll(camera);
         camera->deleteLater();

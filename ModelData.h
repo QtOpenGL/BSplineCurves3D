@@ -13,7 +13,7 @@ class ModelData : public QObject, protected QOpenGLFunctions
     Q_OBJECT
 public:
     explicit ModelData(Model::Type type, QObject *parent = nullptr);
-    ~ModelData();
+    virtual ~ModelData();
 
     bool load();
     bool create();

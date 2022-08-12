@@ -38,12 +38,12 @@ public:
 
     virtual QVector3D getViewDirection();
 
-    virtual void onKeyPressed(QKeyEvent *);
-    virtual void onKeyReleased(QKeyEvent *);
-    virtual void onMousePressed(QMouseEvent *);
-    virtual void onMouseReleased(QMouseEvent *);
-    virtual void onMouseMoved(QMouseEvent *);
-    virtual void update(float);
+    virtual void onKeyPressed(QKeyEvent *) = 0;
+    virtual void onKeyReleased(QKeyEvent *) = 0;
+    virtual void onMousePressed(QMouseEvent *) = 0;
+    virtual void onMouseReleased(QMouseEvent *) = 0;
+    virtual void onMouseMoved(QMouseEvent *) = 0;
+    virtual void update(float) = 0;
 
 private:
     void updateTransformation();

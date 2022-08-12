@@ -6,27 +6,33 @@ CurveManager::CurveManager(QObject *parent)
     , mSelectedCurve(nullptr)
     , mSelectedPoint(nullptr)
     , mGlobalPipeRadius(0.125f)
-    , mGlobalPipeSectorCount(128) {}
+    , mGlobalPipeSectorCount(128)
+{}
 
-CurveManager *CurveManager::instance() {
+CurveManager *CurveManager::instance()
+{
     static CurveManager instance;
 
     return &instance;
 }
 
-const QList<Spline *> &CurveManager::curves() const {
+const QList<Spline *> &CurveManager::curves() const
+{
     return mCurves;
 }
 
-QList<Spline *> &CurveManager::getCurvesNonConst() {
+QList<Spline *> &CurveManager::getCurvesNonConst()
+{
     return mCurves;
 }
 
-void CurveManager::addCurve(Spline *curve) {
+void CurveManager::addCurve(Spline *curve)
+{
     mCurves << curve;
 }
 
-void CurveManager::removeCurve(Spline *curve) {
+void CurveManager::removeCurve(Spline *curve)
+{
     if (curve == mSelectedCurve)
         setSelectedCurve(nullptr);
 
@@ -34,8 +40,10 @@ void CurveManager::removeCurve(Spline *curve) {
     curve->deleteLater();
 }
 
-void CurveManager::removeAllCurves() {
-    for (auto &curve : mCurves) {
+void CurveManager::removeAllCurves()
+{
+    for (auto &curve : mCurves)
+    {
         curve->deleteLater();
     }
 
@@ -44,26 +52,32 @@ void CurveManager::removeAllCurves() {
     setSelectedKnotPoint(nullptr);
 }
 
-void CurveManager::addCurves(QList<Spline *> curves) {
-    for (auto &curve : curves) {
+void CurveManager::addCurves(QList<Spline *> curves)
+{
+    for (auto &curve : curves)
+    {
         mCurves << curve;
     }
 }
 
-Spline *CurveManager::selectCurve(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance) {
+Spline *CurveManager::selectCurve(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance)
+{
     float minDistance = std::numeric_limits<float>::infinity();
     Spline *selectedCurve = nullptr;
 
-    for (auto &curve : mCurves) {
+    for (auto &curve : mCurves)
+    {
         float distance = curve->closestDistanceToRay(rayOrigin, rayDirection);
 
-        if (distance < minDistance) {
+        if (distance < minDistance)
+        {
             minDistance = distance;
             selectedCurve = curve;
         }
     }
 
-    if (minDistance >= maxDistance) {
+    if (minDistance >= maxDistance)
+    {
         selectedCurve = nullptr;
     }
 
@@ -72,8 +86,10 @@ Spline *CurveManager::selectCurve(const QVector3D &rayOrigin, const QVector3D &r
     return selectedCurve;
 }
 
-KnotPoint *CurveManager::selectKnotPoint(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance) {
-    if (mSelectedCurve) {
+KnotPoint *CurveManager::selectKnotPoint(const QVector3D &rayOrigin, const QVector3D &rayDirection, float maxDistance)
+{
+    if (mSelectedCurve)
+    {
         KnotPoint *point = mSelectedCurve->getClosestKnotPointToRay(rayOrigin, rayDirection, maxDistance);
         setSelectedKnotPoint(point);
         return point;
@@ -82,11 +98,13 @@ KnotPoint *CurveManager::selectKnotPoint(const QVector3D &rayOrigin, const QVect
     return nullptr;
 }
 
-Spline *CurveManager::selectedCurve() const {
+Spline *CurveManager::selectedCurve() const
+{
     return mSelectedCurve;
 }
 
-void CurveManager::setSelectedCurve(Spline *newSelectedCurve) {
+void CurveManager::setSelectedCurve(Spline *newSelectedCurve)
+{
     if (mSelectedCurve == newSelectedCurve)
         return;
 
@@ -103,11 +121,13 @@ void CurveManager::setSelectedCurve(Spline *newSelectedCurve) {
     setSelectedKnotPoint(nullptr);
 }
 
-KnotPoint *CurveManager::selectedKnotPoint() const {
+KnotPoint *CurveManager::selectedKnotPoint() const
+{
     return mSelectedPoint;
 }
 
-void CurveManager::setSelectedKnotPoint(KnotPoint *newSelectedPoint) {
+void CurveManager::setSelectedKnotPoint(KnotPoint *newSelectedPoint)
+{
     if (mSelectedPoint == newSelectedPoint)
         return;
 
@@ -121,26 +141,32 @@ void CurveManager::setSelectedKnotPoint(KnotPoint *newSelectedPoint) {
     emit selectedKnotPointChanged(mSelectedPoint);
 }
 
-float CurveManager::globalPipeRadius() const {
+float CurveManager::globalPipeRadius() const
+{
     return mGlobalPipeRadius;
 }
 
-void CurveManager::setGlobalPipeRadius(float newGlobalPipeRadius) {
+void CurveManager::setGlobalPipeRadius(float newGlobalPipeRadius)
+{
     mGlobalPipeRadius = newGlobalPipeRadius;
 
-    for (auto &curve : mCurves) {
+    for (auto &curve : mCurves)
+    {
         curve->setRadius(mGlobalPipeRadius);
     }
 }
 
-int CurveManager::globalPipeSectorCount() const {
+int CurveManager::globalPipeSectorCount() const
+{
     return mGlobalPipeSectorCount;
 }
 
-void CurveManager::setGlobalPipeSectorCount(int newGlobalPipeSectorCount) {
+void CurveManager::setGlobalPipeSectorCount(int newGlobalPipeSectorCount)
+{
     mGlobalPipeSectorCount = newGlobalPipeSectorCount;
 
-    for (auto &curve : mCurves) {
+    for (auto &curve : mCurves)
+    {
         curve->setSectorCount(mGlobalPipeSectorCount);
     }
 }

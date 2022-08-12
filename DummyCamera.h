@@ -8,18 +8,18 @@
 class DummyCamera : public Camera
 {
     Q_OBJECT
-private:
-    friend class CameraManager;
-
-private:
+public:
     explicit DummyCamera(QObject *parent = nullptr);
     virtual ~DummyCamera();
 
-    static CameraManager *CAMERA_MANAGER;
-
+    // Camera interface
 public:
-    static DummyCamera *create();
-    void remove();
+    void onKeyPressed(QKeyEvent *);
+    void onKeyReleased(QKeyEvent *);
+    void onMousePressed(QMouseEvent *);
+    void onMouseReleased(QMouseEvent *);
+    void onMouseMoved(QMouseEvent *);
+    void update(float);
 };
 
 #endif // DUMMYCAMERA_H

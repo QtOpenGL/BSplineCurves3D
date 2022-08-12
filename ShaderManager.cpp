@@ -3,9 +3,11 @@
 
 ShaderManager::ShaderManager(QObject *parent)
     : QObject{parent}
-    , mActiveShader(Shader::None) {}
+    , mActiveShader(Shader::None)
+{}
 
-bool ShaderManager::init() {
+bool ShaderManager::init()
+{
     initializeOpenGLFunctions();
 
     // Basic
@@ -13,22 +15,26 @@ bool ShaderManager::init() {
         QOpenGLShaderProgram *shader = new QOpenGLShaderProgram;
         mPrograms.insert(Shader::Basic, shader);
 
-        if (!shader->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/Basic.vert"))) {
+        if (!shader->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/Basic.vert")))
+        {
             qWarning() << Q_FUNC_INFO << "Could not load vertex shader.";
             return false;
         }
 
-        if (!shader->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/Basic.frag"))) {
+        if (!shader->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/Basic.frag")))
+        {
             qWarning() << Q_FUNC_INFO << "Could not load fragment shader.";
             return false;
         }
 
-        if (!shader->link()) {
+        if (!shader->link())
+        {
             qWarning() << Q_FUNC_INFO << "Could not link shader program.";
             return false;
         }
 
-        if (!shader->bind()) {
+        if (!shader->bind())
+        {
             qWarning() << Q_FUNC_INFO << "Could not bind shader program.";
             return false;
         }
@@ -68,22 +74,26 @@ bool ShaderManager::init() {
         QOpenGLShaderProgram *shader = new QOpenGLShaderProgram;
         mPrograms.insert(Shader::Path, shader);
 
-        if (!shader->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/Path.vert"))) {
+        if (!shader->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/Path.vert")))
+        {
             qWarning() << Q_FUNC_INFO << "Could not load vertex shader.";
             return false;
         }
 
-        if (!shader->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/Path.frag"))) {
+        if (!shader->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/Path.frag")))
+        {
             qWarning() << Q_FUNC_INFO << "Could not load fragment shader.";
             return false;
         }
 
-        if (!shader->link()) {
+        if (!shader->link())
+        {
             qWarning() << Q_FUNC_INFO << "Could not link shader program.";
             return false;
         }
 
-        if (!shader->bind()) {
+        if (!shader->bind())
+        {
             qWarning() << Q_FUNC_INFO << "Could not bind shader program.";
             return false;
         }
@@ -111,27 +121,32 @@ bool ShaderManager::init() {
         QOpenGLShaderProgram *shader = new QOpenGLShaderProgram;
         mPrograms.insert(Shader::PipeDumb, shader);
 
-        if (!shader->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/PipeDumb.vert"))) {
+        if (!shader->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/PipeDumb.vert")))
+        {
             qWarning() << Q_FUNC_INFO << "Could not load vertex shader.";
             return false;
         }
 
-        if (!shader->addShaderFromSourceCode(QOpenGLShader::Geometry, Helper::getBytes(":/Resources/Shaders/PipeDumb.geom"))) {
+        if (!shader->addShaderFromSourceCode(QOpenGLShader::Geometry, Helper::getBytes(":/Resources/Shaders/PipeDumb.geom")))
+        {
             qWarning() << Q_FUNC_INFO << "Could not load geometry shader.";
             return false;
         }
 
-        if (!shader->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/PipeDumb.frag"))) {
+        if (!shader->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/PipeDumb.frag")))
+        {
             qWarning() << Q_FUNC_INFO << "Could not load fragment shader.";
             return false;
         }
 
-        if (!shader->link()) {
+        if (!shader->link())
+        {
             qWarning() << Q_FUNC_INFO << "Could not link shader program.";
             return false;
         }
 
-        if (!shader->bind()) {
+        if (!shader->bind())
+        {
             qWarning() << Q_FUNC_INFO << "Could not bind shader program.";
             return false;
         }
@@ -176,22 +191,26 @@ bool ShaderManager::init() {
         QOpenGLShaderProgram *shader = new QOpenGLShaderProgram;
         mPrograms.insert(Shader::PipeSmart, shader);
 
-        if (!shader->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/PipeSmart.vert"))) {
+        if (!shader->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/PipeSmart.vert")))
+        {
             qWarning() << Q_FUNC_INFO << "Could not load vertex shader.";
             return false;
         }
 
-        if (!shader->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/PipeSmart.frag"))) {
+        if (!shader->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/PipeSmart.frag")))
+        {
             qWarning() << Q_FUNC_INFO << "Could not load fragment shader.";
             return false;
         }
 
-        if (!shader->link()) {
+        if (!shader->link())
+        {
             qWarning() << Q_FUNC_INFO << "Could not link shader program.";
             return false;
         }
 
-        if (!shader->bind()) {
+        if (!shader->bind())
+        {
             qWarning() << Q_FUNC_INFO << "Could not bind shader program.";
             return false;
         }
@@ -228,44 +247,54 @@ bool ShaderManager::init() {
     return true;
 }
 
-bool ShaderManager::bind(Shader shader) {
+bool ShaderManager::bind(Shader shader)
+{
     mActiveShader = shader;
     return mPrograms.value(mActiveShader)->bind();
 }
 
-void ShaderManager::release() {
+void ShaderManager::release()
+{
     mPrograms.value(mActiveShader)->release();
 }
 
-void ShaderManager::setUniformValue(const QString &name, int value) {
+void ShaderManager::setUniformValue(const QString &name, int value)
+{
     mPrograms.value(mActiveShader)->setUniformValue(mLocations.value(mActiveShader).value(name), value);
 }
 
-void ShaderManager::setUniformValue(const QString &name, float value) {
+void ShaderManager::setUniformValue(const QString &name, float value)
+{
     mPrograms.value(mActiveShader)->setUniformValue(mLocations.value(mActiveShader).value(name), value);
 }
 
-void ShaderManager::setUniformValue(const QString &name, const QVector3D &value) {
+void ShaderManager::setUniformValue(const QString &name, const QVector3D &value)
+{
     mPrograms.value(mActiveShader)->setUniformValue(mLocations.value(mActiveShader).value(name), value);
 }
 
-void ShaderManager::setUniformValue(const QString &name, const QVector4D &value) {
+void ShaderManager::setUniformValue(const QString &name, const QVector4D &value)
+{
     mPrograms.value(mActiveShader)->setUniformValue(mLocations.value(mActiveShader).value(name), value);
 }
 
-void ShaderManager::setUniformValue(const QString &name, const QMatrix4x4 &value) {
+void ShaderManager::setUniformValue(const QString &name, const QMatrix4x4 &value)
+{
     mPrograms.value(mActiveShader)->setUniformValue(mLocations.value(mActiveShader).value(name), value);
 }
 
-void ShaderManager::setUniformValue(const QString &name, const QMatrix3x3 &value) {
+void ShaderManager::setUniformValue(const QString &name, const QMatrix3x3 &value)
+{
     mPrograms.value(mActiveShader)->setUniformValue(mLocations.value(mActiveShader).value(name), value);
 }
 
-void ShaderManager::setUniformValueArray(const QString &name, const QVector<QVector3D> &values) {
+void ShaderManager::setUniformValueArray(const QString &name, const QVector<QVector3D> &values)
+{
     mPrograms.value(mActiveShader)->setUniformValueArray(mLocations.value(mActiveShader).value(name), values.constData(), values.size());
 }
 
-ShaderManager *ShaderManager::instance() {
+ShaderManager *ShaderManager::instance()
+{
     static ShaderManager instance;
 
     return &instance;

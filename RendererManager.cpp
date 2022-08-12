@@ -10,7 +10,8 @@ RendererManager::RendererManager(QObject *parent)
     , mSelectedCurve(nullptr)
     , mSelectedKnotPoint(nullptr)
     , mRenderPaths(true)
-    , mRenderPipes(true) {
+    , mRenderPipes(true)
+{
     mModelManager = ModelManager::instance();
     mCameraManager = CameraManager::instance();
     mLightManager = LightManager::instance();
@@ -21,12 +22,14 @@ RendererManager::RendererManager(QObject *parent)
     connect(mCurveManager, &CurveManager::selectedKnotPointChanged, this, [=](KnotPoint *selectedPoint) { mSelectedKnotPoint = selectedPoint; });
 }
 
-RendererManager *RendererManager::instance() {
+RendererManager *RendererManager::instance()
+{
     static RendererManager instance;
     return &instance;
 }
 
-bool RendererManager::init() {
+bool RendererManager::init()
+{
     initializeOpenGLFunctions();
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_DEPTH_TEST);
@@ -36,16 +39,19 @@ bool RendererManager::init() {
 
     qInfo() << Q_FUNC_INFO << "Initializing ShaderManager...";
 
-    if (!mShaderManager->init()) {
+    if (!mShaderManager->init())
+    {
         qWarning() << Q_FUNC_INFO << "ShaderManager could not be initialized.";
         return false;
     }
 
     qInfo() << Q_FUNC_INFO << "Loading and creating all models...";
 
-    for (Model::Type type : Model::ALL_MODEL_TYPES) {
+    for (Model::Type type : Model::ALL_MODEL_TYPES)
+    {
         ModelData *data = new ModelData(type);
-        if (!data->load() || !data->create()) {
+        if (!data->load() || !data->create())
+        {
             data->deleteLater();
             continue;
         }
@@ -55,11 +61,13 @@ bool RendererManager::init() {
 
     // Knot Point Model
     {
-        mKnotPointModel = Model::create(Model::Sphere);
+        mKnotPointModel = new Model;
+        mKnotPointModel->setType(Model::Sphere);
         mKnotPointModel->setObjectName("KnotPointModel");
         mKnotPointModel->material().setColor(QVector4D(0, 1, 0, 1));
         mKnotPointModel->setScale(QVector3D(0.005f, 0.005f, 0.005f));
         mKnotPointModel->setVisible(false);
+
         mKnotPointModelData = mTypeToModelData.value(mKnotPointModel->type(), nullptr);
     }
 
@@ -72,7 +80,8 @@ bool RendererManager::init() {
     return true;
 }
 
-void RendererManager::render(float ifps) {
+void RendererManager::render(float ifps)
+{
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     mCamera = mCameraManager->activeCamera();
@@ -90,16 +99,21 @@ void RendererManager::render(float ifps) {
         renderKnotPoints(ifps);
 }
 
-void RendererManager::renderModels(float ifps) {
+void RendererManager::renderModels(float ifps)
+{
+    Q_UNUSED(ifps);
+
     mShaderManager->bind(ShaderManager::Shader::Basic);
 
-    if (mCamera) {
+    if (mCamera)
+    {
         mShaderManager->setUniformValue("projection_matrix", mCamera->projection());
         mShaderManager->setUniformValue("view_matrix", mCamera->transformation());
         mShaderManager->setUniformValue("camera_position", mCamera->position());
     }
 
-    if (mLight) {
+    if (mLight)
+    {
         mShaderManager->setUniformValue("light.position", mLight->position());
         mShaderManager->setUniformValue("light.color", mLight->color());
         mShaderManager->setUniformValue("light.ambient", mLight->ambient());
@@ -109,13 +123,15 @@ void RendererManager::renderModels(float ifps) {
 
     QList<Model *> models = mModelManager->models();
 
-    for (Model *model : qAsConst(models)) {
+    for (Model *model : qAsConst(models))
+    {
         if (!model->visible())
             continue;
 
         ModelData *data = mTypeToModelData.value(model->type(), nullptr);
 
-        if (data) {
+        if (data)
+        {
             data->bind();
 
             mShaderManager->setUniformValue("node.transformation", model->transformation());
@@ -135,17 +151,22 @@ void RendererManager::renderModels(float ifps) {
     mShaderManager->release();
 }
 
-void RendererManager::renderKnotPoints(float ifps) {
+void RendererManager::renderKnotPoints(float ifps)
+{
+    Q_UNUSED(ifps);
+
     mShaderManager->bind(ShaderManager::Shader::Basic);
     mKnotPointModelData->bind();
 
-    if (mCamera) {
+    if (mCamera)
+    {
         mShaderManager->setUniformValue("projection_matrix", mCamera->projection());
         mShaderManager->setUniformValue("view_matrix", mCamera->transformation());
         mShaderManager->setUniformValue("camera_position", mCamera->position());
     }
 
-    if (mLight) {
+    if (mLight)
+    {
         mShaderManager->setUniformValue("light.position", mLight->position());
         mShaderManager->setUniformValue("light.color", mLight->color());
         mShaderManager->setUniformValue("light.ambient", mLight->ambient());
@@ -153,13 +174,15 @@ void RendererManager::renderKnotPoints(float ifps) {
         mShaderManager->setUniformValue("light.specular", mLight->specular());
     }
 
-    if (mSelectedCurve) {
+    if (mSelectedCurve)
+    {
         mShaderManager->setUniformValue("node.ambient", mKnotPointModel->material().ambient());
         mShaderManager->setUniformValue("node.diffuse", mKnotPointModel->material().diffuse());
         mShaderManager->setUniformValue("node.specular", mKnotPointModel->material().specular());
         mShaderManager->setUniformValue("node.shininess", mKnotPointModel->material().shininess());
 
-        for (auto &point : qAsConst(mSelectedCurve->knotPoints())) {
+        for (auto &point : qAsConst(mSelectedCurve->knotPoints()))
+        {
             mKnotPointModel->setPosition(point->position());
             mKnotPointModel->material().setColor(point->selected() ? QVector4D(1, 1, 0, 1) : QVector4D(0, 1, 0, 1));
 
@@ -174,21 +197,28 @@ void RendererManager::renderKnotPoints(float ifps) {
     mShaderManager->release();
 }
 
-void RendererManager::renderPaths(float ifps) {
+void RendererManager::renderPaths(float ifps)
+{
+    Q_UNUSED(ifps);
+
     mShaderManager->bind(ShaderManager::Shader::Path);
     mPathTicks->bind();
 
-    if (mCamera) {
+    if (mCamera)
+    {
         mShaderManager->setUniformValue("projection_matrix", mCamera->projection());
         mShaderManager->setUniformValue("view_matrix", mCamera->transformation());
     }
 
     mShaderManager->setUniformValue("color", QVector4D(1, 0, 0, 1));
 
-    for (auto &curve : qAsConst(mCurveManager->curves())) {
-        if (curve) {
+    for (auto &curve : qAsConst(mCurveManager->curves()))
+    {
+        if (curve)
+        {
             QList<Bezier *> patches = curve->bezierPatches();
-            for (auto &patch : qAsConst(patches)) {
+            for (auto &patch : qAsConst(patches))
+            {
                 auto controlPointPositions = patch->getControlPointPositions();
 
                 mShaderManager->setUniformValue("control_points_count", controlPointPositions.size());
@@ -203,27 +233,36 @@ void RendererManager::renderPaths(float ifps) {
     mShaderManager->release();
 }
 
-void RendererManager::renderPipes(float ifps) {
+void RendererManager::renderPipes(float ifps)
+{
     // Pipe
 
-    for (auto &curve : qAsConst(mCurveManager->curves())) {
-        if (curve) {
+    for (auto &curve : qAsConst(mCurveManager->curves()))
+    {
+        if (curve)
+        {
             QList<Bezier *> patches = curve->bezierPatches();
 
-            for (auto &patch : patches) {
-                if (!patch->initialized()) {
+            for (auto &patch : patches)
+            {
+                if (!patch->initialized())
+                {
                     patch->initializeOpenGLStuff();
                 }
 
-                if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::GeneratingVertices) {
+                if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::GeneratingVertices)
+                {
                     renderUsingDumbShader(ifps, curve, patch);
-                } else if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::WaitingForOpenGLUpdate) {
+                } else if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::WaitingForOpenGLUpdate)
+                {
                     patch->updateOpenGLStuff();
                     renderUsingSmartShader(ifps, curve, patch);
-                } else if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::Dirty) {
+                } else if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::Dirty)
+                {
                     patch->generateVertices();
                     renderUsingDumbShader(ifps, curve, patch);
-                } else if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::Ready) {
+                } else if (patch->vertexGenerationStatus() == Bezier::VertexGenerationStatus::Ready)
+                {
                     renderUsingSmartShader(ifps, curve, patch);
                 }
             }
@@ -231,17 +270,22 @@ void RendererManager::renderPipes(float ifps) {
     }
 }
 
-void RendererManager::renderUsingDumbShader(float ifps, Spline *curve, Bezier *patch) {
+void RendererManager::renderUsingDumbShader(float ifps, Spline *curve, Bezier *patch)
+{
+    Q_UNUSED(ifps);
+
     mShaderManager->bind(ShaderManager::Shader::PipeDumb);
     mPipeTicks->bind();
 
-    if (mCamera) {
+    if (mCamera)
+    {
         mShaderManager->setUniformValue("projection_matrix", mCamera->projection());
         mShaderManager->setUniformValue("view_matrix", mCamera->transformation());
         mShaderManager->setUniformValue("camera_position", mCamera->position());
     }
 
-    if (mLight) {
+    if (mLight)
+    {
         mShaderManager->setUniformValue("light.position", mLight->position());
         mShaderManager->setUniformValue("light.color", mLight->color());
         mShaderManager->setUniformValue("light.ambient", mLight->ambient());
@@ -265,7 +309,8 @@ void RendererManager::renderUsingDumbShader(float ifps, Spline *curve, Bezier *p
     int n = patch->sectorCount();
     float r = patch->radius();
 
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++)
+    {
         float sectorAngle0 = 2.0f * float(i) * M_PI / n;
         float sectorAngle1 = 2.0f * float(i + 1) * M_PI / n;
 
@@ -280,16 +325,22 @@ void RendererManager::renderUsingDumbShader(float ifps, Spline *curve, Bezier *p
     mShaderManager->release();
 }
 
-void RendererManager::renderUsingSmartShader(float ifps, Spline *curve, Bezier *patch) {
+void RendererManager::renderUsingSmartShader(float ifps, Spline *curve, Bezier *patch)
+{
+    Q_UNUSED(ifps);
+
     mShaderManager->bind(ShaderManager::Shader::PipeSmart);
 
-    if (mCamera) {
+    if (mCamera)
+    {
         mShaderManager->setUniformValue("projection_matrix", mCamera->projection());
         mShaderManager->setUniformValue("view_matrix", mCamera->transformation());
         mShaderManager->setUniformValue("camera_position", mCamera->position());
     }
 
-    if (mLight) {
+    if (mLight)
+        Q_UNUSED(ifps);
+    {
         mShaderManager->setUniformValue("light.position", mLight->position());
         mShaderManager->setUniformValue("light.color", mLight->color());
         mShaderManager->setUniformValue("light.ambient", mLight->ambient());
@@ -310,18 +361,22 @@ void RendererManager::renderUsingSmartShader(float ifps, Spline *curve, Bezier *
     mShaderManager->release();
 }
 
-void RendererManager::setRenderPipes(bool newRenderPipes) {
+void RendererManager::setRenderPipes(bool newRenderPipes)
+{
     mRenderPipes = newRenderPipes;
 }
 
-void RendererManager::setRenderPaths(bool newRenderPaths) {
+void RendererManager::setRenderPaths(bool newRenderPaths)
+{
     mRenderPaths = newRenderPaths;
 }
 
-bool RendererManager::getRenderPaths() const {
+bool RendererManager::getRenderPaths() const
+{
     return mRenderPaths;
 }
 
-bool RendererManager::getRenderPipes() const {
+bool RendererManager::getRenderPipes() const
+{
     return mRenderPipes;
 }

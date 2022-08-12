@@ -8,7 +8,8 @@
 
 Window::Window(QWindow *parent)
     : QOpenGLWindow(QOpenGLWindow::UpdateBehavior::NoPartialUpdate, parent)
-    , mMode(Mode::Select) {
+    , mMode(Mode::Select)
+{
     mRendererManager = RendererManager::instance();
     mCurveManager = CurveManager::instance();
     mLightManager = LightManager::instance();
@@ -23,7 +24,8 @@ Window::Window(QWindow *parent)
     connect(this, &QOpenGLWindow::frameSwapped, this, [=]() { update(); });
 }
 
-void Window::initializeGL() {
+void Window::initializeGL()
+{
     initializeOpenGLFunctions();
 
     QtImGui::initialize(this);
@@ -34,11 +36,13 @@ void Window::initializeGL() {
     mPreviousTime = mCurrentTime;
 }
 
-void Window::resizeGL(int w, int h) {
+void Window::resizeGL(int w, int h)
+{
     emit resized(w, h);
 }
 
-void Window::paintGL() {
+void Window::paintGL()
+{
     mActiveLight = mLightManager->activeLight();
     mRenderPaths = mRendererManager->getRenderPaths();
     mRenderPipes = mRendererManager->getRenderPipes();
@@ -59,8 +63,10 @@ void Window::paintGL() {
     ImGui::SetNextWindowSize(ImVec2(420, 820), ImGuiCond_FirstUseEver);
     ImGui::Begin("Controls", NULL, ImGuiWindowFlags_MenuBar);
 
-    if (ImGui::BeginMenuBar()) {
-        if (ImGui::BeginMenu("File")) {
+    if (ImGui::BeginMenuBar())
+    {
+        if (ImGui::BeginMenu("File"))
+        {
             if (ImGui::MenuItem("Import"))
                 emit action(Action::ShowImportWindow);
 
@@ -72,41 +78,41 @@ void Window::paintGL() {
         ImGui::EndMenuBar();
     }
     // Mode
-    if (!ImGui::CollapsingHeader("Mode")) {
+    if (!ImGui::CollapsingHeader("Mode"))
+    {
         int mode = (int) mMode;
 
         ImGui::RadioButton("Select (Z)", &mode, 0);
         ImGui::RadioButton("Add Knot (C)", &mode, 1);
 
-        if (mode != (int) mMode) {
+        if (mode != (int) mMode)
+        {
             mMode = (Mode) mode;
             emit action(Action::UpdateMode, mode);
         }
     }
 
     // Render Settings
-    if (!ImGui::CollapsingHeader("Render Settings")) {
-        if (ImGui::SliderFloat("Pipe Radius (Global)", &mGlobalPipeRadius, 0.001f, 1.0f, "%.3f")) {
+    if (!ImGui::CollapsingHeader("Render Settings"))
+    {
+        if (ImGui::SliderFloat("Pipe Radius (Global)", &mGlobalPipeRadius, 0.001f, 1.0f, "%.3f"))
             emit action(Action::UpdateGlobalPipeRadius, mGlobalPipeRadius);
-        }
 
-        if (ImGui::SliderInt("Pipe Sector Count (Global)", &mGlobalPipeSectorCount, 3, 192)) {
+        if (ImGui::SliderInt("Pipe Sector Count (Global)", &mGlobalPipeSectorCount, 3, 192))
             emit action(Action::UpdateGlobalPipeSectorCount, mGlobalPipeSectorCount);
-        }
 
-        if (ImGui::Checkbox("Render Paths", &mRenderPaths)) {
+        if (ImGui::Checkbox("Render Paths", &mRenderPaths))
             emit action(Action::UpdateRenderPaths, mRenderPaths);
-        }
 
         ImGui::SameLine();
 
-        if (ImGui::Checkbox("Render Pipes", &mRenderPipes)) {
+        if (ImGui::Checkbox("Render Pipes", &mRenderPipes))
             emit action(Action::UpdateRenderPipes, mRenderPipes);
-        }
     }
 
     // Light
-    if (!ImGui::CollapsingHeader("Light")) {
+    if (!ImGui::CollapsingHeader("Light"))
+    {
         {
             ImGui::Text("Position:");
             QVector3D position = mActiveLight->position();
@@ -133,28 +139,25 @@ void Window::paintGL() {
             float diffuse = mActiveLight->diffuse();
             float specular = mActiveLight->specular();
 
-            if (ImGui::SliderFloat("Ambient", &ambient, 0.0f, 1.0f, "%.3f")) {
+            if (ImGui::SliderFloat("Ambient", &ambient, 0.0f, 1.0f, "%.3f"))
                 mActiveLight->setAmbient(ambient);
-            }
 
-            if (ImGui::SliderFloat("Diffuse", &diffuse, 0.0f, 1.0f, "%.3f")) {
+            if (ImGui::SliderFloat("Diffuse", &diffuse, 0.0f, 1.0f, "%.3f"))
                 mActiveLight->setDiffuse(diffuse);
-            }
 
-            if (ImGui::SliderFloat("Specular", &specular, 0.0f, 1.0f, "%.3f")) {
+            if (ImGui::SliderFloat("Specular", &specular, 0.0f, 1.0f, "%.3f"))
                 mActiveLight->setSpecular(specular);
-            }
 
             float color[4] = {mActiveLight->color().x(), mActiveLight->color().y(), mActiveLight->color().z(), mActiveLight->color().w()};
 
-            if (ImGui::ColorEdit4("Color##Light", (float *) &color)) {
+            if (ImGui::ColorEdit4("Color##Light", (float *) &color))
                 mActiveLight->setColor(QVector4D(color[0], color[1], color[2], color[3]));
-            }
         }
     }
 
     // Curve
-    if (!ImGui::CollapsingHeader("Curve")) {
+    if (!ImGui::CollapsingHeader("Curve"))
+    {
         int n = mSelectedCurve ? mSelectedCurve->knotPoints().size() : 0;
         float length = mSelectedCurve ? mSelectedCurve->length() : 0.0f;
         float radius = mSelectedCurve ? mSelectedCurve->radius() : 0.0f;
@@ -165,13 +168,11 @@ void Window::paintGL() {
         ImGui::Text("Knots: %d", n);
         ImGui::Text("Length: %.2f", length);
 
-        if (ImGui::SliderFloat("Pipe Radius", &radius, 0.001f, 1.0f, "%.3f")) {
+        if (ImGui::SliderFloat("Pipe Radius", &radius, 0.001f, 1.0f, "%.3f"))
             emit action(Action::UpdateSelectedCurvePipeRadius, radius);
-        }
 
-        if (ImGui::SliderInt("Pipe Sector Count", &sectorCount, 3, 192)) {
+        if (ImGui::SliderInt("Pipe Sector Count", &sectorCount, 3, 192))
             emit action(Action::UpdateSelectedCurvePipeSectorCount, sectorCount);
-        }
 
         ImGui::Text("Shading Parameters:");
         float ambient = mSelectedCurve ? mSelectedCurve->material().ambient() : 0.0f;
@@ -188,7 +189,8 @@ void Window::paintGL() {
         ImGui::SliderFloat("Specular##Curve", &specular, 0.0f, 1.0f, "%.3f");
         ImGui::ColorEdit4("Color##Curve", (float *) &color);
 
-        if (mSelectedCurve) {
+        if (mSelectedCurve)
+        {
             Material material;
             material.setAmbient(ambient);
             material.setDiffuse(diffuse);
@@ -204,7 +206,8 @@ void Window::paintGL() {
     }
 
     // Knot
-    if (!ImGui::CollapsingHeader("Knot")) {
+    if (!ImGui::CollapsingHeader("Knot"))
+    {
         float x = mSelectedKnotPoint ? mSelectedKnotPoint->position().x() : 0;
         float y = mSelectedKnotPoint ? mSelectedKnotPoint->position().y() : 0;
         float z = mSelectedKnotPoint ? mSelectedKnotPoint->position().z() : 0;
@@ -223,7 +226,8 @@ void Window::paintGL() {
         if (ImGui::DragFloat("z##Knot", &z, 0.001f, -1000, 1000, "%.3f"))
             update = true;
 
-        if (update) {
+        if (update)
+        {
             QList<QVariant> list;
             list << x;
             list << y;
@@ -251,38 +255,47 @@ void Window::paintGL() {
     QtImGui::render();
 }
 
-void Window::keyPressEvent(QKeyEvent *event) {
+void Window::keyPressEvent(QKeyEvent *event)
+{
     emit keyPressed(event);
 }
 
-void Window::keyReleaseEvent(QKeyEvent *event) {
+void Window::keyReleaseEvent(QKeyEvent *event)
+{
     emit keyReleased(event);
 }
 
-void Window::mousePressEvent(QMouseEvent *event) {
+void Window::mousePressEvent(QMouseEvent *event)
+{
     emit mousePressed(event);
 }
 
-void Window::mouseReleaseEvent(QMouseEvent *event) {
+void Window::mouseReleaseEvent(QMouseEvent *event)
+{
     emit mouseReleased(event);
 }
 
-void Window::mouseMoveEvent(QMouseEvent *event) {
+void Window::mouseMoveEvent(QMouseEvent *event)
+{
     emit mouseMoved(event);
 }
 
-void Window::wheelEvent(QWheelEvent *event) {
+void Window::wheelEvent(QWheelEvent *event)
+{
     emit wheelMoved(event);
 }
 
-void Window::mouseDoubleClickEvent(QMouseEvent *event) {
+void Window::mouseDoubleClickEvent(QMouseEvent *event)
+{
     emit mouseDoubleClicked(event);
 }
 
-bool Window::imguiWantCapture() const {
+bool Window::imguiWantCapture() const
+{
     return mImguiWantCapture;
 }
 
-void Window::onModeChanged(Mode newMode) {
+void Window::onModeChanged(Mode newMode)
+{
     mMode = newMode;
 }

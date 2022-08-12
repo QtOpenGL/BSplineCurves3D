@@ -8,15 +8,11 @@
 
 class Model : public Node
 {
-private:
-    friend class ModelManager;
-
+public:
     explicit Model(QObject *parent = nullptr);
     virtual ~Model();
 
-public:
-    enum Type
-    { //
+    enum Type { //
         Capsule,
         Cone,
         Cube,
@@ -36,20 +32,15 @@ public:
     Material &material();
     void setMaterial(const Material &newMaterial);
 
-    static Model *create(Type type);
-    void remove();
-
-    static const QVector<Model::Type> ALL_MODEL_TYPES;
-
     bool visible() const;
     void setVisible(bool newVisible);
 
-protected:
+    static const QVector<Model::Type> ALL_MODEL_TYPES;
+
+private:
     Type mType;
     Material mMaterial;
     bool mVisible;
-
-    static ModelManager *MODEL_MANAGER;
 };
 
 #endif // MODEL_H

@@ -9,9 +9,7 @@ class FreeCamera : public Camera
 {
     Q_OBJECT
 
-private:
-    friend class CameraManager;
-
+public:
     explicit FreeCamera(QObject *parent = nullptr);
 
     void onKeyPressed(QKeyEvent *event) override;
@@ -21,6 +19,7 @@ private:
     void onMouseMoved(QMouseEvent *event) override;
     void update(float ifps) override;
 
+public:
     QMap<Qt::Key, bool> mPressedKeys;
 
     float mMovementSpeed;
@@ -36,12 +35,6 @@ private:
     bool mUpdatePosition;
 
     static const QMap<Qt::Key, QVector3D> KEY_BINDINGS;
-
-    static CameraManager *CAMERA_MANAGER;
-
-public:
-    static FreeCamera *create();
-    void remove();
 };
 
 #endif // FREECAMERA_H

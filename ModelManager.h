@@ -9,18 +9,18 @@ class ModelManager : public QObject
     Q_OBJECT
 
 private:
-    friend class Model;
-
     explicit ModelManager(QObject *parent = nullptr);
+
+public:
     void addModel(Model *model);
     void removeModel(Model *model);
 
-    QList<Model *> mModels;
-
-public:
     const QList<Model *> &models() const;
 
     static ModelManager *instance();
+
+private:
+    QList<Model *> mModels;
 };
 
 #endif // MODELMANAGER_H

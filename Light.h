@@ -5,15 +5,9 @@
 
 class Light : public Node
 {
-private:
-    friend class LightManager;
-
+public:
     explicit Light(QObject *parent = nullptr);
     virtual ~Light();
-
-public:
-    static Light *create();
-    void remove();
 
     const QVector4D &color() const;
     void setColor(const QVector4D &newColor);
@@ -32,8 +26,6 @@ private:
     float mAmbient;
     float mDiffuse;
     float mSpecular;
-
-    static LightManager *LIGHT_MANAGER;
 };
 
 #endif // LIGHT_H
