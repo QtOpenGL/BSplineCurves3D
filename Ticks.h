@@ -12,8 +12,7 @@ public:
     ~Ticks();
 
     void create();
-    void bind();
-    void release();
+    void render();
 
     float startingPoint() const;
     float endPoint() const;

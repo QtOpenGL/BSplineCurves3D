@@ -14,10 +14,7 @@ FreeCamera::FreeCamera(QObject *parent)
     , mMouseDeltaY(0.0f)
     , mUpdateRotation(true)
     , mUpdatePosition(true)
-{
-    mTransformation.setToIdentity();
-    mProjection.setToIdentity();
-}
+{}
 
 void FreeCamera::onKeyPressed(QKeyEvent *event)
 {
@@ -83,13 +80,6 @@ void FreeCamera::update(float ifps)
         for (auto key : keys)
             if (mPressedKeys.value(key, false))
                 mPosition += mMovementSpeed * ifps * mRotation.rotatedVector(KEY_BINDINGS.value(key, QVector3D(0, 0, 0)));
-    }
-
-    if (mUpdatePosition | mUpdateRotation)
-    {
-        mTransformation.setToIdentity();
-        mTransformation.rotate(mRotation.conjugated());
-        mTransformation.translate(-mPosition);
     }
 
     if (mPressedKeys.empty())

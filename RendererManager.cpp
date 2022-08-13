@@ -132,19 +132,13 @@ void RendererManager::renderModels(float ifps)
 
         if (data)
         {
-            data->bind();
-
             mShaderManager->setUniformValue("node.transformation", model->transformation());
             mShaderManager->setUniformValue("node.color", model->material().color());
             mShaderManager->setUniformValue("node.ambient", model->material().ambient());
             mShaderManager->setUniformValue("node.diffuse", model->material().diffuse());
             mShaderManager->setUniformValue("node.specular", model->material().specular());
             mShaderManager->setUniformValue("node.shininess", model->material().shininess());
-
-            // Draw
-            glDrawArrays(GL_TRIANGLES, 0, data->count());
-
-            data->release();
+            data->render();
         }
     }
 
@@ -156,7 +150,6 @@ void RendererManager::renderKnotPoints(float ifps)
     Q_UNUSED(ifps);
 
     mShaderManager->bind(ShaderManager::Shader::Basic);
-    mKnotPointModelData->bind();
 
     if (mCamera)
     {
@@ -189,11 +182,10 @@ void RendererManager::renderKnotPoints(float ifps)
             mShaderManager->setUniformValue("node.color", mKnotPointModel->material().color());
             mShaderManager->setUniformValue("node.transformation", mKnotPointModel->transformation());
 
-            glDrawArrays(GL_TRIANGLES, 0, mKnotPointModelData->count());
+            mKnotPointModelData->render();
         }
     }
 
-    mKnotPointModelData->release();
     mShaderManager->release();
 }
 
@@ -202,7 +194,6 @@ void RendererManager::renderPaths(float ifps)
     Q_UNUSED(ifps);
 
     mShaderManager->bind(ShaderManager::Shader::Path);
-    mPathTicks->bind();
 
     if (mCamera)
     {
@@ -223,13 +214,11 @@ void RendererManager::renderPaths(float ifps)
 
                 mShaderManager->setUniformValue("control_points_count", controlPointPositions.size());
                 mShaderManager->setUniformValueArray("control_points", controlPointPositions);
-
-                glDrawArrays(GL_LINE_STRIP, 0, mPathTicks->size());
+                mPathTicks->render();
             }
         }
     }
 
-    mPathTicks->release();
     mShaderManager->release();
 }
 
@@ -275,7 +264,6 @@ void RendererManager::renderUsingDumbShader(float ifps, Spline *curve, Bezier *p
     Q_UNUSED(ifps);
 
     mShaderManager->bind(ShaderManager::Shader::PipeDumb);
-    mPipeTicks->bind();
 
     if (mCamera)
     {
@@ -317,11 +305,9 @@ void RendererManager::renderUsingDumbShader(float ifps, Spline *curve, Bezier *p
         mShaderManager->setUniformValue("r", r);
         mShaderManager->setUniformValue("sector_angle_0", sectorAngle0);
         mShaderManager->setUniformValue("sector_angle_1", sectorAngle1);
-
-        glDrawArrays(GL_POINTS, 0, mPipeTicks->size());
+        mPipeTicks->render();
     }
 
-    mPipeTicks->release();
     mShaderManager->release();
 }
 
@@ -354,9 +340,7 @@ void RendererManager::renderUsingSmartShader(float ifps, Spline *curve, Bezier *
     mShaderManager->setUniformValue("node.specular", curve->material().specular());
     mShaderManager->setUniformValue("node.shininess", curve->material().shininess());
 
-    patch->bind();
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, patch->count());
-    patch->release();
+    patch->render();
 
     mShaderManager->release();
 }

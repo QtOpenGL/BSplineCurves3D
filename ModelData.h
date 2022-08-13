@@ -17,9 +17,7 @@ public:
 
     bool load();
     bool create();
-    void bind();
-    void release();
-    int count();
+    void render();
 
 private:
     Model::Type mType;

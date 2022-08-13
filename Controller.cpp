@@ -304,7 +304,7 @@ void Controller::onAction(Action action, QVariant variant)
     }
 }
 
-void Controller::onWheelMoved(QWheelEvent *event)
+void Controller::onWheelMoved(QWheelEvent *)
 {
     if (mWindow->imguiWantCapture())
         return;

@@ -19,7 +19,7 @@ public:
     void onMouseMoved(QMouseEvent *event) override;
     void update(float ifps) override;
 
-public:
+private:
     QMap<Qt::Key, bool> mPressedKeys;
 
     float mMovementSpeed;

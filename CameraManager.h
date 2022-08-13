@@ -23,8 +23,8 @@ public:
     void onMouseMoved(QMouseEvent *event);
     void update(float ifps);
 
-    QVector3D getViewDirection();
-    QVector3D getDirectionFromScreen(int x, int y, int width, int height);
+    QVector3D getViewDirection() const;
+    QVector3D getDirectionFromScreen(int x, int y, int width, int height) const;
 
     Camera *activeCamera() const;
     void setActiveCamera(Camera *newActiveCamera);

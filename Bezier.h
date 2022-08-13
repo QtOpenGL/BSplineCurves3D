@@ -48,10 +48,7 @@ public:
     void generateVertices();
     void initializeOpenGLStuff();
     void updateOpenGLStuff();
-
-    void bind();
-    void release();
-    int count();
+    void render();
 
     int sectorCount() const;
     void setSectorCount(int newSectorCount);

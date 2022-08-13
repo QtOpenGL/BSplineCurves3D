@@ -69,7 +69,7 @@ void CameraManager::update(float ifps)
         mActiveCamera->update(ifps);
 }
 
-QVector3D CameraManager::getViewDirection()
+QVector3D CameraManager::getViewDirection() const
 {
     if (mActiveCamera)
         return mActiveCamera->getViewDirection();
@@ -77,7 +77,7 @@ QVector3D CameraManager::getViewDirection()
     return QVector3D();
 }
 
-QVector3D CameraManager::getDirectionFromScreen(int x, int y, int width, int height)
+QVector3D CameraManager::getDirectionFromScreen(int x, int y, int width, int height) const
 {
     if (mActiveCamera)
     {

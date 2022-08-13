@@ -4,38 +4,12 @@
 #include <QtMath>
 
 Camera::Camera(QObject *parent)
-    : QObject(parent)
-    , mPosition(0.0f, 0.0f, 0.0f)
+    : Node(parent)
     , mAspectRatio(1.0f)
     , mZNear(0.1f)
     , mZFar(10000.0f)
 {
-    mTransformation.setToIdentity();
-    mProjection.setToIdentity();
-
     setVerticalFov(60.0f);
-}
-
-const QVector3D &Camera::position() const
-{
-    return mPosition;
-}
-
-void Camera::setPosition(const QVector3D &newPosition)
-{
-    mPosition = newPosition;
-    updateTransformation();
-}
-
-const QQuaternion &Camera::rotation() const
-{
-    return mRotation;
-}
-
-void Camera::setRotation(const QQuaternion &newRotation)
-{
-    mRotation = newRotation;
-    updateTransformation();
 }
 
 float Camera::horizontalFov() const
@@ -51,7 +25,6 @@ void Camera::setHorizontalFov(float newHorizontalFov)
     float verticalFovRadian = 2 * atan(tan(halfHorizontalFovRadian) * mAspectRatio);
 
     mVerticalFov = qRadiansToDegrees(verticalFovRadian);
-    updateProjection();
 }
 
 float Camera::verticalFov() const
@@ -67,7 +40,6 @@ void Camera::setVerticalFov(float newVerticalFov)
     float horizontalFovRadian = 2 * atan(tan(halfVerticalFovRadian) / mAspectRatio);
 
     mHorizontalFov = qRadiansToDegrees(horizontalFovRadian);
-    updateProjection();
 }
 
 float Camera::aspectRatio() const
@@ -78,7 +50,6 @@ float Camera::aspectRatio() const
 void Camera::setAspectRatio(float newAspectRatio)
 {
     mAspectRatio = newAspectRatio;
-    updateProjection();
 }
 
 float Camera::zNear() const
@@ -89,7 +60,6 @@ float Camera::zNear() const
 void Camera::setZNear(float newZNear)
 {
     mZNear = newZNear;
-    updateProjection();
 }
 
 float Camera::zFar() const
@@ -100,33 +70,25 @@ float Camera::zFar() const
 void Camera::setZFar(float newZFar)
 {
     mZFar = newZFar;
-    updateProjection();
 }
 
-const QMatrix4x4 &Camera::projection() const
+QMatrix4x4 Camera::projection() const
 {
-    return mProjection;
+    QMatrix4x4 projection;
+    projection.perspective(mVerticalFov, mAspectRatio, mZNear, mZFar);
+    return projection;
 }
 
-QVector3D Camera::getViewDirection()
+QVector3D Camera::getViewDirection() const
 {
     return mRotation * QVector3D(0, 0, -1);
 }
 
-const QMatrix4x4 &Camera::transformation() const
+QMatrix4x4 Camera::transformation() const
 {
-    return mTransformation;
-}
+    QMatrix4x4 transformation;
+    transformation.rotate(mRotation.conjugated());
+    transformation.translate(-mPosition);
 
-void Camera::updateTransformation()
-{
-    mTransformation.setToIdentity();
-    mTransformation.rotate(mRotation.conjugated());
-    mTransformation.translate(-mPosition);
-}
-
-void Camera::updateProjection()
-{
-    mProjection.setToIdentity();
-    mProjection.perspective(mVerticalFov, mAspectRatio, mZNear, mZFar);
+    return transformation;
 }

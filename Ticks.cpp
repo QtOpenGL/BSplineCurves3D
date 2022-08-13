@@ -38,13 +38,10 @@ void Ticks::create()
     mTicksVertexArray.release();
 }
 
-void Ticks::bind()
+void Ticks::render()
 {
     mTicksVertexArray.bind();
-}
-
-void Ticks::release()
-{
+    glDrawArrays(GL_POINTS, 0, mTicks.size());
     mTicksVertexArray.release();
 }
 

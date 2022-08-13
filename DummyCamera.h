@@ -12,8 +12,6 @@ public:
     explicit DummyCamera(QObject *parent = nullptr);
     virtual ~DummyCamera();
 
-    // Camera interface
-public:
     void onKeyPressed(QKeyEvent *);
     void onKeyReleased(QKeyEvent *);
     void onMousePressed(QMouseEvent *);

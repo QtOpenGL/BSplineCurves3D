@@ -308,19 +308,11 @@ void Bezier::updateOpenGLStuff()
     mVertexGenerationStatus = VertexGenerationStatus::Ready;
 }
 
-void Bezier::bind()
+void Bezier::render()
 {
     mVertexArray.bind();
-}
-
-void Bezier::release()
-{
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, mVertices.size());
     mVertexArray.release();
-}
-
-int Bezier::count()
-{
-    return mVertices.size();
 }
 
 int Bezier::sectorCount() const

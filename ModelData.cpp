@@ -96,6 +96,7 @@ bool ModelData::create()
     mVertexBuffer.bind();
     mVertexBuffer.setUsagePattern(QOpenGLBuffer::UsagePattern::StaticDraw);
     mVertexBuffer.allocate(mVertices.constData(), sizeof(QVector3D) * mVertices.size());
+    glEnableVertexAttribArray(0);
     glVertexAttribPointer(0,
                           3,                 // Size
                           GL_FLOAT,          // Type
@@ -103,7 +104,7 @@ bool ModelData::create()
                           sizeof(QVector3D), // Stride
                           nullptr            // Offset
     );
-    glEnableVertexAttribArray(0);
+
     mVertexBuffer.release();
 
     // Normals
@@ -111,7 +112,7 @@ bool ModelData::create()
     mNormalBuffer.bind();
     mNormalBuffer.setUsagePattern(QOpenGLBuffer::UsagePattern::StaticDraw);
     mNormalBuffer.allocate(mNormals.constData(), sizeof(QVector3D) * mNormals.size());
-
+    glEnableVertexAttribArray(1);
     glVertexAttribPointer(1,
                           3,                 // Size
                           GL_FLOAT,          // Type
@@ -119,7 +120,7 @@ bool ModelData::create()
                           sizeof(QVector3D), // Stride
                           nullptr            // Offset
     );
-    glEnableVertexAttribArray(1);
+
     mNormalBuffer.release();
 
     // TextureCoords
@@ -127,6 +128,7 @@ bool ModelData::create()
     mTextureCoordsBuffer.bind();
     mTextureCoordsBuffer.setUsagePattern(QOpenGLBuffer::UsagePattern::StaticDraw);
     mTextureCoordsBuffer.allocate(mTextureCoords.constData(), sizeof(QVector2D) * mTextureCoords.size());
+    glEnableVertexAttribArray(2);
     glVertexAttribPointer(2,
                           2,                 // Size
                           GL_FLOAT,          // Type
@@ -134,7 +136,6 @@ bool ModelData::create()
                           sizeof(QVector2D), // Stride
                           nullptr            // Offset
     );
-    glEnableVertexAttribArray(2);
     mTextureCoordsBuffer.release();
 
     mVertexArray.release();
@@ -144,19 +145,11 @@ bool ModelData::create()
     return true;
 }
 
-void ModelData::bind()
+void ModelData::render()
 {
     mVertexArray.bind();
-}
-
-void ModelData::release()
-{
+    glDrawArrays(GL_TRIANGLES, 0, mVertices.size());
     mVertexArray.release();
-}
-
-int ModelData::count()
-{
-    return mVertices.count();
 }
 
 const QString ModelData::ROOT_PATH = ":/Resources/Models/";

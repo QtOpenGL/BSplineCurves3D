@@ -160,7 +160,7 @@ float Spline::closestDistanceToRay(const QVector3D &cameraPosition, const QVecto
 
     for (auto &patch : mBezierPatches)
     {
-        float distance = patch->closestDistanceToRay(cameraPosition, rayDirection);
+        float distance = patch->closestDistanceToRay(cameraPosition, rayDirection, epsilon);
         if (distance < minDistance)
         {
             minDistance = distance;
