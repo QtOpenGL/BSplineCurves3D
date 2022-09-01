@@ -12,11 +12,11 @@ class FreeCamera : public Camera
 public:
     explicit FreeCamera(QObject *parent = nullptr);
 
-    void onKeyPressed(QKeyEvent *event) override;
-    void onKeyReleased(QKeyEvent *event) override;
-    void onMousePressed(QMouseEvent *event) override;
-    void onMouseReleased(QMouseEvent *event) override;
-    void onMouseMoved(QMouseEvent *event) override;
+    void keyPressed(QKeyEvent *event) override;
+    void keyReleased(QKeyEvent *event) override;
+    void mousePressed(QMouseEvent *event) override;
+    void mouseReleased(QMouseEvent *event) override;
+    void mouseMoved(QMouseEvent *event) override;
     void update(float ifps) override;
 
 private:

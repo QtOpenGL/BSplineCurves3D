@@ -32,11 +32,11 @@ public:
     virtual QMatrix4x4 projection() const;
     virtual QVector3D getViewDirection() const;
 
-    virtual void onKeyPressed(QKeyEvent *) = 0;
-    virtual void onKeyReleased(QKeyEvent *) = 0;
-    virtual void onMousePressed(QMouseEvent *) = 0;
-    virtual void onMouseReleased(QMouseEvent *) = 0;
-    virtual void onMouseMoved(QMouseEvent *) = 0;
+    virtual void keyPressed(QKeyEvent *) = 0;
+    virtual void keyReleased(QKeyEvent *) = 0;
+    virtual void mousePressed(QMouseEvent *) = 0;
+    virtual void mouseReleased(QMouseEvent *) = 0;
+    virtual void mouseMoved(QMouseEvent *) = 0;
     virtual void update(float) = 0;
 
 protected:

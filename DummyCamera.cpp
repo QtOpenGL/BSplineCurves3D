@@ -6,14 +6,14 @@ DummyCamera::DummyCamera(QObject *parent)
 
 DummyCamera::~DummyCamera() {}
 
-void DummyCamera::onKeyPressed(QKeyEvent *) {}
+void DummyCamera::keyPressed(QKeyEvent *) {}
 
-void DummyCamera::onKeyReleased(QKeyEvent *) {}
+void DummyCamera::keyReleased(QKeyEvent *) {}
 
-void DummyCamera::onMousePressed(QMouseEvent *) {}
+void DummyCamera::mousePressed(QMouseEvent *) {}
 
-void DummyCamera::onMouseReleased(QMouseEvent *) {}
+void DummyCamera::mouseReleased(QMouseEvent *) {}
 
-void DummyCamera::onMouseMoved(QMouseEvent *) {}
+void DummyCamera::mouseMoved(QMouseEvent *) {}
 
 void DummyCamera::update(float) {}

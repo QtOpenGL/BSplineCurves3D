@@ -1,4 +1,5 @@
 #include "Window.h"
+#include "Controller.h"
 #include "qmath.h"
 
 #include <imgui.h>
@@ -10,10 +11,6 @@ Window::Window(QWindow *parent)
     : QOpenGLWindow(QOpenGLWindow::UpdateBehavior::NoPartialUpdate, parent)
     , mMode(Mode::Select)
 {
-    mRendererManager = RendererManager::instance();
-    mCurveManager = CurveManager::instance();
-    mLightManager = LightManager::instance();
-
     QSurfaceFormat format;
     format.setMajorVersion(3);
     format.setMinorVersion(3);
@@ -30,7 +27,13 @@ void Window::initializeGL()
 
     QtImGui::initialize(this);
 
-    emit init();
+    mController = new Controller;
+    mController->setWindow(this);
+    mController->init();
+
+    mRendererManager = RendererManager::instance();
+    mCurveManager = CurveManager::instance();
+    mLightManager = LightManager::instance();
 
     mCurrentTime = QDateTime::currentMSecsSinceEpoch();
     mPreviousTime = mCurrentTime;
@@ -38,7 +41,7 @@ void Window::initializeGL()
 
 void Window::resizeGL(int w, int h)
 {
-    emit resized(w, h);
+    mController->resize(w, h);
 }
 
 void Window::paintGL()
@@ -55,7 +58,7 @@ void Window::paintGL()
     float ifps = (mCurrentTime - mPreviousTime) * 0.001f;
     mPreviousTime = mCurrentTime;
 
-    emit render(ifps);
+    mController->render(ifps);
 
     mImguiWantCapture = ImGui::GetIO().WantCaptureMouse;
 
@@ -68,10 +71,10 @@ void Window::paintGL()
         if (ImGui::BeginMenu("File"))
         {
             if (ImGui::MenuItem("Import"))
-                emit action(Action::ShowImportWindow);
+                mController->onAction(Action::ShowImportWindow);
 
             if (ImGui::MenuItem("Export"))
-                emit action(Action::ShowExportWindow);
+                mController->onAction(Action::ShowExportWindow);
 
             ImGui::EndMenu();
         }
@@ -88,7 +91,7 @@ void Window::paintGL()
         if (mode != (int) mMode)
         {
             mMode = (Mode) mode;
-            emit action(Action::UpdateMode, mode);
+            mController->onAction(Action::UpdateMode, mode);
         }
     }
 
@@ -96,18 +99,18 @@ void Window::paintGL()
     if (!ImGui::CollapsingHeader("Render Settings"))
     {
         if (ImGui::SliderFloat("Pipe Radius (Global)", &mGlobalPipeRadius, 0.001f, 1.0f, "%.3f"))
-            emit action(Action::UpdateGlobalPipeRadius, mGlobalPipeRadius);
+            mController->onAction(Action::UpdateGlobalPipeRadius, mGlobalPipeRadius);
 
         if (ImGui::SliderInt("Pipe Sector Count (Global)", &mGlobalPipeSectorCount, 3, 192))
-            emit action(Action::UpdateGlobalPipeSectorCount, mGlobalPipeSectorCount);
+            mController->onAction(Action::UpdateGlobalPipeSectorCount, mGlobalPipeSectorCount);
 
         if (ImGui::Checkbox("Render Paths", &mRenderPaths))
-            emit action(Action::UpdateRenderPaths, mRenderPaths);
+            mController->onAction(Action::UpdateRenderPaths, mRenderPaths);
 
         ImGui::SameLine();
 
         if (ImGui::Checkbox("Render Pipes", &mRenderPipes))
-            emit action(Action::UpdateRenderPipes, mRenderPipes);
+            mController->onAction(Action::UpdateRenderPipes, mRenderPipes);
     }
 
     // Light
@@ -169,10 +172,10 @@ void Window::paintGL()
         ImGui::Text("Length: %.2f", length);
 
         if (ImGui::SliderFloat("Pipe Radius", &radius, 0.001f, 1.0f, "%.3f"))
-            emit action(Action::UpdateSelectedCurvePipeRadius, radius);
+            mController->onAction(Action::UpdateSelectedCurvePipeRadius, radius);
 
         if (ImGui::SliderInt("Pipe Sector Count", &sectorCount, 3, 192))
-            emit action(Action::UpdateSelectedCurvePipeSectorCount, sectorCount);
+            mController->onAction(Action::UpdateSelectedCurvePipeSectorCount, sectorCount);
 
         ImGui::Text("Shading Parameters:");
         float ambient = mSelectedCurve ? mSelectedCurve->material().ambient() : 0.0f;
@@ -200,7 +203,7 @@ void Window::paintGL()
         }
 
         if (ImGui::Button("Remove Curve"))
-            emit action(Action::RemoveSelectedCurve);
+            mController->onAction(Action::RemoveSelectedCurve);
 
         ImGui::EndDisabled();
     }
@@ -232,11 +235,11 @@ void Window::paintGL()
             list << x;
             list << y;
             list << z;
-            emit action(Action::UpdateKnotPointPositionFromGui, list);
+            mController->onAction(Action::UpdateKnotPointPositionFromGui, list);
         }
 
         if (ImGui::Button("Remove Knot"))
-            emit action(Action::RemoveSelectedKnotPoint);
+            mController->onAction(Action::RemoveSelectedKnotPoint);
 
         ImGui::EndDisabled();
     }
@@ -244,7 +247,7 @@ void Window::paintGL()
     ImGui::Spacing();
 
     if (ImGui::Button("Clear Scene"))
-        emit action(Action::ClearScene);
+        mController->onAction(Action::ClearScene);
 
     ImGui::Spacing();
 
@@ -257,37 +260,37 @@ void Window::paintGL()
 
 void Window::keyPressEvent(QKeyEvent *event)
 {
-    emit keyPressed(event);
+    mController->keyPressed(event);
 }
 
 void Window::keyReleaseEvent(QKeyEvent *event)
 {
-    emit keyReleased(event);
+    mController->keyReleased(event);
 }
 
 void Window::mousePressEvent(QMouseEvent *event)
 {
-    emit mousePressed(event);
+    mController->mousePressed(event);
 }
 
 void Window::mouseReleaseEvent(QMouseEvent *event)
 {
-    emit mouseReleased(event);
+    mController->mouseReleased(event);
 }
 
 void Window::mouseMoveEvent(QMouseEvent *event)
 {
-    emit mouseMoved(event);
+    mController->mouseMoved(event);
 }
 
 void Window::wheelEvent(QWheelEvent *event)
 {
-    emit wheelMoved(event);
+    mController->wheelMoved(event);
 }
 
 void Window::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    emit mouseDoubleClicked(event);
+    mController->mouseDoubleClicked(event);
 }
 
 bool Window::imguiWantCapture() const

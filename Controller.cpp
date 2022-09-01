@@ -2,6 +2,7 @@
 #include "FreeCamera.h"
 #include "Helper.h"
 #include "Light.h"
+#include "Window.h"
 
 #include <QDebug>
 
@@ -11,27 +12,19 @@ Controller::Controller(QObject *parent)
     , mSelectedKnotPoint(nullptr)
     , mPressedButton(Qt::NoButton)
     , mMode(Mode::Select)
+{}
+
+void Controller::init()
 {
     mRendererManager = RendererManager::instance();
     mCameraManager = CameraManager::instance();
     mLightManager = LightManager::instance();
     mModelManager = ModelManager::instance();
     mCurveManager = CurveManager::instance();
-    mWindow = new Window;
+
+    mRendererManager->init();
 
     mFileDialog = new QFileDialog;
-
-    connect(mWindow, &Window::wheelMoved, this, &Controller::onWheelMoved);
-    connect(mWindow, &Window::mousePressed, this, &Controller::onMousePressed);
-    connect(mWindow, &Window::mouseReleased, this, &Controller::onMouseReleased);
-    connect(mWindow, &Window::mouseMoved, this, &Controller::onMouseMoved);
-    connect(mWindow, &Window::keyPressed, this, &Controller::onKeyPressed);
-    connect(mWindow, &Window::keyReleased, this, &Controller::onKeyReleased);
-    connect(mWindow, &Window::resized, this, &Controller::onResized);
-    connect(mWindow, &Window::init, this, &Controller::init);
-    connect(mWindow, &Window::render, this, &Controller::render);
-    connect(mWindow, &Window::action, this, &Controller::onAction);
-    connect(mWindow, &Window::mouseDoubleClicked, this, &Controller::onMouseDoubleClicked);
 
     connect(mCurveManager, &CurveManager::selectedCurveChanged, this, [=](Spline *selectedCurve) { mSelectedCurve = selectedCurve; });
     connect(mCurveManager, &CurveManager::selectedKnotPointChanged, this, [=](KnotPoint *selectedPoint) { mSelectedKnotPoint = selectedPoint; });
@@ -52,12 +45,6 @@ Controller::Controller(QObject *parent)
                 break;
             }
     });
-}
-
-void Controller::init()
-{
-    // Initialize Managers
-    mRendererManager->init();
 
     mCamera = new FreeCamera;
     mCamera->setPosition(QVector3D(0, 10, 10));
@@ -83,14 +70,6 @@ void Controller::init()
     }
 
     mCurveManager->addCurves(Helper::loadCurveDataFromJson(":/Resources/Data/test-curves-light.json"));
-}
-
-void Controller::run()
-{
-    // mWindow->showMaximized();
-    // mWindow->showFullScreen();
-    mWindow->resize(1024, 800);
-    mWindow->show();
 }
 
 void Controller::onAction(Action action, QVariant variant)
@@ -304,13 +283,18 @@ void Controller::onAction(Action action, QVariant variant)
     }
 }
 
-void Controller::onWheelMoved(QWheelEvent *)
+void Controller::setWindow(Window *newWindow)
+{
+    mWindow = newWindow;
+}
+
+void Controller::wheelMoved(QWheelEvent *)
 {
     if (mWindow->imguiWantCapture())
         return;
 }
 
-void Controller::onMousePressed(QMouseEvent *event)
+void Controller::mousePressed(QMouseEvent *event)
 {
     if (mWindow->imguiWantCapture())
         return;
@@ -319,7 +303,7 @@ void Controller::onMousePressed(QMouseEvent *event)
 
     if (mPressedButton == Qt::RightButton)
     {
-        mCameraManager->onMousePressed(event);
+        mCameraManager->mousePressed(event);
     } else if (mPressedButton == Qt::LeftButton)
     {
         switch (mMode)
@@ -336,7 +320,7 @@ void Controller::onMousePressed(QMouseEvent *event)
     }
 }
 
-void Controller::onMouseReleased(QMouseEvent *event)
+void Controller::mouseReleased(QMouseEvent *event)
 {
     if (mWindow->imguiWantCapture())
         return;
@@ -345,18 +329,18 @@ void Controller::onMouseReleased(QMouseEvent *event)
 
     if (event->button() == Qt::RightButton)
     {
-        mCameraManager->onMouseReleased(event);
+        mCameraManager->mouseReleased(event);
     }
 }
 
-void Controller::onMouseMoved(QMouseEvent *event)
+void Controller::mouseMoved(QMouseEvent *event)
 {
     if (mWindow->imguiWantCapture())
         return;
 
     if (mPressedButton == Qt::RightButton)
     {
-        mCameraManager->onMouseMoved(event);
+        mCameraManager->mouseMoved(event);
     } else if (mPressedButton == Qt::LeftButton)
     {
         switch (mMode)
@@ -372,7 +356,7 @@ void Controller::onMouseMoved(QMouseEvent *event)
     }
 }
 
-void Controller::onKeyPressed(QKeyEvent *event)
+void Controller::keyPressed(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Delete)
     {
@@ -389,20 +373,20 @@ void Controller::onKeyPressed(QKeyEvent *event)
         onAction(Action::UpdateMode, (int) Mode::Add);
     }
 
-    mCameraManager->onKeyPressed(event);
+    mCameraManager->keyPressed(event);
 }
 
-void Controller::onKeyReleased(QKeyEvent *event)
+void Controller::keyReleased(QKeyEvent *event)
 {
-    mCameraManager->onKeyReleased(event);
+    mCameraManager->keyReleased(event);
 }
 
-void Controller::onResized(int w, int h)
+void Controller::resize(int w, int h)
 {
     mCamera->setAspectRatio((float) (w) / h);
 }
 
-void Controller::onMouseDoubleClicked(QMouseEvent *event)
+void Controller::mouseDoubleClicked(QMouseEvent *event)
 {
     if (event->button() == Qt::RightButton)
         onAction(Action::UpdateMode, (int) Mode::Select);

@@ -9,6 +9,8 @@
 #include <QOpenGLFunctionsPrivate>
 #include <QOpenGLWindow>
 
+class Controller;
+
 class Window : public QOpenGLWindow, protected QOpenGLFunctions
 {
     Q_OBJECT
@@ -20,19 +22,6 @@ public:
 
 public slots:
     void onModeChanged(Mode newMode);
-
-signals:
-    void init();
-    void resized(int w, int h);
-    void render(float ifps);
-    void keyPressed(QKeyEvent *);
-    void keyReleased(QKeyEvent *);
-    void mousePressed(QMouseEvent *);
-    void mouseReleased(QMouseEvent *);
-    void mouseMoved(QMouseEvent *);
-    void wheelMoved(QWheelEvent *);
-    void mouseDoubleClicked(QMouseEvent *);
-    void action(Action action, QVariant variant = QVariant());
 
 private:
     void initializeGL() override;
@@ -47,6 +36,7 @@ private:
     void mouseDoubleClickEvent(QMouseEvent *) override;
 
 private:
+    Controller *mController;
     long long mPreviousTime;
     long long mCurrentTime;
 

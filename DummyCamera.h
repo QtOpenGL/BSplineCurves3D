@@ -12,11 +12,11 @@ public:
     explicit DummyCamera(QObject *parent = nullptr);
     virtual ~DummyCamera();
 
-    void onKeyPressed(QKeyEvent *);
-    void onKeyReleased(QKeyEvent *);
-    void onMousePressed(QMouseEvent *);
-    void onMouseReleased(QMouseEvent *);
-    void onMouseMoved(QMouseEvent *);
+    void keyPressed(QKeyEvent *);
+    void keyReleased(QKeyEvent *);
+    void mousePressed(QMouseEvent *);
+    void mouseReleased(QMouseEvent *);
+    void mouseMoved(QMouseEvent *);
     void update(float);
 };
 

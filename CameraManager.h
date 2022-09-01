@@ -16,11 +16,11 @@ public:
     void addCamera(Camera *camera);
     void removeCamera(Camera *camera);
 
-    void onKeyPressed(QKeyEvent *event);
-    void onKeyReleased(QKeyEvent *event);
-    void onMousePressed(QMouseEvent *event);
-    void onMouseReleased(QMouseEvent *event);
-    void onMouseMoved(QMouseEvent *event);
+    void keyPressed(QKeyEvent *event);
+    void keyReleased(QKeyEvent *event);
+    void mousePressed(QMouseEvent *event);
+    void mouseReleased(QMouseEvent *event);
+    void mouseMoved(QMouseEvent *event);
     void update(float ifps);
 
     QVector3D getViewDirection() const;

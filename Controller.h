@@ -4,35 +4,36 @@
 #include "Camera.h"
 #include "Enums.h"
 #include "RendererManager.h"
-#include "Window.h"
 
 #include <QObject>
 
 #include <Dense>
 #include <QFileDialog>
 
+class Window;
+
 class Controller : public QObject
 {
     Q_OBJECT
 public:
     explicit Controller(QObject *parent = nullptr);
-    void run();
+
+    void init();
+    void wheelMoved(QWheelEvent *event);
+    void mousePressed(QMouseEvent *event);
+    void mouseReleased(QMouseEvent *event);
+    void mouseMoved(QMouseEvent *event);
+    void keyPressed(QKeyEvent *event);
+    void keyReleased(QKeyEvent *event);
+    void resize(int w, int h);
+    void mouseDoubleClicked(QMouseEvent *event);
+    void render(float ifps);
+    void onAction(Action, QVariant variant = QVariant());
+
+    void setWindow(Window *newWindow);
 
 signals:
     void modeChanged(Mode newMode);
-
-private slots:
-    void init();
-    void onWheelMoved(QWheelEvent *event);
-    void onMousePressed(QMouseEvent *event);
-    void onMouseReleased(QMouseEvent *event);
-    void onMouseMoved(QMouseEvent *event);
-    void onKeyPressed(QKeyEvent *event);
-    void onKeyReleased(QKeyEvent *event);
-    void onResized(int w, int h);
-    void onMouseDoubleClicked(QMouseEvent *event);
-    void render(float ifps);
-    void onAction(Action, QVariant variant = QVariant());
 
 private:
     RendererManager *mRendererManager;

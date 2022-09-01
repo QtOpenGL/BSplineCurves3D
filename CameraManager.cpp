@@ -33,34 +33,34 @@ void CameraManager::setActiveCamera(Camera *newActiveCamera)
     mActiveCamera = newActiveCamera;
 }
 
-void CameraManager::onKeyPressed(QKeyEvent *event)
+void CameraManager::keyPressed(QKeyEvent *event)
 {
     if (mActiveCamera)
-        mActiveCamera->onKeyPressed(event);
+        mActiveCamera->keyPressed(event);
 }
 
-void CameraManager::onKeyReleased(QKeyEvent *event)
+void CameraManager::keyReleased(QKeyEvent *event)
 {
     if (mActiveCamera)
-        mActiveCamera->onKeyReleased(event);
+        mActiveCamera->keyReleased(event);
 }
 
-void CameraManager::onMousePressed(QMouseEvent *event)
+void CameraManager::mousePressed(QMouseEvent *event)
 {
     if (mActiveCamera)
-        mActiveCamera->onMousePressed(event);
+        mActiveCamera->mousePressed(event);
 }
 
-void CameraManager::onMouseReleased(QMouseEvent *event)
+void CameraManager::mouseReleased(QMouseEvent *event)
 {
     if (mActiveCamera)
-        mActiveCamera->onMouseReleased(event);
+        mActiveCamera->mouseReleased(event);
 }
 
-void CameraManager::onMouseMoved(QMouseEvent *event)
+void CameraManager::mouseMoved(QMouseEvent *event)
 {
     if (mActiveCamera)
-        mActiveCamera->onMouseMoved(event);
+        mActiveCamera->mouseMoved(event);
 }
 
 void CameraManager::update(float ifps)

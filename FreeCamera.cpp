@@ -16,30 +16,30 @@ FreeCamera::FreeCamera(QObject *parent)
     , mUpdatePosition(true)
 {}
 
-void FreeCamera::onKeyPressed(QKeyEvent *event)
+void FreeCamera::keyPressed(QKeyEvent *event)
 {
     mPressedKeys.insert((Qt::Key) event->key(), true);
     mUpdatePosition = true;
 }
 
-void FreeCamera::onKeyReleased(QKeyEvent *event)
+void FreeCamera::keyReleased(QKeyEvent *event)
 {
     mPressedKeys.insert((Qt::Key) event->key(), false);
 }
 
-void FreeCamera::onMousePressed(QMouseEvent *event)
+void FreeCamera::mousePressed(QMouseEvent *event)
 {
     mMousePreviousX = event->x();
     mMousePreviousY = event->y();
     mMousePressed = true;
 }
 
-void FreeCamera::onMouseReleased(QMouseEvent *)
+void FreeCamera::mouseReleased(QMouseEvent *)
 {
     mMousePressed = false;
 }
 
-void FreeCamera::onMouseMoved(QMouseEvent *event)
+void FreeCamera::mouseMoved(QMouseEvent *event)
 {
     if (mMousePressed)
     {
