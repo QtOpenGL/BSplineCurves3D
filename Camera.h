@@ -28,16 +28,16 @@ public:
     virtual float zFar() const;
     virtual void setZFar(float newZFar);
 
-    virtual QMatrix4x4 transformation() const;
-    virtual QMatrix4x4 projection() const;
-    virtual QVector3D getViewDirection() const;
-
     virtual void keyPressed(QKeyEvent *) = 0;
     virtual void keyReleased(QKeyEvent *) = 0;
     virtual void mousePressed(QMouseEvent *) = 0;
     virtual void mouseReleased(QMouseEvent *) = 0;
     virtual void mouseMoved(QMouseEvent *) = 0;
     virtual void update(float) = 0;
+
+    QMatrix4x4 getViewMatrix() const;
+    QMatrix4x4 getProjectionMatrix() const;
+    QVector3D getViewDirection() const;
 
 protected:
     float mVerticalFov;

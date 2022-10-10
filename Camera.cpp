@@ -72,7 +72,7 @@ void Camera::setZFar(float newZFar)
     mZFar = newZFar;
 }
 
-QMatrix4x4 Camera::projection() const
+QMatrix4x4 Camera::getProjectionMatrix() const
 {
     QMatrix4x4 projection;
     projection.perspective(mVerticalFov, mAspectRatio, mZNear, mZFar);
@@ -84,11 +84,10 @@ QVector3D Camera::getViewDirection() const
     return mRotation * QVector3D(0, 0, -1);
 }
 
-QMatrix4x4 Camera::transformation() const
+QMatrix4x4 Camera::getViewMatrix() const
 {
     QMatrix4x4 transformation;
     transformation.rotate(mRotation.conjugated());
     transformation.translate(-mPosition);
-
     return transformation;
 }

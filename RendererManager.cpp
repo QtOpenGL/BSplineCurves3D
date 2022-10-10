@@ -107,8 +107,8 @@ void RendererManager::renderModels(float ifps)
 
     if (mCamera)
     {
-        mShaderManager->setUniformValue("projection_matrix", mCamera->projection());
-        mShaderManager->setUniformValue("view_matrix", mCamera->transformation());
+        mShaderManager->setUniformValue("projection_matrix", mCamera->getProjectionMatrix());
+        mShaderManager->setUniformValue("view_matrix", mCamera->getViewMatrix());
         mShaderManager->setUniformValue("camera_position", mCamera->position());
     }
 
@@ -153,8 +153,8 @@ void RendererManager::renderKnotPoints(float ifps)
 
     if (mCamera)
     {
-        mShaderManager->setUniformValue("projection_matrix", mCamera->projection());
-        mShaderManager->setUniformValue("view_matrix", mCamera->transformation());
+        mShaderManager->setUniformValue("projection_matrix", mCamera->getProjectionMatrix());
+        mShaderManager->setUniformValue("view_matrix", mCamera->getViewMatrix());
         mShaderManager->setUniformValue("camera_position", mCamera->position());
     }
 
@@ -197,8 +197,8 @@ void RendererManager::renderPaths(float ifps)
 
     if (mCamera)
     {
-        mShaderManager->setUniformValue("projection_matrix", mCamera->projection());
-        mShaderManager->setUniformValue("view_matrix", mCamera->transformation());
+        mShaderManager->setUniformValue("projection_matrix", mCamera->getProjectionMatrix());
+        mShaderManager->setUniformValue("view_matrix", mCamera->getViewMatrix());
     }
 
     mShaderManager->setUniformValue("color", QVector4D(1, 0, 0, 1));
@@ -267,8 +267,8 @@ void RendererManager::renderUsingDumbShader(float ifps, Spline *curve, Bezier *p
 
     if (mCamera)
     {
-        mShaderManager->setUniformValue("projection_matrix", mCamera->projection());
-        mShaderManager->setUniformValue("view_matrix", mCamera->transformation());
+        mShaderManager->setUniformValue("projection_matrix", mCamera->getProjectionMatrix());
+        mShaderManager->setUniformValue("view_matrix", mCamera->getViewMatrix());
         mShaderManager->setUniformValue("camera_position", mCamera->position());
     }
 
@@ -319,8 +319,8 @@ void RendererManager::renderUsingSmartShader(float ifps, Spline *curve, Bezier *
 
     if (mCamera)
     {
-        mShaderManager->setUniformValue("projection_matrix", mCamera->projection());
-        mShaderManager->setUniformValue("view_matrix", mCamera->transformation());
+        mShaderManager->setUniformValue("projection_matrix", mCamera->getProjectionMatrix());
+        mShaderManager->setUniformValue("view_matrix", mCamera->getViewMatrix());
         mShaderManager->setUniformValue("camera_position", mCamera->position());
     }
 
