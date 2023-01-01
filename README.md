@@ -5,9 +5,9 @@ B-splines are parameterics curves which consists of several Bezier curves whose 
 I used cubic Bezier curves for the interpolation of knots.
 Given a set of knots, a cubic Bezier is generated between each knot. Then these Bezier curves are glued together and forming the final curve, B-spline.
 The algorithm for the generation of the curves can be found [here](https://www.math.ucla.edu/~baker/149.1.02w/handouts/dd_splines.pdf). Although it is about 2D B-splines, interpolating 3D B-splines is not so different.
-I implemented the algorithm in `createCoefficientMatrix`, `getSplineControlPoints` and `update` methods of `Spline` class.
+I implemented the algorithm in `CreateCoefficientMatrix`, `GetSplineControlPoints` and `Update` methods of `Spline` class.
 
-For the rendering algorithm, [this](https://www.songho.ca/opengl/gl_cylinder.html) resource helped me a lot. The vertex generation algorithm can be found in `PipeDumb.geom` shader or in `generateVertices` method of `Bezier` class.
+For the rendering algorithm, [this](https://www.songho.ca/opengl/gl_cylinder.html) resource helped me a lot. The vertex generation algorithm can be found in `PipeDumb.geom` shader or in `GenerateVertices` method of `Bezier` class.
 
 ## Build
 1) Install `CMake 3.25.1`.
