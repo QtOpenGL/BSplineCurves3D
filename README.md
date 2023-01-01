@@ -1,4 +1,4 @@
-# BSplineCurves3D
+# BSpline Curves 3D
 Rendering 3D B-splines using OpenGL, Qt, C++ and Eigen.
 
 B-splines are parameterics curves which consists of several Bezier curves whose control points satisfy some special conditions.
@@ -10,7 +10,15 @@ I implemented the algorithm in `createCoefficientMatrix`, `getSplineControlPoint
 For the rendering algorithm, [this](https://www.songho.ca/opengl/gl_cylinder.html) resource helped me a lot. The vertex generation algorithm can be found in `PipeDumb.geom` shader or in `generateVertices` method of `Bezier` class.
 
 ## Build
-Simply open `BSplineCurves3D.pro` with `QtCreator` and build it with `Qt 5.15.2 MSVC 2019 64-bit` kit. You may use a compiler other than `MSVC 2019 64-bit` but you must use `Qt 5` because the project may not be built with `Qt 6`.
+1) Install `CMake 3.25.1`.
+2) Install `Visual Studio 2019 and MSVC C++ Compiler`.
+3) Install `Qt 5.15.2 MSVC2019 64bit` kit.
+4) Clone the repo `git clone https://github.com/berkbavas/BSplineCurves3D.git`.
+5) Create a folder `mkdir Build`.
+6) Enter the folder `cd Build`.
+7) Run CMake `cmake ..`.
+8) Open `BSplineCurves3D.sln` with `Visual Studio 2019`.
+9) Build & Run.
 
 ## Screenshots
 ![](Screenshots/1.png)
