@@ -10,15 +10,16 @@ I implemented the algorithm in `CreateCoefficientMatrix`, `GetSplineControlPoint
 For the rendering algorithm, [this](https://www.songho.ca/opengl/gl_cylinder.html) resource helped me a lot. The vertex generation algorithm can be found in `PipeDumb.geom` shader or in `GenerateVertices` method of `Bezier` class.
 
 ## Build
-1) Install `CMake 3.25.1`.
-2) Install `Visual Studio 2019 and MSVC C++ Compiler`.
-3) Install `Qt 5.15.2 MSVC2019 64bit` kit.
-4) Clone the repo `git clone https://github.com/berkbavas/BSplineCurves3D.git`.
-5) Create a folder `mkdir Build`.
-6) Enter the folder `cd Build`.
-7) Run CMake `cmake ..`.
-8) Open `BSplineCurves3D.sln` with `Visual Studio 2019`.
-9) Build & Run.
+1) Install `CMake 3.25.1` or latest.
+2) Install `Visual Studio 2019` and `MSVC C++ Compiler`.
+3) Install `Qt 6.x.x MSVC2019 64bit` kit.
+4) Define environment variable `Qt6_DIR` as `C:\Qt\6.x.x\msvc2019_64`.
+5) Clone the repo `git clone https://github.com/berkbavas/BSplineCurves3D.git`.
+6) Create a folder `mkdir Build`.
+7) Enter the folder `cd Build`.
+8) Run CMake `cmake ..`.
+9) Open `BSplineCurves3D.sln` with `Visual Studio 2019`.
+10) Build & Run with `Release` configuration.
 
 ## Screenshots
 ![](Screenshots/1.png)
@@ -30,4 +31,4 @@ For the rendering algorithm, [this](https://www.songho.ca/opengl/gl_cylinder.htm
 ![](UML.png)
 
 ## Keywords
-C++, Qt 5, OpenGL, GLSL, Curves, Bezier Curves, 3D B-splines, Eigen
+C++, Qt 6, OpenGL, GLSL, Curves, Bezier Curves, 3D B-Splines, Eigen, 3D Rendering

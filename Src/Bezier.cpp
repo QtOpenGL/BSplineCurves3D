@@ -191,62 +191,63 @@ void BSplineCurves3D::Bezier::GenerateVertices()
 {
     mVertexGenerationStatus = VertexGenerationStatus::GeneratingVertices;
 
-    QtConcurrent::run([=]() {
-        mVertices.clear();
-        mNormals.clear();
-
-        mVertices.reserve(4 * mSectorCount * mTickCount);
-        mNormals.reserve(4 * mSectorCount * mTickCount);
-
-        float dt = 1.0f / mTickCount;
-        float r = mRadius;
-
-        for (float t = 0.0f; t <= 1.0f - dt; t += dt)
+    QtConcurrent::run([=]()
         {
-            float t0 = t;
-            float t1 = t0 + dt;
+            mVertices.clear();
+            mNormals.clear();
 
-            QVector3D value0 = ValueAt(t0);
-            QVector3D value1 = ValueAt(t1);
+            mVertices.reserve(4 * mSectorCount * mTickCount);
+            mNormals.reserve(4 * mSectorCount * mTickCount);
 
-            QVector3D tangent0 = TangentAt(t0);
-            QVector3D tangent1 = TangentAt(t1);
+            float dt = 1.0f / mTickCount;
+            float r = mRadius;
 
-            QVector3D axis = QVector3D::crossProduct(QVector3D(1, 0, 0), tangent0);
-            float angle = acos(QVector3D::dotProduct(QVector3D(1, 0, 0), tangent0));
-
-            if (abs(angle) < 0.00001f || abs(angle - M_PI) < 0.00001f)
+            for (float t = 0.0f; t <= 1.0f - dt; t += dt)
             {
-                axis = QVector3D(0, 1, 0);
+                float t0 = t;
+                float t1 = t0 + dt;
+
+                QVector3D value0 = ValueAt(t0);
+                QVector3D value1 = ValueAt(t1);
+
+                QVector3D tangent0 = TangentAt(t0);
+                QVector3D tangent1 = TangentAt(t1);
+
+                QVector3D axis = QVector3D::crossProduct(QVector3D(1, 0, 0), tangent0);
+                float angle = acos(QVector3D::dotProduct(QVector3D(1, 0, 0), tangent0));
+
+                if (abs(angle) < 0.00001f || abs(angle - M_PI) < 0.00001f)
+                {
+                    axis = QVector3D(0, 1, 0);
+                }
+
+                QQuaternion rotation = QQuaternion::fromAxisAndAngle(axis, qRadiansToDegrees(angle));
+
+                for (int i = 0; i < mSectorCount; ++i)
+                {
+                    float sectorAngle0 = 2 * float(i) / mSectorCount * M_PI;
+                    float sectorAngle1 = 2 * float(i + 1) / mSectorCount * M_PI;
+
+                    QVector3D position00 = value0 + rotation * QVector3D(0, r * cos(sectorAngle0), r * sin(sectorAngle0));
+                    QVector3D position01 = value0 + rotation * QVector3D(0, r * cos(sectorAngle1), r * sin(sectorAngle1));
+                    QVector3D position10 = Helper::ProjectOntoPlane(tangent1, value1, position00);
+                    QVector3D position11 = Helper::ProjectOntoPlane(tangent1, value1, position01);
+
+                    QVector3D normal = QVector3D::crossProduct((position10 - position00).normalized(), (position11 - position00).normalized());
+
+                    mVertices << position10;
+                    mVertices << position00;
+                    mVertices << position11;
+                    mVertices << position01;
+
+                    mNormals << normal;
+                    mNormals << normal;
+                    mNormals << normal;
+                    mNormals << normal;
+                }
             }
 
-            QQuaternion rotation = QQuaternion::fromAxisAndAngle(axis, qRadiansToDegrees(angle));
-
-            for (int i = 0; i < mSectorCount; ++i)
-            {
-                float sectorAngle0 = 2 * float(i) / mSectorCount * M_PI;
-                float sectorAngle1 = 2 * float(i + 1) / mSectorCount * M_PI;
-
-                QVector3D position00 = value0 + rotation * QVector3D(0, r * cos(sectorAngle0), r * sin(sectorAngle0));
-                QVector3D position01 = value0 + rotation * QVector3D(0, r * cos(sectorAngle1), r * sin(sectorAngle1));
-                QVector3D position10 = Helper::ProjectOntoPlane(tangent1, value1, position00);
-                QVector3D position11 = Helper::ProjectOntoPlane(tangent1, value1, position01);
-
-                QVector3D normal = QVector3D::crossProduct((position10 - position00).normalized(), (position11 - position00).normalized());
-
-                mVertices << position10;
-                mVertices << position00;
-                mVertices << position11;
-                mVertices << position01;
-
-                mNormals << normal;
-                mNormals << normal;
-                mNormals << normal;
-                mNormals << normal;
-            }
-        }
-
-        mVertexGenerationStatus = VertexGenerationStatus::WaitingForOpenGLUpdate;
+            mVertexGenerationStatus = VertexGenerationStatus::WaitingForOpenGLUpdate;
         });
 }
 

@@ -112,7 +112,7 @@ bool BSplineCurves3D::Helper::SaveCurveDataToJson(const QList<Spline*>& curves, 
         QJsonDocument document;
         document.setArray(curvesArray);
         QTextStream stream(&file);
-        stream.setCodec("UTF-8");
+        stream.setEncoding(QStringConverter::Encoding::Utf8);
         stream << document.toJson(QJsonDocument::Indented);
         stream.flush();
         file.close();

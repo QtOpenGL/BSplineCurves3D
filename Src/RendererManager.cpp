@@ -212,7 +212,7 @@ void BSplineCurves3D::RendererManager::RenderPaths(float ifps)
             {
                 auto controlPointPositions = patch->GetControlPointPositions();
 
-                mShaderManager->SetUniformValue("control_points_count", controlPointPositions.size());
+                mShaderManager->SetUniformValue("control_points_count", static_cast<int>(controlPointPositions.size()));
                 mShaderManager->SetUniformValueArray("control_points", controlPointPositions);
                 mPathTicks->Render();
             }
@@ -288,7 +288,7 @@ void BSplineCurves3D::RendererManager::RenderUsingDumbShader(float ifps, Spline*
 
     auto controlPointPositions = patch->GetControlPointPositions();
 
-    mShaderManager->SetUniformValue("control_points_count", controlPointPositions.size());
+    mShaderManager->SetUniformValue("control_points_count", static_cast<int>(controlPointPositions.size()));
     mShaderManager->SetUniformValueArray("control_points", controlPointPositions);
 
     mShaderManager->SetUniformValue("node.color", curve->GetMaterial().GetColor());
